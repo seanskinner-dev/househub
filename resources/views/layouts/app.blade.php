@@ -3,25 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>House Hub - Sydney</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <style>
-        body { background: #eef2f7; font-family: 'Inter', sans-serif; }
-        .nav-sidebar { width: 250px; background: #fff; height: 100vh; position: fixed; border-right: 1px solid #ddd; }
-        .main-content { margin-left: 250px; padding: 20px; }
-    </style>
+    <title>HouseHub</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <div class="nav-sidebar">
-        <div style="padding:20px; font-weight:bold; border-bottom:1px solid #eee;">🏆 HOUSE HUB</div>
-        <ul style="list-style:none; padding:20px;">
-            <li style="margin-bottom:15px;"><a href="{{ route('leaderboard') }}" style="text-decoration:none; color:#333;">Leaderboard</a></li>
-            <li style="margin-bottom:15px;"><a href="{{ route('points.create') }}" style="text-decoration:none; color:#333; font-weight:bold;">Award Points</a></li>
-        </ul>
-    </div>
 
-    <div class="main-content">
-        @yield('content')
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+
+        <a class="navbar-brand" href="{{ route('points.index') }}">
+            HouseHub
+        </a>
+
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav ms-auto">
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('points.index') }}">
+                        Award Points
+                    </a>
+                </li>
+
+                {{-- Leaderboard removed for now to stop crash --}}
+                {{-- <li class="nav-item">
+                    <a class="nav-link" href="{{ route('leaderboard') }}">
+                        Leaderboard
+                    </a>
+                </li> --}}
+
+            </ul>
+        </div>
+
     </div>
+</nav>
+
+<div class="container mt-4">
+    @yield('content')
+</div>
+
 </body>
 </html>

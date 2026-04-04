@@ -38,11 +38,13 @@ class PointSystemTest extends TestCase
         ]);
     }
 
-    public function test_house_award_creates_single_transaction_and_updates_all_students(): void
+    // ✅ NEW RULE: HOUSE DOES NOT TOUCH STUDENTS
+    public function test_house_award_updates_house_only(): void
     {
         DB::table('houses')->insert([
             'name' => 'Gryffindor',
-            'colour_hex' => '#740001'
+            'colour_hex' => '#740001',
+            'points' => 0
         ]);
 
         DB::table('students')->insert([
@@ -64,20 +66,24 @@ class PointSystemTest extends TestCase
 
         $response = $this->post('/points', [
             'house_name' => 'Gryffindor',
-            'amount' => 1,
-            'type' => 'house'
+            'amount' => 1
         ]);
 
         $response->assertStatus(302);
 
+        // ✅ Only 1 transaction
+        $this->assertEquals(1, DB::table('point_transactions')->count());
+
+        // ❌ Students should NOT change
         $this->assertEquals(
-            1,
-            DB::table('point_transactions')->count()
+            0,
+            DB::table('students')->where('house_points', 1)->count()
         );
 
+        // ✅ House total updated
         $this->assertEquals(
-            2,
-            DB::table('students')->where('house_points', 1)->count()
+            1,
+            DB::table('houses')->where('points', 1)->count()
         );
     }
 
@@ -128,29 +134,13 @@ class PointSystemTest extends TestCase
                  ]);
     }
 
-    // 🔥 NEW TEST (HOUSE BUTTON VIA AJAX)
-    public function test_house_ajax_request_returns_success_and_updates_data(): void
+    // ✅ UPDATED AJAX TEST
+    public function test_house_ajax_request_updates_house_only(): void
     {
         DB::table('houses')->insert([
             'name' => 'Gryffindor',
-            'colour_hex' => '#740001'
-        ]);
-
-        DB::table('students')->insert([
-            [
-                'first_name' => 'Harry',
-                'last_name' => 'Potter',
-                'year_level' => 7,
-                'house_name' => 'Gryffindor',
-                'house_points' => 0
-            ],
-            [
-                'first_name' => 'Ron',
-                'last_name' => 'Weasley',
-                'year_level' => 7,
-                'house_name' => 'Gryffindor',
-                'house_points' => 0
-            ]
+            'colour_hex' => '#740001',
+            'points' => 0
         ]);
 
         $response = $this->postJson('/points', [
@@ -163,16 +153,83 @@ class PointSystemTest extends TestCase
                      'success' => true
                  ]);
 
-        // Transaction created
+        // ✅ Only 1 transaction
         $this->assertEquals(
             1,
             DB::table('point_transactions')->count()
         );
 
-        // All students updated
+        // ✅ House updated
         $this->assertEquals(
-            2,
-            DB::table('students')->where('house_points', 1)->count()
+            1,
+            DB::table('houses')->where('points', 1)->count()
         );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | NEW TESTS (AWARDS + DESCRIPTIONS)
+    |--------------------------------------------------------------------------
+    */
+
+    public function test_award_stores_description(): void
+    {
+        $studentId = DB::table('students')->insertGetId([
+            'first_name' => 'Harry',
+            'last_name' => 'Potter',
+            'year_level' => 7,
+            'house_name' => 'Gryffindor',
+            'house_points' => 0,
+        ]);
+
+        $this->postJson('/points', [
+            'student_id' => $studentId,
+            'award_key' => 'quidditch_star',
+            'description' => 'Won the match'
+        ]);
+
+        $this->assertDatabaseHas('point_transactions', [
+            'student_id' => $studentId,
+            'description' => 'Won the match'
+        ]);
+    }
+
+    public function test_award_uses_config_points(): void
+    {
+        $studentId = DB::table('students')->insertGetId([
+            'first_name' => 'Harry',
+            'last_name' => 'Potter',
+            'year_level' => 7,
+            'house_name' => 'Gryffindor',
+            'house_points' => 0,
+        ]);
+
+        $this->postJson('/points', [
+            'student_id' => $studentId,
+            'award_key' => 'quidditch_star'
+        ]);
+
+        $this->assertDatabaseHas('point_transactions', [
+            'student_id' => $studentId,
+            'amount' => config('awards.quidditch_star.points')
+        ]);
+    }
+
+    public function test_invalid_award_returns_error(): void
+    {
+        $studentId = DB::table('students')->insertGetId([
+            'first_name' => 'Harry',
+            'last_name' => 'Potter',
+            'year_level' => 7,
+            'house_name' => 'Gryffindor',
+            'house_points' => 0,
+        ]);
+
+        $response = $this->postJson('/points', [
+            'student_id' => $studentId,
+            'award_key' => 'invalid_award'
+        ]);
+
+        $response->assertStatus(422);
     }
 }

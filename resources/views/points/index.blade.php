@@ -28,36 +28,42 @@
 
         h1 { color:white; }
 
-        /* HOUSE BUTTONS */
+        .house-section {
+            background:#3a3f47;
+            padding:18px;
+            border-radius:14px;
+            margin-bottom:20px;
+        }
+
         .house-bar {
             display:grid;
             grid-template-columns:repeat(4,1fr);
-            gap:10px;
-            margin-bottom:15px;
+            gap:14px;
         }
 
-        .house-btn {
-            width:100%;
-            padding:18px 0;
-            font-weight:800;
-            border:none;
-            border-radius:10px;
+        .house-card {
+            background:linear-gradient(
+                145deg,
+                var(--colour) 0%,
+                rgba(0,0,0,0.4) 100%
+            );
+            border-radius:16px;
+            padding:20px;
+            text-align:center;
             cursor:pointer;
-            font-size:16px;
         }
 
-        .gryffindor { background:#740001; color:white; }
-        .slytherin { background:#1a472a; color:white; }
-        .ravenclaw { background:#0e1a40; color:white; }
-        .hufflepuff { background:#ffcc00; color:#111; }
+        .house-shield {
+            width:70px;
+            margin-bottom:10px;
+            display:block;
+            margin:auto;
+            background:none;
+            filter:drop-shadow(0 4px 10px rgba(0,0,0,0.6));
+        }
 
-        #search {
-            width:100%;
-            padding:12px;
-            border-radius:8px;
-            border:none;
-            margin-bottom:15px;
-            background:#3a3f47;
+        .house-name {
+            font-weight:800;
             color:white;
         }
 
@@ -77,20 +83,16 @@
             gap:16px;
         }
 
-        /* ✅ CREST FIX */
-        .crest {
-            width:64px;
-            filter: drop-shadow(0 0 8px rgba(255,255,255,0.35));
-            transition: transform 0.15s ease;
-        }
-
-        .card:hover .crest {
-            transform: scale(1.08);
-        }
+        .crest { width:64px; }
 
         .name {
             font-weight:800;
             font-size:20px;
+        }
+
+        .student-link {
+            text-decoration:none;
+            color:inherit;
         }
 
         .meta {
@@ -110,19 +112,8 @@
             font-weight:800;
         }
 
-        .plus {
-            background:#22c55e;
-            color:white;
-            padding:18px 22px;
-            font-size:18px;
-        }
-
-        .minus {
-            background:#ef4444;
-            color:white;
-            padding:10px 14px;
-            font-size:14px;
-        }
+        .plus { background:#22c55e; color:white; padding:18px; }
+        .minus { background:#ef4444; color:white; padding:10px; }
 
         .star { background:#4b5563; color:white; padding:10px; }
         .award { background:#6366f1; color:white; padding:10px; }
@@ -139,20 +130,34 @@
             padding:12px;
             margin-bottom:8px;
             border-radius:8px;
-            font-size:13px;
         }
 
         .pos { color:#22c55e; }
         .neg { color:#ef4444; }
 
-        /* MODAL */
+        /* Toast bottom-right */
+        #toast {
+            position:fixed;
+            bottom:30px;
+            right:30px;
+            padding:14px 20px;
+            border-radius:10px;
+            opacity:0;
+            color:white;
+            font-weight:700;
+        }
+
+        #toast.show { opacity:1; }
+        .toast-success { background:#22c55e; }
+        .toast-error { background:#ef4444; }
+
         .modal {
-            position: fixed;
+            position:fixed;
             top:0;
             left:0;
             width:100%;
             height:100%;
-            background: rgba(0,0,0,0.6);
+            background:rgba(0,0,0,0.7);
             display:none;
             align-items:center;
             justify-content:center;
@@ -160,45 +165,17 @@
 
         .modal-box {
             background:#1f2329;
-            padding:20px;
-            border-radius:12px;
-            width:350px;
+            padding:30px;
+            border-radius:16px;
+            width:600px;
             color:white;
         }
 
-        .modal textarea, .modal select {
+        textarea {
             width:100%;
-            padding:10px;
+            height:260px;
             margin-top:10px;
-            border-radius:8px;
-            border:none;
-            background:#2f343c;
-            color:white;
         }
-
-        .modal button {
-            margin-top:10px;
-            padding:10px;
-            border:none;
-            border-radius:8px;
-            cursor:pointer;
-        }
-
-        #toast {
-            position:fixed;
-            top:20px;
-            right:20px;
-            padding:12px 18px;
-            border-radius:10px;
-            opacity:0;
-            transition:0.3s;
-            color:white;
-        }
-
-        #toast.show { opacity:1; }
-        .toast-success { background:#22c55e; }
-        .toast-error { background:#ef4444; }
-
     </style>
 </head>
 
@@ -210,45 +187,56 @@
 
 <h1>Award Points</h1>
 
+<div class="house-section">
 <div class="house-bar">
-@foreach(['Gryffindor','Slytherin','Ravenclaw','Hufflepuff'] as $house)
-<form method="POST" action="{{ route('points.store') }}">
+
+@foreach($houses as $house)
+<form method="POST" action="{{ route('points.store') }}" class="ajax">
 @csrf
-<input type="hidden" name="house_name" value="{{ $house }}">
-<input type="hidden" name="points" value="1">
-<button class="house-btn {{ strtolower($house) }}">+1 {{ $house }}</button>
-</form>
-@endforeach
+<input type="hidden" name="house_name" value="{{ $house->name }}">
+<input type="hidden" name="amount" value="1">
+
+<div class="house-card" style="--colour: {{ $house->colour_hex }}">
+    <img src="/images/{{ strtolower($house->name) }}.png" class="house-shield">
+    <div class="house-name">{{ $house->name }}</div>
 </div>
 
-<input id="search" placeholder="Search student...">
+</form>
+@endforeach
+
+</div>
+</div>
 
 @foreach($students as $student)
-<div class="card student-card">
+<div class="card">
 
 <div class="left">
-<img class="crest" src="/images/{{ strtolower($student->house_name) }}.png">
+<img class="crest" src="/images/{{ strtolower($student->house_name ?? '') }}.png">
 
 <div>
-<div class="name">{{ $student->first_name }} {{ $student->last_name }}</div>
+<div class="name">
+<a href="{{ route('students.show', $student->id) }}" class="student-link">
+{{ $student->first_name }} {{ $student->last_name }}
+</a>
+</div>
 <div class="meta">{{ $student->house_name }} • {{ $student->house_points }} pts</div>
 </div>
 </div>
 
 <div class="actions">
 
-<form method="POST" action="{{ route('points.store') }}">
+<form method="POST" action="{{ route('points.store') }}" class="ajax">
 @csrf
 <input type="hidden" name="student_id" value="{{ $student->id }}">
-<input type="hidden" name="points" value="-1">
-<button class="btn minus" onclick="toast(-1)">-1</button>
+<input type="hidden" name="amount" value="-1">
+<button class="btn minus">-1</button>
 </form>
 
-<form method="POST" action="{{ route('points.store') }}">
+<form method="POST" action="{{ route('points.store') }}" class="ajax">
 @csrf
 <input type="hidden" name="student_id" value="{{ $student->id }}">
-<input type="hidden" name="points" value="1">
-<button class="btn plus" onclick="toast(1)">+1</button>
+<input type="hidden" name="amount" value="1">
+<button class="btn plus">+1</button>
 </form>
 
 <button class="btn star" onclick="openCommendation({{ $student->id }})">⭐</button>
@@ -264,97 +252,132 @@
 <div class="sidebar">
 <div class="sidebar-box">
 <h3>Recent</h3>
-
-@foreach($recent as $r)
-<div class="activity">
-
-@if($r->category === 'house')
-<strong>{{ $r->house_name }}</strong>
-@else
-<strong>{{ $r->first_name }} {{ $r->last_name }}</strong>
-@endif
-
-<span class="{{ $r->amount > 0 ? 'pos' : 'neg' }}">
-{{ $r->amount > 0 ? '+' : '' }}{{ $r->amount }}
-</span>
-
-<div style="font-size:11px;opacity:0.6;">
-{{ $r->teacher ?? 'System' }}
-</div>
-
-</div>
-@endforeach
-
+<div id="recentList"></div>
 </div>
 </div>
 
-</div>
-
-<!-- ⭐ MODAL -->
-<div id="commendationModal" class="modal">
-<div class="modal-box">
-<form method="POST" action="{{ route('points.store') }}">
-@csrf
-<input type="hidden" name="student_id" id="commStudent">
-<input type="hidden" name="points" value="1">
-<input type="hidden" name="category" value="commendation">
-<textarea name="description" placeholder="Commendation..." required></textarea>
-<button type="submit">Save</button>
-<button type="button" onclick="closeModal()">Cancel</button>
-</form>
-</div>
-</div>
-
-<!-- 🏆 MODAL -->
-<div id="awardModal" class="modal">
-<div class="modal-box">
-<form method="POST" action="{{ route('points.store') }}">
-@csrf
-<input type="hidden" name="student_id" id="awardStudent">
-<select name="points">
-<option value="5">+5</option>
-<option value="10">+10</option>
-<option value="20">+20</option>
-</select>
-<input type="hidden" name="category" value="award">
-<textarea name="description" placeholder="Award details"></textarea>
-<button type="submit">Save</button>
-<button type="button" onclick="closeModal()">Cancel</button>
-</form>
-</div>
 </div>
 
 <div id="toast"></div>
 
+<!-- MODALS -->
+<div id="commendationModal" class="modal">
+<div class="modal-box">
+<form class="ajax">
+@csrf
+<input type="hidden" name="student_id" id="commStudent">
+<input type="hidden" name="amount" value="1">
+<input type="hidden" name="type" value="commendation">
+<textarea name="description"></textarea>
+<button>Save</button>
+<button type="button" onclick="closeModal()">Cancel</button>
+</form>
+</div>
+</div>
+
+<div id="awardModal" class="modal">
+<div class="modal-box">
+<form class="ajax">
+@csrf
+<input type="hidden" name="student_id" id="awardStudent">
+<input type="hidden" name="amount" id="awardPoints">
+<input type="hidden" name="type" value="award">
+<select onchange="document.getElementById('awardPoints').value=this.value">
+<option value="5">+5</option>
+<option value="10">+10</option>
+</select>
+<textarea name="description"></textarea>
+<button>Save</button>
+<button type="button" onclick="closeModal()">Cancel</button>
+</form>
+</div>
+</div>
+
 <script>
-function toast(type){
+
+// AJAX
+document.querySelectorAll('form.ajax').forEach(form=>{
+form.addEventListener('submit',function(e){
+e.preventDefault();
+
+let fd=new FormData(this);
+
+fetch('/points',{
+method:'POST',
+headers:{
+'X-CSRF-TOKEN':document.querySelector('input[name="_token"]').value,
+'Accept':'application/json'
+},
+body:fd
+})
+.then(r=>r.json())
+.then(data=>{
+
+let amt=parseInt(data.amount||0);
+
+// toast
 let t=document.getElementById('toast');
-t.className='show '+(type>0?'toast-success':'toast-error');
-t.innerText=type>0?'+1 Point':'-1 Point';
-setTimeout(()=>t.className='',1200);
+t.className='show '+(amt>0?'toast-success':'toast-error');
+t.innerText=data.type ? data.type.toUpperCase() : (amt>0?'+ Point':'- Point');
+setTimeout(()=>t.className='',1000);
+
+// update points
+let card=this.closest('.card');
+if(card && data.student){
+let meta=card.querySelector('.meta');
+let parts=meta.innerText.split('•');
+let current=parseInt(parts[1]);
+meta.innerText=parts[0]+'• '+(current+amt)+' pts';
 }
 
+// recent
+let list=document.getElementById('recentList');
+let item=document.createElement('div');
+item.className='activity';
+item.dataset.time=Date.now();
+
+item.innerHTML=`
+<strong>${data.student ?? data.house}</strong>
+<span class="${amt>0?'pos':'neg'}">
+${amt>0?'+':''}${amt}
+</span>
+`;
+
+list.prepend(item);
+
+});
+});
+});
+
+// expire recent
+setInterval(()=>{
+let now=Date.now();
+document.querySelectorAll('#recentList .activity').forEach(el=>{
+if(now-el.dataset.time>120000) el.remove();
+});
+},10000);
+
+// house click
+document.querySelectorAll('.house-card').forEach(card=>{
+card.addEventListener('click',function(){
+this.closest('form').dispatchEvent(new Event('submit',{cancelable:true}));
+});
+});
+
+// modals
 function openCommendation(id){
 document.getElementById('commStudent').value=id;
 document.getElementById('commendationModal').style.display='flex';
 }
-
 function openAward(id){
 document.getElementById('awardStudent').value=id;
 document.getElementById('awardModal').style.display='flex';
 }
-
 function closeModal(){
 document.getElementById('commendationModal').style.display='none';
 document.getElementById('awardModal').style.display='none';
 }
 
-document.getElementById('search').addEventListener('keyup',function(){
-let v=this.value.toLowerCase();
-document.querySelectorAll('.student-card').forEach(c=>{
-c.style.display=c.innerText.toLowerCase().includes(v)?'':'none';
-});
-});
 </script>
 
 </body>

@@ -9,9 +9,7 @@ class PointController extends Controller
 {
     public function index()
     {
-        $students = DB::table('students')
-            ->orderBy('id')
-            ->get();
+        $students = DB::table('students')->orderBy('id')->get();
 
         $recent = DB::table('point_transactions')
             ->leftJoin('students', 'point_transactions.student_id', '=', 'students.id')
@@ -30,110 +28,102 @@ class PointController extends Controller
             ->limit(10)
             ->get();
 
-        return view('points.index', [
-            'students' => $students,
-            'recent'   => $recent,
-        ]);
+        $houses = DB::table('houses')->get();
+
+        return view('points.index', compact('students','recent','houses'));
     }
 
     public function store(Request $request)
     {
-        $request->validate([
-            'student_id' => 'nullable|integer',
-            'house_name' => 'nullable|string',
-            'amount'     => 'nullable|integer',
-        ]);
-
-        $amount = (int) $request->input('amount', 1);
+        $amount = (int) $request->input('amount');
         $userId = auth()->id() ?? 1;
+        $teacherName = auth()->user()->name ?? 'System';
 
-        // =========================
-        // ✅ HOUSE POINTS
-        // =========================
-        if ($request->filled('house_name')) {
+        return DB::transaction(function () use ($request, $amount, $userId, $teacherName) {
 
-            $house = DB::table('houses')
-                ->where('name', $request->house_name)
-                ->first();
+            // =====================
+            // HOUSE
+            // =====================
+            if ($request->filled('house_name')) {
 
-            if (!$house) {
-                return back();
+                $house = DB::table('houses')
+                    ->where('name', $request->house_name)
+                    ->first();
+
+                if ($house) {
+
+                    DB::table('houses')
+                        ->where('id', $house->id)
+                        ->increment('points', $amount);
+
+                    DB::table('point_transactions')->insert([
+                        'student_id' => null,
+                        'house_id' => $house->id,
+                        'amount' => $amount,
+                        'category' => 'house',
+                        'description' => 'House points',
+                        'awarded_by' => $userId,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+
+                    return response()->json([
+                        'success' => true,
+                        'amount' => $amount,
+                        'student' => null,
+                        'house' => $house->name,
+                        'teacher' => $teacherName
+                    ]);
+                }
             }
 
-            // 🔥 FIX: handle + and - correctly
-            if ($amount > 0) {
-                DB::table('students')
-                    ->where('house_name', $request->house_name)
-                    ->increment('house_points', $amount);
-            } else {
-                DB::table('students')
-                    ->where('house_name', $request->house_name)
-                    ->decrement('house_points', abs($amount));
-            }
+            // =====================
+            // STUDENT
+            // =====================
+            if ($request->filled('student_id')) {
 
-            // 🔥 FIX: house transaction should NOT belong to a student
-            DB::table('point_transactions')->insert([
-                'student_id'  => null,
-                'house_id'    => $house->id,
-                'amount'      => $amount,
-                'category'    => 'house',
-                'description' => $request->house_name . ' ' . ($amount > 0 ? '+' : '') . $amount,
-                'awarded_by'  => $userId,
-                'created_at'  => now(),
-                'updated_at'  => now(),
-            ]);
-
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'success' => true,
-                ]);
-            }
-
-            return back();
-        }
-
-        // =========================
-        // ✅ STUDENT POINTS
-        // =========================
-        if ($request->filled('student_id')) {
-
-            // 🔥 FIX: proper increment / decrement
-            if ($amount > 0) {
-                DB::table('students')
+                $student = DB::table('students')
                     ->where('id', $request->student_id)
-                    ->increment('house_points', $amount);
-            } else {
-                DB::table('students')
-                    ->where('id', $request->student_id)
-                    ->decrement('house_points', abs($amount));
+                    ->first();
+
+                if ($student) {
+
+                    DB::table('students')
+                        ->where('id', $student->id)
+                        ->increment('house_points', $amount);
+
+                    $house = DB::table('houses')
+                        ->where('name', $student->house_name)
+                        ->first();
+
+                    if ($house) {
+                        DB::table('houses')
+                            ->where('id', $house->id)
+                            ->increment('points', $amount);
+                    }
+
+                    DB::table('point_transactions')->insert([
+                        'student_id' => $student->id,
+                        'house_id' => $house->id ?? null,
+                        'amount' => $amount,
+                        'category' => $request->input('category', 'manual'),
+                        'description' => $request->input('description', ''),
+                        'awarded_by' => $userId,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+
+                    return response()->json([
+                        'success' => true,
+                        'amount' => $amount,
+                        'student' => $student->first_name . ' ' . $student->last_name,
+                        'house' => $student->house_name,
+                        'teacher' => $teacherName
+                    ]);
+                }
             }
 
-            DB::table('point_transactions')->insert([
-                'student_id'  => $request->student_id,
-                'house_id'    => null,
-                'amount'      => $amount,
-                'category'    => $request->input('category', 'manual'),
-                'description' => $request->input('description', 'Manual adjustment'),
-                'awarded_by'  => $userId,
-                'created_at'  => now(),
-                'updated_at'  => now(),
-            ]);
-
-            $newPoints = DB::table('students')
-                ->where('id', $request->student_id)
-                ->value('house_points');
-
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'success' => true,
-                    'points'  => $newPoints,
-                    'amount'  => $amount,
-                ]);
-            }
-
-            return back();
-        }
-
-        return back();
+            return response()->json(['success' => false]);
+        });
     }
 }
