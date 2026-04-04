@@ -126,4 +126,16 @@ class PointController extends Controller
             return response()->json(['success' => false]);
         });
     }
+
+    // ✅ NEW METHOD — STUDENT PROFILE
+    public function showStudent($id)
+    {
+        $student = DB::table('students')->where('id', $id)->first();
+
+        if (!$student) {
+            abort(404);
+        }
+
+        return view('students.show', compact('student'));
+    }
 }

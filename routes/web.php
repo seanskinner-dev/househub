@@ -27,6 +27,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/points', [PointController::class, 'index'])->name('points.index');
     Route::post('/points', [PointController::class, 'store'])->name('points.store');
 
+    // ✅ NEW — Student profile route
+    Route::get('/students/{id}', [PointController::class, 'showStudent'])->name('students.show');
+
     // 🔹 Dashboard (keep for now)
     Route::get('/dashboard', function () {
         return view('dashboard');
