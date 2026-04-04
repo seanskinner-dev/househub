@@ -51,15 +51,14 @@
             padding:20px;
             text-align:center;
             cursor:pointer;
+            overflow:hidden;
         }
 
-        .house-shield {
-            width:70px;
-            margin-bottom:10px;
+        /* NEW: emoji instead of shield */
+        .house-emoji {
+            font-size:64px;
             display:block;
-            margin:auto;
-            background:none;
-            filter:drop-shadow(0 4px 10px rgba(0,0,0,0.6));
+            margin-bottom:10px;
         }
 
         .house-name {
@@ -83,7 +82,10 @@
             gap:16px;
         }
 
-        .crest { width:64px; }
+        /* student emoji (replaces crest image) */
+        .crest {
+            font-size:32px;
+        }
 
         .name {
             font-weight:800;
@@ -135,7 +137,6 @@
         .pos { color:#22c55e; }
         .neg { color:#ef4444; }
 
-        /* Toast bottom-right */
         #toast {
             position:fixed;
             bottom:30px;
@@ -197,7 +198,9 @@
 <input type="hidden" name="amount" value="1">
 
 <div class="house-card" style="--colour: {{ $house->colour_hex }}">
-    <img src="/images/{{ strtolower($house->name) }}.png" class="house-shield">
+    <div class="house-emoji">
+        {{ $house->name == 'Gryffindor' ? '🦁' : ($house->name == 'Slytherin' ? '🐍' : ($house->name == 'Ravenclaw' ? '🦅' : '🦡')) }}
+    </div>
     <div class="house-name">{{ $house->name }}</div>
 </div>
 
@@ -211,7 +214,10 @@
 <div class="card">
 
 <div class="left">
-<img class="crest" src="/images/{{ strtolower($student->house_name ?? '') }}.png">
+
+<div class="crest">
+    {{ $student->house_name == 'Gryffindor' ? '🦁' : ($student->house_name == 'Slytherin' ? '🐍' : ($student->house_name == 'Ravenclaw' ? '🦅' : '🦡')) }}
+</div>
 
 <div>
 <div class="name">
@@ -260,7 +266,7 @@
 
 <div id="toast"></div>
 
-<!-- MODALS -->
+<!-- COMMENDATION MODAL -->
 <div id="commendationModal" class="modal">
 <div class="modal-box">
 <form class="ajax">
@@ -268,13 +274,16 @@
 <input type="hidden" name="student_id" id="commStudent">
 <input type="hidden" name="amount" value="1">
 <input type="hidden" name="type" value="commendation">
-<textarea name="description"></textarea>
+
+<textarea name="description" placeholder="Reason for commendation..."></textarea>
+
 <button>Save</button>
 <button type="button" onclick="closeModal()">Cancel</button>
 </form>
 </div>
 </div>
 
+<!-- AWARD MODAL -->
 <div id="awardModal" class="modal">
 <div class="modal-box">
 <form class="ajax">
@@ -282,11 +291,18 @@
 <input type="hidden" name="student_id" id="awardStudent">
 <input type="hidden" name="amount" id="awardPoints">
 <input type="hidden" name="type" value="award">
-<select onchange="document.getElementById('awardPoints').value=this.value">
-<option value="5">+5</option>
-<option value="10">+10</option>
+
+<select id="awardSelect" onchange="setAwardPoints()">
+<option value="">Select Award</option>
+<option value="5">House Pride Award (+5)</option>
+<option value="10">Excellence in Behaviour (+10)</option>
+<option value="15">Outstanding Effort (+15)</option>
+<option value="20">Professor’s Recognition (+20)</option>
+<option value="25">Headmaster’s Award (+25)</option>
 </select>
-<textarea name="description"></textarea>
+
+<textarea name="description" placeholder="Reason for award..."></textarea>
+
 <button>Save</button>
 <button type="button" onclick="closeModal()">Cancel</button>
 </form>
@@ -294,6 +310,12 @@
 </div>
 
 <script>
+
+// set award points
+function setAwardPoints(){
+let val=document.getElementById('awardSelect').value;
+document.getElementById('awardPoints').value=val;
+}
 
 // AJAX
 document.querySelectorAll('form.ajax').forEach(form=>{
@@ -337,9 +359,9 @@ item.className='activity';
 item.dataset.time=Date.now();
 
 item.innerHTML=`
-<strong>${data.student ?? data.house}</strong>
+<strong>${data.student ?? 'House'}</strong>
 <span class="${amt>0?'pos':'neg'}">
-${amt>0?'+':''}${amt}
+${data.type ? data.type : (amt>0?'+':''+amt)}
 </span>
 `;
 
@@ -369,10 +391,12 @@ function openCommendation(id){
 document.getElementById('commStudent').value=id;
 document.getElementById('commendationModal').style.display='flex';
 }
+
 function openAward(id){
 document.getElementById('awardStudent').value=id;
 document.getElementById('awardModal').style.display='flex';
 }
+
 function closeModal(){
 document.getElementById('commendationModal').style.display='none';
 document.getElementById('awardModal').style.display='none';
