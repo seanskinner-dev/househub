@@ -235,9 +235,9 @@
 
 <div>
 <div class="name">
-<a href="{{ route('students.show', $student->id) }}" class="student-link">
+<span class="student-link">
 {{ $student->first_name }} {{ $student->last_name }}
-</a>
+</span>
 </div>
 <div class="meta">{{ $student->house_name }} • {{ $student->house_points }} pts</div>
 </div>
@@ -366,7 +366,7 @@ let current=parseInt(parts[1]);
 meta.innerText=parts[0]+'• '+(current+amt)+' pts';
 }
 
-// ✅ FIXED RECENT
+// recent
 let list=document.getElementById('recentList');
 let item=document.createElement('div');
 item.className='activity';
