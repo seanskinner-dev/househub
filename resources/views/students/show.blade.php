@@ -12,28 +12,22 @@
         }
 
         .card {
-            background:#1f2329;
+            background:#3a3f47;
             padding:30px;
-            border-radius:12px;
-            max-width:600px;
-            margin:auto;
+            border-radius:16px;
+            max-width:500px;
         }
 
         h1 {
-            margin-bottom:20px;
-        }
-
-        .meta {
             margin-bottom:10px;
         }
 
-        a {
-            color:#22c55e;
-            text-decoration:none;
+        .meta {
+            color:#ccc;
         }
 
-        a:hover {
-            text-decoration:underline;
+        a {
+            color:#60a5fa;
         }
     </style>
 </head>
@@ -41,17 +35,16 @@
 <body>
 
 <div class="card">
+    <h1>{{ $student->first_name }} {{ $student->last_name }}</h1>
 
-<h1>{{ $student->first_name }} {{ $student->last_name }}</h1>
+    <div class="meta">
+        {{ $student->house_name }}<br>
+        {{ $student->house_points }} points
+    </div>
 
-<div class="meta"><strong>House:</strong> {{ $student->house_name }}</div>
-<div class="meta"><strong>Points:</strong> {{ $student->house_points }}</div>
-<div class="meta"><strong>Year:</strong> {{ $student->year_level ?? 'N/A' }}</div>
+    <br>
 
-<br>
-
-<a href="{{ route('points.index') }}">← Back to Award Points</a>
-
+    <a href="/points">← Back to Points</a>
 </div>
 
 </body>

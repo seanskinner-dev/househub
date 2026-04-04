@@ -10,9 +10,9 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-// Default landing (optional – can change later)
+// ✅ CHANGED — redirect root to points (instead of welcome view)
 Route::get('/', function () {
-    return view('welcome');
+    return redirect('/points');
 });
 
 /*
