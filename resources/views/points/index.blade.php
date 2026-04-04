@@ -28,6 +28,7 @@
 
         h1 { color:white; }
 
+        /* HOUSE BUTTONS */
         .house-bar {
             display:grid;
             grid-template-columns:repeat(4,1fr);
@@ -76,6 +77,7 @@
             gap:16px;
         }
 
+        /* ✅ CREST FIX */
         .crest {
             width:64px;
             filter: drop-shadow(0 0 8px rgba(255,255,255,0.35));
@@ -160,23 +162,18 @@
             background:#1f2329;
             padding:20px;
             border-radius:12px;
-            width:420px;
+            width:350px;
             color:white;
         }
 
         .modal textarea, .modal select {
             width:100%;
-            padding:12px;
+            padding:10px;
             margin-top:10px;
             border-radius:8px;
             border:none;
             background:#2f343c;
             color:white;
-            font-size:14px;
-        }
-
-        textarea {
-            min-height:120px;
         }
 
         .modal button {
@@ -293,7 +290,7 @@
 
 </div>
 
-<!-- ⭐ COMMENDATION -->
+<!-- ⭐ MODAL -->
 <div id="commendationModal" class="modal">
 <div class="modal-box">
 <form method="POST" action="{{ route('points.store') }}">
@@ -301,32 +298,26 @@
 <input type="hidden" name="student_id" id="commStudent">
 <input type="hidden" name="points" value="1">
 <input type="hidden" name="category" value="commendation">
-<textarea name="description" placeholder="What did they do well?" required></textarea>
+<textarea name="description" placeholder="Commendation..." required></textarea>
 <button type="submit">Save</button>
 <button type="button" onclick="closeModal()">Cancel</button>
 </form>
 </div>
 </div>
 
-<!-- 🏆 AWARD -->
+<!-- 🏆 MODAL -->
 <div id="awardModal" class="modal">
 <div class="modal-box">
 <form method="POST" action="{{ route('points.store') }}">
 @csrf
 <input type="hidden" name="student_id" id="awardStudent">
-<input type="hidden" name="category" value="award">
-<input type="hidden" name="points" id="awardPoints">
-
-<select id="awardSelect" onchange="setAwardPoints()">
-<option value="">Select Award</option>
-<option value="5">House Pride (+5)</option>
-<option value="10">Outstanding Effort (+10)</option>
-<option value="15">Professor’s Recognition (+15)</option>
-<option value="20">Order of Merlin (+20)</option>
+<select name="points">
+<option value="5">+5</option>
+<option value="10">+10</option>
+<option value="20">+20</option>
 </select>
-
-<textarea name="description" placeholder="Optional notes..."></textarea>
-
+<input type="hidden" name="category" value="award">
+<textarea name="description" placeholder="Award details"></textarea>
 <button type="submit">Save</button>
 <button type="button" onclick="closeModal()">Cancel</button>
 </form>
@@ -358,11 +349,6 @@ document.getElementById('commendationModal').style.display='none';
 document.getElementById('awardModal').style.display='none';
 }
 
-function setAwardPoints(){
-let val=document.getElementById('awardSelect').value;
-document.getElementById('awardPoints').value=val;
-}
-
 document.getElementById('search').addEventListener('keyup',function(){
 let v=this.value.toLowerCase();
 document.querySelectorAll('.student-card').forEach(c=>{
@@ -372,4 +358,4 @@ c.style.display=c.innerText.toLowerCase().includes(v)?'':'none';
 </script>
 
 </body>
-</html>a
+</html>

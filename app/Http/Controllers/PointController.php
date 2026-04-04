@@ -60,22 +60,24 @@ class PointController extends Controller
                 return back();
             }
 
-            // Update ALL students in house
-            DB::table('students')
-                ->where('house_name', $request->house_name)
-                ->increment('house_points', $amount);
+            // 🔥 FIX: handle + and - correctly
+            if ($amount > 0) {
+                DB::table('students')
+                    ->where('house_name', $request->house_name)
+                    ->increment('house_points', $amount);
+            } else {
+                DB::table('students')
+                    ->where('house_name', $request->house_name)
+                    ->decrement('house_points', abs($amount));
+            }
 
-            // 🔥 CRITICAL FIX: get ONE student (cannot be null)
-            $student = DB::table('students')
-                ->where('house_name', $request->house_name)
-                ->first();
-
+            // 🔥 FIX: house transaction should NOT belong to a student
             DB::table('point_transactions')->insert([
-                'student_id'  => $student->id, // ✅ FIX
+                'student_id'  => null,
                 'house_id'    => $house->id,
                 'amount'      => $amount,
                 'category'    => 'house',
-                'description' => $request->house_name . ' +' . $amount,
+                'description' => $request->house_name . ' ' . ($amount > 0 ? '+' : '') . $amount,
                 'awarded_by'  => $userId,
                 'created_at'  => now(),
                 'updated_at'  => now(),
@@ -95,9 +97,16 @@ class PointController extends Controller
         // =========================
         if ($request->filled('student_id')) {
 
-            DB::table('students')
-                ->where('id', $request->student_id)
-                ->increment('house_points', $amount);
+            // 🔥 FIX: proper increment / decrement
+            if ($amount > 0) {
+                DB::table('students')
+                    ->where('id', $request->student_id)
+                    ->increment('house_points', $amount);
+            } else {
+                DB::table('students')
+                    ->where('id', $request->student_id)
+                    ->decrement('house_points', abs($amount));
+            }
 
             DB::table('point_transactions')->insert([
                 'student_id'  => $request->student_id,
