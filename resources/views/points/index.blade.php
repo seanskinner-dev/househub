@@ -54,7 +54,6 @@
             overflow:hidden;
         }
 
-        /* NEW: emoji instead of shield */
         .house-emoji {
             font-size:64px;
             display:block;
@@ -82,7 +81,6 @@
             gap:16px;
         }
 
-        /* student emoji (replaces crest image) */
         .crest {
             font-size:32px;
         }
@@ -199,7 +197,15 @@
 
 <div class="house-card" style="--colour: {{ $house->colour_hex }}">
     <div class="house-emoji">
-        {{ $house->name == 'Gryffindor' ? '🦁' : ($house->name == 'Slytherin' ? '🐍' : ($house->name == 'Ravenclaw' ? '🦅' : '🦡')) }}
+        @if($house->name == 'Gryffindor')
+            🦁
+        @elseif($house->name == 'Slytherin')
+            🐍
+        @elseif($house->name == 'Ravenclaw')
+            🦅
+        @else
+            🦡
+        @endif
     </div>
     <div class="house-name">{{ $house->name }}</div>
 </div>
@@ -216,7 +222,15 @@
 <div class="left">
 
 <div class="crest">
-    {{ $student->house_name == 'Gryffindor' ? '🦁' : ($student->house_name == 'Slytherin' ? '🐍' : ($student->house_name == 'Ravenclaw' ? '🦅' : '🦡')) }}
+    @if($student->house_name == 'Gryffindor')
+        🦁
+    @elseif($student->house_name == 'Slytherin')
+        🐍
+    @elseif($student->house_name == 'Ravenclaw')
+        🦅
+    @else
+        🦡
+    @endif
 </div>
 
 <div>
@@ -352,17 +366,23 @@ let current=parseInt(parts[1]);
 meta.innerText=parts[0]+'• '+(current+amt)+' pts';
 }
 
-// recent
+// ✅ FIXED RECENT
 let list=document.getElementById('recentList');
 let item=document.createElement('div');
 item.className='activity';
 item.dataset.time=Date.now();
 
+let label = data.student 
+    ? data.student 
+    : (data.house ?? 'Unknown');
+
 item.innerHTML=`
-<strong>${data.student ?? 'House'}</strong>
+<strong>${label}</strong><br>
 <span class="${amt>0?'pos':'neg'}">
 ${data.type ? data.type : (amt>0?'+':''+amt)}
 </span>
+<br>
+<small>by ${data.teacher ?? 'System'}</small>
 `;
 
 list.prepend(item);
