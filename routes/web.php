@@ -1,44 +1,61 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PointController;
-use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
+|
+| Main application routes for HouseHub
+|
 */
 
-// ✅ Redirect root → points
+// =============================
+// ROOT REDIRECT
+// =============================
 Route::get('/', function () {
     return redirect('/points');
 });
 
-/*
-|--------------------------------------------------------------------------
-| Authenticated Routes
-|--------------------------------------------------------------------------
-*/
-
+// =============================
+// AUTHENTICATED ROUTES
+// =============================
 Route::middleware(['auth'])->group(function () {
 
-    // 🔹 Points system (CORE APP)
+    // =============================
+    // CORE SYSTEM
+    // =============================
     Route::get('/points', [PointController::class, 'index'])->name('points.index');
     Route::post('/points', [PointController::class, 'store'])->name('points.store');
 
-    // 🔹 Student profile
+    // =============================
+    // STUDENT PROFILE
+    // =============================
     Route::get('/students/{id}', [PointController::class, 'showStudent'])->name('students.show');
 
-    // ✅ NEW — Certificate route
+    // =============================
+    // CERTIFICATES
+    // =============================
     Route::get('/certificate/{id}', [PointController::class, 'certificate'])->name('certificate.show');
 
-    // 🔹 Dashboard
+    // =============================
+    // TV MODE (DISPLAY SCREENS)
+    // =============================
+    Route::get('/tv', [PointController::class, 'tv'])->name('tv');
+
+    // =============================
+    // DASHBOARD (OPTIONAL / FUTURE)
+    // =============================
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
 
-    // 🔹 Profile (Breeze default)
+    // =============================
+    // USER PROFILE (LARAVEL BREEZE)
+    // =============================
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -47,7 +64,7 @@ Route::middleware(['auth'])->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Auth Routes
+| AUTH ROUTES
 |--------------------------------------------------------------------------
 */
 require __DIR__.'/auth.php';
