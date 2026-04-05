@@ -51,7 +51,6 @@
             padding:20px;
             text-align:center;
             cursor:pointer;
-            overflow:hidden;
         }
 
         .house-emoji {
@@ -88,15 +87,11 @@
         .name {
             font-weight:800;
             font-size:20px;
-            position:relative;
-            z-index:2;
         }
 
         .student-link {
             text-decoration:none;
             color:inherit;
-            display:inline-block;
-            cursor:pointer;
         }
 
         .meta {
@@ -118,7 +113,6 @@
 
         .plus { background:#22c55e; color:white; padding:18px; }
         .minus { background:#ef4444; color:white; padding:10px; }
-
         .star { background:#4b5563; color:white; padding:10px; }
         .award { background:#6366f1; color:white; padding:10px; }
 
@@ -179,6 +173,13 @@
             height:260px;
             margin-top:10px;
         }
+
+        label {
+            display:block;
+            margin-top:10px;
+            margin-bottom:5px;
+            font-weight:800;
+        }
     </style>
 </head>
 
@@ -209,18 +210,19 @@
     </div>
     <div class="house-name">{{ $house->name }}</div>
 </div>
-
 </form>
 @endforeach
 
 </div>
 </div>
 
-@foreach($students as $student)
+<input id="studentSearch" placeholder="Search students..." style="width:100%;padding:12px;margin-bottom:15px;border-radius:8px;border:none;">
+
+{{-- SORTED --}}
+@foreach(collect($students)->sortBy('first_name') as $student)
 <div class="card">
 
 <div class="left">
-
 <div class="crest">
     @if($student->house_name == 'Gryffindor') 🦁
     @elseif($student->house_name == 'Slytherin') 🐍
@@ -259,7 +261,6 @@
 <button class="btn award" onclick="openAward({{ $student->id }})">🏆</button>
 
 </div>
-
 </div>
 @endforeach
 
@@ -276,7 +277,8 @@
 
 <div id="toast"></div>
 
-<!-- MODALS (unchanged) -->
+<!-- MODALS -->
+
 <div id="commendationModal" class="modal">
 <div class="modal-box">
 <form class="ajax">
@@ -285,9 +287,9 @@
 <input type="hidden" name="amount" value="1">
 <input type="hidden" name="type" value="commendation">
 
-<textarea name="description" placeholder="Reason for commendation..."></textarea>
+<textarea name="description" placeholder="Highlight what the student has done well — effort, attitude, teamwork, or a moment worth recognising..."></textarea>
 
-<button>Save</button>
+<button type="submit">Save</button>
 <button type="button" onclick="closeModal()">Cancel</button>
 </form>
 </div>
@@ -301,18 +303,20 @@
 <input type="hidden" name="amount" id="awardPoints">
 <input type="hidden" name="type" value="award">
 
-<select id="awardSelect" onchange="setAwardPoints()">
+<label>Award Title</label>
+<select id="awardSelect" onchange="setAwardDetails()">
 <option value="">Select Award</option>
-<option value="5">House Pride Award (+5)</option>
-<option value="10">Excellence in Behaviour (+10)</option>
-<option value="15">Outstanding Effort (+15)</option>
-<option value="20">Professor’s Recognition (+20)</option>
-<option value="25">Headmaster’s Award (+25)</option>
+<option data-points="10">Prefect Recognition</option>
+<option data-points="15">Outstanding Magical Effort</option>
+<option data-points="20">Professor’s Excellence Award</option>
+<option data-points="25">Headmaster’s Honour</option>
+<option data-points="30">Order of Merlin</option>
 </select>
 
-<textarea name="description" placeholder="Reason for award..."></textarea>
+<label>Comments</label>
+<textarea name="description" placeholder="Add a short note explaining why this award is being given..."></textarea>
 
-<button>Save</button>
+<button type="submit">Save</button>
 <button type="button" onclick="closeModal()">Cancel</button>
 </form>
 </div>
@@ -321,26 +325,36 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-// award points
-window.setAwardPoints = function(){
-let val=document.getElementById('awardSelect').value;
-document.getElementById('awardPoints').value=val;
-};
+// SEARCH
+document.getElementById('studentSearch').addEventListener('keyup', function(){
+    let val = this.value.toLowerCase();
+    document.querySelectorAll('.card').forEach(card=>{
+        let name = card.querySelector('.name').innerText.toLowerCase();
+        card.style.display = name.includes(val) ? 'flex' : 'none';
+    });
+});
 
-// modals
+// MODALS
 window.openCommendation = function(id){
-document.getElementById('commStudent').value=id;
-document.getElementById('commendationModal').style.display='flex';
+    document.getElementById('commStudent').value = id;
+    document.getElementById('commendationModal').style.display = 'flex';
 };
 
 window.openAward = function(id){
-document.getElementById('awardStudent').value=id;
-document.getElementById('awardModal').style.display='flex';
+    document.getElementById('awardStudent').value = id;
+    document.getElementById('awardModal').style.display = 'flex';
 };
 
 window.closeModal = function(){
-document.getElementById('commendationModal').style.display='none';
-document.getElementById('awardModal').style.display='none';
+    document.getElementById('commendationModal').style.display = 'none';
+    document.getElementById('awardModal').style.display = 'none';
+};
+
+window.setAwardDetails = function(){
+    let select = document.getElementById('awardSelect');
+    let selected = select.options[select.selectedIndex];
+    let points = selected.getAttribute('data-points');
+    document.getElementById('awardPoints').value = points;
 };
 
 // AJAX
@@ -360,41 +374,37 @@ body:fd
 })
 .then(r=>r.json())
 .then(data=>{
-let amt=parseInt(data.amount||0);
+
+let amt = Number(data.amount);
+if (isNaN(amt)) amt = 0;
 
 // toast
 let t=document.getElementById('toast');
 t.className='show '+(amt>0?'toast-success':'toast-error');
-t.innerText=data.type ? data.type.toUpperCase() : (amt>0?'+ Point':'- Point');
+t.innerText=(amt>0?'+ ':'')+amt;
 setTimeout(()=>t.className='',1000);
-
-// update UI
-let card=this.closest('.card');
-if(card && data.student){
-let meta=card.querySelector('.meta');
-let parts=meta.innerText.split('•');
-let current=parseInt(parts[1]);
-meta.innerText=parts[0]+'• '+(current+amt)+' pts';
-}
 
 // recent
 let list=document.getElementById('recentList');
 let item=document.createElement('div');
 item.className='activity';
-item.dataset.time=Date.now();
 
-let label = data.student ? data.student : (data.house ?? 'Unknown');
+let label = data.student || data.house || 'Unknown';
 
 item.innerHTML=`
 <strong>${label}</strong><br>
 <span class="${amt>0?'pos':'neg'}">
-${data.type ? data.type : (amt>0?'+':''+amt)}
+${(amt > 0 ? '+ ' : '') + amt}
 </span>
 <br>
 <small>by ${data.teacher ?? 'System'}</small>
 `;
 
 list.prepend(item);
+
+// ✅ CLOSE MODAL
+closeModal();
+
 });
 });
 });
@@ -405,14 +415,6 @@ card.addEventListener('click',function(){
 this.closest('form').dispatchEvent(new Event('submit',{cancelable:true}));
 });
 });
-
-// expire recent
-setInterval(()=>{
-let now=Date.now();
-document.querySelectorAll('#recentList .activity').forEach(el=>{
-if(now-el.dataset.time>120000) el.remove();
-});
-},10000);
 
 });
 </script>
