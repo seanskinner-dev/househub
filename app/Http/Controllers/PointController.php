@@ -113,6 +113,21 @@ class PointController extends Controller
                         'updated_at' => now(),
                     ]);
 
+                    // =============================
+                    // ✅ AWARD SAVE
+                    // =============================
+                    if ($request->filled('award_title')) {
+                        DB::table('awards')->insert([
+                            'student_id'  => $student->id,
+                            'awarded_by'  => $userId,
+                            'name'        => $request->input('award_title'),
+                            'description' => $request->input('description', ''),
+                            'awarded_at'  => now(),
+                            'created_at'  => now(),
+                            'updated_at'  => now(),
+                        ]);
+                    }
+
                     return response()->json([
                         'success' => true,
                         'amount' => $amount,
@@ -127,7 +142,9 @@ class PointController extends Controller
         });
     }
 
-    // ✅ NEW METHOD — STUDENT PROFILE
+    // =============================
+    // ✅ STUDENT PROFILE (UPDATED)
+    // =============================
     public function showStudent($id)
     {
         $student = DB::table('students')->where('id', $id)->first();
@@ -136,6 +153,56 @@ class PointController extends Controller
             abort(404);
         }
 
-        return view('students.show', compact('student'));
+        // =====================
+        // AWARDS
+        // =====================
+        $awards = DB::table('awards')
+            ->where('student_id', $id)
+            ->orderByDesc('awarded_at')
+            ->get();
+
+        $awardCount = $awards->count();
+
+        // =====================
+        // COMMENDATIONS
+        // =====================
+        $commendations = DB::table('point_transactions')
+            ->where('student_id', $id)
+            ->where('category', 'commendation')
+            ->orderByDesc('created_at')
+            ->get();
+
+        $commendationCount = $commendations->count();
+
+        return view('students.show', compact(
+            'student',
+            'awards',
+            'awardCount',
+            'commendations',
+            'commendationCount'
+        ));
+    }
+
+    // =============================
+    // CERTIFICATE VIEW
+    // =============================
+    public function certificate($id)
+    {
+        $award = DB::table('awards')
+            ->leftJoin('students', 'awards.student_id', '=', 'students.id')
+            ->select(
+                'awards.*',
+                'students.first_name',
+                'students.last_name',
+                'students.house_name'
+            )
+            ->where('awards.id', $id)
+            ->first();
+
+        if (!$award) {
+            abort(404);
+        }
+
+        return view('certificates.show', compact('award'));
     }
 }

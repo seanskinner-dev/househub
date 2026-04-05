@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-// ✅ CHANGED — redirect root to points (instead of welcome view)
+// ✅ Redirect root → points
 Route::get('/', function () {
     return redirect('/points');
 });
@@ -27,10 +27,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/points', [PointController::class, 'index'])->name('points.index');
     Route::post('/points', [PointController::class, 'store'])->name('points.store');
 
-    // ✅ NEW — Student profile route
+    // 🔹 Student profile
     Route::get('/students/{id}', [PointController::class, 'showStudent'])->name('students.show');
 
-    // 🔹 Dashboard (keep for now)
+    // ✅ NEW — Certificate route
+    Route::get('/certificate/{id}', [PointController::class, 'certificate'])->name('certificate.show');
+
+    // 🔹 Dashboard
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
@@ -44,7 +47,7 @@ Route::middleware(['auth'])->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Auth Routes (login, register, etc.)
+| Auth Routes
 |--------------------------------------------------------------------------
 */
 require __DIR__.'/auth.php';
