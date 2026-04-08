@@ -18,8 +18,9 @@
 
                         <h2 class="house-name">{{ $house->name }}</h2>
 
-                        <div class="points" data-points="{{ $house->point_transactions_sum_amount }}">
-                            0
+                        <!-- ✅ FIXED -->
+                        <div class="points">
+                            {{ $house->points }}
                         </div>
 
                     </div>
@@ -34,7 +35,7 @@
             @foreach($recent as $item)
                 <div class="activity-row">
                     <div class="student">
-                        {{ $item->first_name }} {{ $item->last_name }}
+                        {{ $item->first_name ?? '' }} {{ $item->last_name ?? $item->house_name }}
                     </div>
 
                     <div class="points-change {{ $item->amount > 0 ? 'plus' : 'minus' }}">
@@ -54,10 +55,16 @@
         <div class="row h-100">
             <div class="col-12 text-center">
                 <h2>Top Teacher</h2>
-                <h3>{{ $topTeacher->name }}</h3>
-                <div class="points">
-                    {{ $topTeacher->total_points }} points
-                </div>
+
+                @if($topTeacher)
+                    <h3>{{ $topTeacher->name }}</h3>
+                    <div class="points">
+                        {{ $topTeacher->total_points }} points
+                    </div>
+                @else
+                    <h3>No data</h3>
+                @endif
+
             </div>
         </div>
     </div>
@@ -94,56 +101,6 @@ document.getElementById('nextBtn').addEventListener('click', nextScreen);
 setInterval(nextScreen, 10000);
 showScreen(0);
 
-// ===============================
-// HOUSE POINTS GRAPH
-// ===============================
-var ctxHousePoints = document.getElementById('housePointsChart').getContext('2d');
-var housePointsChart = new Chart(ctxHousePoints, {
-    type: 'bar',
-    data: {
-        labels: {!! json_encode($houses->pluck('name')) !!}, // House names
-        datasets: [{
-            label: 'Total Points',
-            data: {!! json_encode($houses->pluck('point_transactions_sum_amount')) !!}, // Total points for each house
-            backgroundColor: 'rgba(54, 162, 235, 0.2)',
-            borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1
-        }]
-    },
-    options: {
-        scales: {
-            y: {
-                beginAtZero: true
-            }
-        }
-    }
-});
-
-// ===============================
-// TOP TEACHER GRAPH
-// ===============================
-var ctxTopTeacher = document.getElementById('topTeacherChart').getContext('2d');
-var topTeacherChart = new Chart(ctxTopTeacher, {
-    type: 'bar',
-    data: {
-        labels: {!! json_encode($teachers->pluck('name')) !!}, // Teacher names
-        datasets: [{
-            label: 'Points Awarded',
-            data: {!! json_encode($teachers->pluck('point_transactions_sum_amount')) !!}, // Points awarded by each teacher
-            backgroundColor: 'rgba(255, 99, 132, 0.2)',
-            borderColor: 'rgba(255, 99, 132, 1)',
-            borderWidth: 1
-        }]
-    },
-    options: {
-        scales: {
-            y: {
-                beginAtZero: true
-            }
-        }
-    }
-});
-
 </script>
 
 @endpush
@@ -177,26 +134,21 @@ var topTeacherChart = new Chart(ctxTopTeacher, {
     transition: all 0.4s ease;
 }
 
-/* WINNER EFFECT */
 .house-card.winner {
     transform: scale(1.08);
     box-shadow: 0 0 30px rgba(255,255,255,0.4);
 }
 
-/* RANK */
 .rank {
     font-size: 36px;
     font-weight: bold;
-    opacity: 0.9;
 }
 
-/* NAME */
 .house-name {
     font-size: 32px;
     margin: 15px 0;
 }
 
-/* POINTS */
 .points {
     font-size: 64px;
     font-weight: bold;
@@ -234,14 +186,11 @@ var topTeacherChart = new Chart(ctxTopTeacher, {
     border: none;
     border-radius: 8px;
     color: white;
-    font-size: 16px;
 }
 
 /* TOP TEACHER */
 #screen-3 {
     background: #1e3a8a;
-    color: white;
-    padding: 20px;
     text-align: center;
 }
 

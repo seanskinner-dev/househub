@@ -1,37 +1,44 @@
-<nav class="navbar">
-    <div class="container">
-        <ul class="nav-list">
-            <li><a href="/">Home</a></li>
-            <li><a href="/house-cup">House Cup</a></li>
-            <li><a href="/about">About</a></li>
-            <li><a href="/contact">Contact</a></li>
-        </ul>
-    </div>
-</nav>
 <style>
-    .navbar {
-        background-color: #333;
-        color: white;
-        padding: 15px;
-    }
+.navbar {
+    background:#1f2329;
+    padding:14px 24px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
 
-    .nav-list {
-        list-style-type: none;
-        display: flex;
-        justify-content: space-around;
-    }
+.nav-left {
+    display:flex;
+    gap:20px;
+}
 
-    .nav-list li {
-        margin: 0 10px;
-    }
+.nav-link {
+    color:white;
+    text-decoration:none;
+    font-weight:600;
+}
 
-    .nav-list a {
-        color: white;
-        text-decoration: none;
-        font-size: 1.2rem;
-    }
+.nav-link:hover {
+    opacity:0.7;
+}
 
-    .nav-list a:hover {
-        text-decoration: underline;
-    }
+.nav-right {
+    color:#9ca3af;
+    font-size:14px;
+}
 </style>
+
+<div class="navbar">
+
+    <div class="nav-left">
+        <a href="/points" class="nav-link">Points</a>
+        <a href="/dashboard" class="nav-link">Dashboard</a>
+        <a href="/tv" class="nav-link">TV</a>
+        <a href="/house-cup" class="nav-link">House Cup</a>
+    </div>
+
+    <div class="nav-right">
+        {{ auth()->user()->name ?? 'User' }}
+    </div>
+
+</div>

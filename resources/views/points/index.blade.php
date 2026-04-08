@@ -1,188 +1,105 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Award Points</title>
+@extends('layouts.app')
 
-    <style>
-        body {
-            font-family: Inter, system-ui;
-            background:#2b2f36;
-            margin:0;
-            padding:20px;
-        }
+@section('content')
 
-        .layout {
-            display:flex;
-            gap:20px;
-            max-width:1200px;
-            margin:auto;
-        }
+<style>
+.layout {
+    display:flex;
+    gap:20px;
+    max-width:1200px;
+    margin:auto;
+}
 
-        .main { flex:2; }
+.main { flex:2; }
 
-        .sidebar {
-            flex:1;
-            position:sticky;
-            top:20px;
-        }
+.sidebar {
+    flex:1;
+    position:sticky;
+    top:20px;
+}
 
-        h1 { color:white; }
+h1 { color:white; }
 
-        .house-section {
-            background:#3a3f47;
-            padding:18px;
-            border-radius:14px;
-            margin-bottom:20px;
-        }
+.house-section {
+    background:#3a3f47;
+    padding:18px;
+    border-radius:14px;
+    margin-bottom:20px;
+}
 
-        .house-bar {
-            display:grid;
-            grid-template-columns:repeat(4,1fr);
-            gap:14px;
-        }
+.house-bar {
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:14px;
+}
 
-        .house-card {
-            background:linear-gradient(
-                145deg,
-                var(--colour) 0%,
-                rgba(0,0,0,0.4) 100%
-            );
-            border-radius:16px;
-            padding:20px;
-            text-align:center;
-            cursor:pointer;
-            overflow:hidden;
-        }
+.house-card {
+    background:linear-gradient(145deg,var(--colour) 0%,rgba(0,0,0,0.4) 100%);
+    border-radius:16px;
+    padding:20px;
+    text-align:center;
+    cursor:pointer;
+}
 
-        .house-emoji {
-            font-size:64px;
-            display:block;
-            margin-bottom:10px;
-        }
+.house-emoji { font-size:64px; margin-bottom:10px; }
+.house-name { font-weight:800; color:white; }
 
-        .house-name {
-            font-weight:800;
-            color:white;
-        }
+.card {
+    background:#f3f4f6;
+    padding:18px;
+    border-radius:10px;
+    margin-bottom:10px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
 
-        .card {
-            background:#f3f4f6;
-            padding:18px;
-            border-radius:10px;
-            margin-bottom:10px;
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-        }
+.left { display:flex; align-items:center; gap:16px; }
+.crest { font-size:32px; }
 
-        .left {
-            display:flex;
-            align-items:center;
-            gap:16px;
-        }
+.name { font-weight:800; font-size:20px; }
+.meta { font-size:12px; color:#555; }
 
-        .crest {
-            font-size:32px;
-        }
+.actions { display:flex; gap:8px; }
 
-        .name {
-            font-weight:800;
-            font-size:20px;
-            position:relative;
-            z-index:2;
-        }
+.btn { border:none; border-radius:10px; cursor:pointer; font-weight:800; }
+.plus { background:#22c55e; color:white; padding:18px; }
+.minus { background:#ef4444; color:white; padding:10px; }
+.star { background:#4b5563; color:white; padding:10px; }
+.award { background:#6366f1; color:white; padding:10px; }
 
-        .student-link {
-            text-decoration:none;
-            color:inherit;
-            display:inline-block;
-            cursor:pointer;
-        }
+.sidebar-box {
+    background:#1f2329;
+    padding:12px;
+    border-radius:10px;
+    color:white;
+}
 
-        .meta {
-            font-size:12px;
-            color:#555;
-        }
+.activity {
+    background:#3a4048;
+    padding:12px;
+    margin-bottom:8px;
+    border-radius:8px;
+}
 
-        .actions {
-            display:flex;
-            gap:8px;
-        }
+.pos { color:#22c55e; }
+.neg { color:#ef4444; }
 
-        .btn {
-            border:none;
-            border-radius:10px;
-            cursor:pointer;
-            font-weight:800;
-        }
+#toast {
+    position:fixed;
+    bottom:30px;
+    right:30px;
+    padding:14px 20px;
+    border-radius:10px;
+    opacity:0;
+    color:white;
+    font-weight:700;
+}
 
-        .plus { background:#22c55e; color:white; padding:18px; }
-        .minus { background:#ef4444; color:white; padding:10px; }
-
-        .star { background:#4b5563; color:white; padding:10px; }
-        .award { background:#6366f1; color:white; padding:10px; }
-
-        .sidebar-box {
-            background:#1f2329;
-            padding:12px;
-            border-radius:10px;
-            color:white;
-        }
-
-        .activity {
-            background:#3a4048;
-            padding:12px;
-            margin-bottom:8px;
-            border-radius:8px;
-        }
-
-        .pos { color:#22c55e; }
-        .neg { color:#ef4444; }
-
-        #toast {
-            position:fixed;
-            bottom:30px;
-            right:30px;
-            padding:14px 20px;
-            border-radius:10px;
-            opacity:0;
-            color:white;
-            font-weight:700;
-        }
-
-        #toast.show { opacity:1; }
-        .toast-success { background:#22c55e; }
-        .toast-error { background:#ef4444; }
-
-        .modal {
-            position:fixed;
-            top:0;
-            left:0;
-            width:100%;
-            height:100%;
-            background:rgba(0,0,0,0.7);
-            display:none;
-            align-items:center;
-            justify-content:center;
-        }
-
-        .modal-box {
-            background:#1f2329;
-            padding:30px;
-            border-radius:16px;
-            width:600px;
-            color:white;
-        }
-
-        textarea {
-            width:100%;
-            height:260px;
-            margin-top:10px;
-        }
-    </style>
-</head>
-
-<body>
+#toast.show { opacity:1; }
+.toast-success { background:#22c55e; }
+.toast-error { background:#ef4444; }
+</style>
 
 <div class="layout">
 
@@ -190,6 +107,7 @@
 
 <h1>Award Points</h1>
 
+<!-- HOUSES -->
 <div class="house-section">
 <div class="house-bar">
 
@@ -200,14 +118,14 @@
 <input type="hidden" name="amount" value="1">
 
 <div class="house-card" style="--colour: {{ $house->colour_hex }}">
-    <div class="house-emoji">
-        @if($house->name == 'Gryffindor') 🦁
-        @elseif($house->name == 'Slytherin') 🐍
-        @elseif($house->name == 'Ravenclaw') 🦅
-        @else 🦡
-        @endif
-    </div>
-    <div class="house-name">{{ $house->name }}</div>
+<div class="house-emoji">
+@if($house->name == 'Gryffindor') 🦁
+@elseif($house->name == 'Slytherin') 🐍
+@elseif($house->name == 'Ravenclaw') 🦅
+@else 🦡
+@endif
+</div>
+<div class="house-name">{{ $house->name }}</div>
 </div>
 
 </form>
@@ -216,26 +134,30 @@
 </div>
 </div>
 
+<!-- STUDENTS -->
 @foreach($students as $student)
 <div class="card">
 
 <div class="left">
-
 <div class="crest">
-    @if($student->house_name == 'Gryffindor') 🦁
-    @elseif($student->house_name == 'Slytherin') 🐍
-    @elseif($student->house_name == 'Ravenclaw') 🦅
-    @else 🦡
-    @endif
+@if($student->house_name == 'Gryffindor') 🦁
+@elseif($student->house_name == 'Slytherin') 🐍
+@elseif($student->house_name == 'Ravenclaw') 🦅
+@else 🦡
+@endif
 </div>
 
 <div>
 <div class="name">
-<a href="{{ route('students.show', $student->id) }}" class="student-link">
+<a href="{{ route('students.show', $student->id) }}">
 {{ $student->first_name }} {{ $student->last_name }}
 </a>
 </div>
-<div class="meta">{{ $student->house_name }} • {{ $student->house_points }} pts</div>
+
+<div class="meta">
+{{ $student->house_name }} • 
+<span class="points">{{ $student->house_points }}</span> pts
+</div>
 </div>
 </div>
 
@@ -265,10 +187,30 @@
 
 </div>
 
+<!-- RECENT -->
 <div class="sidebar">
 <div class="sidebar-box">
 <h3>Recent</h3>
-<div id="recentList"></div>
+
+<div id="recentList">
+
+@foreach($recent as $r)
+<div class="activity">
+<strong>
+{{ $r->first_name ? $r->first_name . ' ' . $r->last_name : $r->house_name }}
+</strong><br>
+
+<span class="{{ $r->amount > 0 ? 'pos' : 'neg' }}">
+{{ $r->amount > 0 ? '+' : '' }}{{ $r->amount }}
+</span>
+
+<br>
+<small>{{ ucfirst($r->category) }} • {{ $r->teacher ?? 'System' }}</small>
+</div>
+@endforeach
+
+</div>
+
 </div>
 </div>
 
@@ -276,77 +218,13 @@
 
 <div id="toast"></div>
 
-<!-- MODALS (unchanged) -->
-<div id="commendationModal" class="modal">
-<div class="modal-box">
-<form class="ajax">
-@csrf
-<input type="hidden" name="student_id" id="commStudent">
-<input type="hidden" name="amount" value="1">
-<input type="hidden" name="type" value="commendation">
-
-<textarea name="description" placeholder="Reason for commendation..."></textarea>
-
-<button>Save</button>
-<button type="button" onclick="closeModal()">Cancel</button>
-</form>
-</div>
-</div>
-
-<div id="awardModal" class="modal">
-<div class="modal-box">
-<form class="ajax">
-@csrf
-<input type="hidden" name="student_id" id="awardStudent">
-<input type="hidden" name="amount" id="awardPoints">
-<input type="hidden" name="type" value="award">
-
-<select id="awardSelect" onchange="setAwardPoints()">
-<option value="">Select Award</option>
-<option value="5">House Pride Award (+5)</option>
-<option value="10">Excellence in Behaviour (+10)</option>
-<option value="15">Outstanding Effort (+15)</option>
-<option value="20">Professor’s Recognition (+20)</option>
-<option value="25">Headmaster’s Award (+25)</option>
-</select>
-
-<textarea name="description" placeholder="Reason for award..."></textarea>
-
-<button>Save</button>
-<button type="button" onclick="closeModal()">Cancel</button>
-</form>
-</div>
-</div>
-
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-
-// award points
-window.setAwardPoints = function(){
-let val=document.getElementById('awardSelect').value;
-document.getElementById('awardPoints').value=val;
-};
-
-// modals
-window.openCommendation = function(id){
-document.getElementById('commStudent').value=id;
-document.getElementById('commendationModal').style.display='flex';
-};
-
-window.openAward = function(id){
-document.getElementById('awardStudent').value=id;
-document.getElementById('awardModal').style.display='flex';
-};
-
-window.closeModal = function(){
-document.getElementById('commendationModal').style.display='none';
-document.getElementById('awardModal').style.display='none';
-};
-
-// AJAX
 document.querySelectorAll('form.ajax').forEach(form=>{
 form.addEventListener('submit',function(e){
 e.preventDefault();
+
+if (this.dataset.loading === "1") return;
+this.dataset.loading = "1";
 
 let fd=new FormData(this);
 
@@ -365,57 +243,44 @@ let amt=parseInt(data.amount||0);
 // toast
 let t=document.getElementById('toast');
 t.className='show '+(amt>0?'toast-success':'toast-error');
-t.innerText=data.type ? data.type.toUpperCase() : (amt>0?'+ Point':'- Point');
+t.innerText=(amt>0?'+':'')+amt;
 setTimeout(()=>t.className='',1000);
 
-// update UI
+// update points
 let card=this.closest('.card');
-if(card && data.student){
-let meta=card.querySelector('.meta');
-let parts=meta.innerText.split('•');
-let current=parseInt(parts[1]);
-meta.innerText=parts[0]+'• '+(current+amt)+' pts';
+if(card){
+let el=card.querySelector('.points');
+el.innerText=parseInt(el.innerText)+amt;
 }
 
 // recent
 let list=document.getElementById('recentList');
 let item=document.createElement('div');
 item.className='activity';
-item.dataset.time=Date.now();
 
-let label = data.student ? data.student : (data.house ?? 'Unknown');
+let label = data.student ? data.student : data.house;
 
 item.innerHTML=`
 <strong>${label}</strong><br>
-<span class="${amt>0?'pos':'neg'}">
-${data.type ? data.type : (amt>0?'+':''+amt)}
-</span>
+<span class="${amt>0?'pos':'neg'}">${amt>0?'+':''}${amt}</span>
 <br>
-<small>by ${data.teacher ?? 'System'}</small>
+<small>${data.category ?? 'update'} • ${data.teacher ?? 'System'}</small>
 `;
 
 list.prepend(item);
-});
-});
-});
 
-// house click
-document.querySelectorAll('.house-card').forEach(card=>{
-card.addEventListener('click',function(){
-this.closest('form').dispatchEvent(new Event('submit',{cancelable:true}));
-});
-});
+this.dataset.loading = "0";
+})
+.catch(()=>{
+let t=document.getElementById('toast');
+t.className='show toast-error';
+t.innerText='Error saving';
+setTimeout(()=>t.className='',1500);
 
-// expire recent
-setInterval(()=>{
-let now=Date.now();
-document.querySelectorAll('#recentList .activity').forEach(el=>{
-if(now-el.dataset.time>120000) el.remove();
+this.dataset.loading = "0";
 });
-},10000);
-
+});
 });
 </script>
 
-</body>
-</html>
+@endsection

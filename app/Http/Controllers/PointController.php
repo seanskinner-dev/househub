@@ -9,8 +9,18 @@ class PointController extends Controller
 {
     public function index()
     {
-        $students = DB::table('students')->orderBy('id')->get();
+        // ✅ Students with house data
+        $students = DB::table('students')
+            ->leftJoin('houses', 'students.house_id', '=', 'houses.id')
+            ->select(
+                'students.*',
+                'houses.name as house_name',
+                'houses.colour_hex'
+            )
+            ->orderBy('students.id')
+            ->get();
 
+        // ✅ Recent activity
         $recent = DB::table('point_transactions')
             ->leftJoin('students', 'point_transactions.student_id', '=', 'students.id')
             ->leftJoin('houses', 'point_transactions.house_id', '=', 'houses.id')
@@ -21,6 +31,7 @@ class PointController extends Controller
                 'houses.name as house_name',
                 'point_transactions.amount',
                 'point_transactions.category',
+                'point_transactions.description',
                 'point_transactions.created_at',
                 'users.name as teacher'
             )
@@ -28,16 +39,30 @@ class PointController extends Controller
             ->limit(10)
             ->get();
 
-        $houses = DB::table('houses')->get();
+        // ✅ Cached houses (performance)
+        $houses = cache()->remember('houses', 60, function () {
+            return DB::table('houses')->get();
+        });
 
-        return view('points.index', compact('students','recent','houses'));
+        return view('points.index', compact('students', 'recent', 'houses'));
     }
 
     public function store(Request $request)
     {
+        // ✅ VALIDATION (new)
+        $request->validate([
+            'amount' => 'required|integer',
+            'student_id' => 'nullable|exists:students,id',
+            'house_name' => 'nullable|exists:houses,name',
+            'category' => 'nullable|string',
+            'description' => 'nullable|string',
+        ]);
+
         $amount = (int) $request->input('amount');
         $userId = auth()->id() ?? 1;
-        $teacherName = auth()->user()->name ?? 'System';
+
+        // ✅ Safe auth handling
+        $teacherName = auth()->user() ? auth()->user()->name : 'System';
 
         return DB::transaction(function () use ($request, $amount, $userId, $teacherName) {
 
@@ -72,7 +97,8 @@ class PointController extends Controller
                         'amount' => $amount,
                         'student' => null,
                         'house' => $house->name,
-                        'teacher' => $teacherName
+                        'teacher' => $teacherName,
+                        'category' => 'house'
                     ]);
                 }
             }
@@ -92,8 +118,9 @@ class PointController extends Controller
                         ->where('id', $student->id)
                         ->increment('house_points', $amount);
 
+                    // ✅ Use house_id (not name)
                     $house = DB::table('houses')
-                        ->where('name', $student->house_name)
+                        ->where('id', $student->house_id)
                         ->first();
 
                     if ($house) {
@@ -104,7 +131,7 @@ class PointController extends Controller
 
                     DB::table('point_transactions')->insert([
                         'student_id' => $student->id,
-                        'house_id' => $house->id ?? null,
+                        'house_id' => $house ? $house->id : null,
                         'amount' => $amount,
                         'category' => $request->input('category', 'manual'),
                         'description' => $request->input('description', ''),
@@ -117,8 +144,9 @@ class PointController extends Controller
                         'success' => true,
                         'amount' => $amount,
                         'student' => $student->first_name . ' ' . $student->last_name,
-                        'house' => $student->house_name,
-                        'teacher' => $teacherName
+                        'house' => $house ? $house->name : null,
+                        'teacher' => $teacherName,
+                        'category' => $request->input('category', 'manual')
                     ]);
                 }
             }
@@ -127,10 +155,20 @@ class PointController extends Controller
         });
     }
 
-    // ✅ NEW METHOD — STUDENT PROFILE
+    // =====================
+    // STUDENT PROFILE
+    // =====================
     public function showStudent($id)
     {
-        $student = DB::table('students')->where('id', $id)->first();
+        $student = DB::table('students')
+            ->leftJoin('houses', 'students.house_id', '=', 'houses.id')
+            ->select(
+                'students.*',
+                'houses.name as house_name',
+                'houses.colour_hex'
+            )
+            ->where('students.id', $id)
+            ->first();
 
         if (!$student) {
             abort(404);
