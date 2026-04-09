@@ -18,16 +18,163 @@ Route::get('/', function () {
 
 /*
 |--------------------------------------------------------------------------
-| PUBLIC TV ROUTES (NO AUTH)
+| PUBLIC TV ROUTES (PRODUCT)
 |--------------------------------------------------------------------------
 */
 
-// 🎯 MAIN TV ROTATOR
+// 🎯 TV ROTATOR
 Route::get('/tv', function () {
     return view('tv.tv');
 })->name('tv');
 
-// 🔥 HOUSE TOTAL HERO (NEW)
+// 🏁 HOUSE RACE (PRIMARY)
+Route::get('/tv/house-race-live', function () {
+
+    $houses = DB::table('houses')
+        ->select('name', 'points', 'colour_hex')
+        ->orderByDesc('points')
+        ->get();
+
+    return view('tv.house_race_live', compact('houses'));
+
+})->name('tv.house.race.live');
+
+// ⚡ LIVE ACTIVITY
+Route::get('/tv/live-activity', function () {
+
+    $activities = DB::table('point_transactions')
+        ->leftJoin('students', 'point_transactions.student_id', '=', 'students.id')
+        ->leftJoin('houses', 'point_transactions.house_id', '=', 'houses.id')
+        ->leftJoin('users', 'point_transactions.awarded_by', '=', 'users.id')
+        ->select(
+            'students.first_name',
+            'students.last_name',
+            'houses.name as house_name',
+            'houses.colour_hex',
+            'point_transactions.amount',
+            'users.name as teacher',
+            'point_transactions.created_at'
+        )
+        ->orderByDesc('point_transactions.created_at')
+        ->limit(8)
+        ->get();
+
+    return view('tv.live_activity', compact('activities'));
+
+})->name('tv.live.activity');
+
+// 🏆 DAILY LEADER
+Route::get('/tv/daily-winner', function () {
+
+    $winner = DB::table('point_transactions')
+        ->join('students', 'point_transactions.student_id', '=', 'students.id')
+        ->join('houses', 'students.house_id', '=', 'houses.id')
+        ->select(
+            'students.first_name',
+            'students.last_name',
+            'houses.name as house_name',
+            'houses.colour_hex',
+            DB::raw('SUM(point_transactions.amount) as total')
+        )
+        ->whereDate('point_transactions.created_at', today())
+        ->groupBy(
+            'students.id',
+            'students.first_name',
+            'students.last_name',
+            'houses.name',
+            'houses.colour_hex'
+        )
+        ->orderByDesc('total')
+        ->first();
+
+    return view('tv.daily_winner', compact('winner'));
+
+})->name('tv.daily.winner');
+
+// 🔥 HOT STREAK
+Route::get('/tv/hot-streak', function () {
+
+    $streak = DB::table('point_transactions')
+        ->join('students', 'point_transactions.student_id', '=', 'students.id')
+        ->join('houses', 'students.house_id', '=', 'houses.id')
+        ->select(
+            'students.first_name',
+            'students.last_name',
+            'houses.name as house_name',
+            'houses.colour_hex',
+            DB::raw('SUM(point_transactions.amount) as total')
+        )
+        ->where('point_transactions.created_at', '>=', now()->subMinutes(60))
+        ->groupBy(
+            'students.id',
+            'students.first_name',
+            'students.last_name',
+            'houses.name',
+            'houses.colour_hex'
+        )
+        ->orderByDesc('total')
+        ->first();
+
+    return view('tv.hot_streak', compact('streak'));
+
+})->name('tv.hot.streak');
+
+// 👑 WEEKLY LEADER
+Route::get('/tv/weekly-winner', function () {
+
+    $winner = DB::table('point_transactions')
+        ->join('students', 'point_transactions.student_id', '=', 'students.id')
+        ->join('houses', 'students.house_id', '=', 'houses.id')
+        ->select(
+            'students.first_name',
+            'students.last_name',
+            'houses.name as house_name',
+            'houses.colour_hex',
+            DB::raw('SUM(point_transactions.amount) as total')
+        )
+        ->whereBetween('point_transactions.created_at', [
+            now()->startOfWeek(),
+            now()->endOfWeek()
+        ])
+        ->groupBy(
+            'students.id',
+            'students.first_name',
+            'students.last_name',
+            'houses.name',
+            'houses.colour_hex'
+        )
+        ->orderByDesc('total')
+        ->first();
+
+    return view('tv.weekly_winner', compact('winner'));
+
+})->name('tv.weekly.winner');
+
+// 👨‍🏫 TEACHER TOP 3
+Route::get('/tv/teachers-top', function () {
+
+    $teachers = DB::table('point_transactions')
+        ->join('users', 'point_transactions.awarded_by', '=', 'users.id')
+        ->select(
+            'users.name',
+            DB::raw('COUNT(point_transactions.id) as actions'),
+            DB::raw('SUM(point_transactions.amount) as total_points')
+        )
+        ->whereNotNull('point_transactions.awarded_by')
+        ->groupBy('users.name')
+        ->orderByDesc('actions')
+        ->limit(3)
+        ->get();
+
+    return view('tv.teachers_top', compact('teachers'));
+
+})->name('tv.teachers.top');
+
+// 🎖 TOP STUDENTS
+Route::get('/tv/top-students', [PointController::class, 'topStudents'])
+    ->name('tv.top.students');
+
+// 📊 HOUSE TOTAL
 Route::get('/tv/house-total', function () {
 
     $houses = DB::table('houses')
@@ -39,70 +186,11 @@ Route::get('/tv/house-total', function () {
 
 })->name('tv.house.total');
 
-// 🔥 LEADERBOARD
-Route::get('/tv/leaderboard', function () {
-
-    $houses = DB::table('houses')
-        ->select('id', 'name', 'colour_hex', 'points')
-        ->orderByDesc('points')
-        ->get();
-
-    $students = DB::table('students')
-        ->leftJoin('houses', 'students.house_id', '=', 'houses.id')
-        ->select(
-            'students.id',
-            'students.first_name',
-            'students.last_name',
-            'students.year_level',
-            'houses.name as house_name',
-            'houses.colour_hex',
-            DB::raw('COALESCE(students.house_points, 0) as points')
-        )
-        ->orderByDesc('points')
-        ->limit(30)
-        ->get();
-
-    return view('tv.leaderboard', [
-        'houses' => $houses,
-        'students' => $students
-    ]);
-
-})->name('tv.leaderboard');
-
-// 🔥 WEATHER
+// 🌤 WEATHER
 Route::get('/tv/weather', function () {
     return view('tv.weather');
 })->name('tv.weather');
 
-// 🔥 TOP STUDENTS
-Route::get('/tv/top-students', [PointController::class, 'topStudents'])
-    ->name('tv.top.students');
-
-// 🔥 HOUSE RACE
-Route::get('/tv/house-race', function () {
-
-    $houses = DB::table('houses')
-        ->select('name', 'points', 'colour_hex')
-        ->orderByDesc('points')
-        ->get();
-
-    return view('tv.house_race', compact('houses'));
-
-})->name('tv.house.race');
-
-// 🔥 HOUSE TRENDS
-Route::get('/tv/house-trends', [PointController::class, 'houseTrends'])
-    ->name('tv.house.trends');
-
-// 🔥 TEACHERS
-Route::get('/tv/teachers', [PointController::class, 'teacherHighlights'])
-    ->name('tv.teachers');
-
-// 🔥 OPTIONAL EXTRA SCREENS
-Route::get('/tv/house-month', [PointController::class, 'housePointsMonth'])->name('tv.house.month');
-Route::get('/tv/house-year', [PointController::class, 'housePointsYear'])->name('tv.house.year');
-Route::get('/tv/teachers-month', [PointController::class, 'teacherHighlightsMonth'])->name('tv.teachers.month');
-Route::get('/tv/house-momentum', [PointController::class, 'houseMomentum'])->name('tv.house.momentum');
 
 /*
 |--------------------------------------------------------------------------
@@ -133,12 +221,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
 
-/*
-|--------------------------------------------------------------------------
-| Auth Routes
-|--------------------------------------------------------------------------
-*/
+});
 
 require __DIR__.'/auth.php';

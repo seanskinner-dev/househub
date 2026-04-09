@@ -2,10 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\Student;
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\User;
 
 class DatabaseSeeder extends Seeder
 {
@@ -14,15 +12,15 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Create a default admin user (Optional)
+        // ✅ Admin user (keep this)
         User::factory()->create([
             'name' => 'Admin User',
             'email' => 'admin@househub.com',
         ]);
 
-        // 2. Create 50 random students
-        Student::factory(50)->create();
+        // ✅ MAIN SEEDER (this drives EVERYTHING)
+        $this->call(DemoSchoolSeeder::class);
 
-        $this->command->info('Database seeded: 50 students created successfully!');
+        $this->command->info('HouseHub demo data seeded successfully!');
     }
 }

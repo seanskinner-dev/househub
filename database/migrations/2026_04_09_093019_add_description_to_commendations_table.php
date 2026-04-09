@@ -8,15 +8,15 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('houses', function (Blueprint $table) {
-            $table->integer('points')->default(0);
+        Schema::table('commendations', function (Blueprint $table) {
+            $table->text('description')->nullable();
         });
     }
 
     public function down(): void
     {
-        Schema::table('houses', function (Blueprint $table) {
-            $table->dropColumn('points');
+        Schema::table('commendations', function (Blueprint $table) {
+            $table->dropColumn('description');
         });
     }
 };

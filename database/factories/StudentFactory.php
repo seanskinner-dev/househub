@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Student;
+use App\Models\House;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class StudentFactory extends Factory
@@ -14,31 +15,32 @@ class StudentFactory extends Factory
         $firstNames = [
             'Albus', 'Cedric', 'Draco', 'Hermione', 'Luna', 'Neville', 'Pansy', 'Seamus', 
             'Cho', 'Cormac', 'Lavender', 'Millicent', 'Gregory', 'Vincent', 'Padma', 'Parvati',
-            'Dean', 'Argus', 'Phineas', 'Septimus', 'Garrick', 'Minerva', 'Pomona', 'Filius'
+            'Dean', 'Argus', 'Phineas', 'Septimus', 'Garrick', 'Minerva', 'Pomona', 'Filius',
+            'Oliver', 'Jack', 'Noah', 'William', 'Charlie', 'Leo',
+            'Olivia', 'Amelia', 'Isla', 'Mia', 'Ava', 'Grace'
         ];
 
         $lastNames = [
             'Potter', 'Granger', 'Weasley', 'Malfoy', 'Longbottom', 'Lovegood', 'Diggory', 
             'Chang', 'Finnigan', 'Brown', 'Parkinson', 'Goyle', 'Crabbe', 'Patil', 'Thomas',
-            'Slughorn', 'Flitwick', 'Sprout', 'Zabini', 'Nott', 'Bulstrode', 'Macmillan'
+            'Slughorn', 'Flitwick', 'Sprout', 'Zabini', 'Nott', 'Bulstrode', 'Macmillan',
+            'Smith', 'Taylor', 'Wilson', 'Anderson', 'Harris', 'Clark', 'Walker'
         ];
 
-        $houses = [
-            ['name' => 'Gryffindor', 'color' => '#740001'],
-            ['name' => 'Hufflepuff', 'color' => '#ecb939'],
-            ['name' => 'Ravenclaw', 'color' => '#0e1a40'],
-            ['name' => 'Slytherin', 'color' => '#1a472a'],
-        ];
-
-        $house = $this->faker->randomElement($houses);
+        // ✅ Get a real house (safe fallback)
+        $houseId = House::inRandomOrder()->value('id') ?? 1;
 
         return [
             'first_name' => $this->faker->randomElement($firstNames),
             'last_name' => $this->faker->randomElement($lastNames),
-            'house_name' => $house['name'],
-            'colour_hex' => $house['color'],
-            'year_level' => $this->faker->numberBetween(1, 7),
-            'points' => $this->faker->numberBetween(0, 150), // Starting points for the term
+
+            // ✅ FIXED
+            'house_id' => $houseId,
+
+            'year_level' => $this->faker->numberBetween(7, 12),
+
+            // ✅ FIXED
+            'house_points' => 0,
         ];
     }
 }

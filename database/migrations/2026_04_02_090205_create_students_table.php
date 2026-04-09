@@ -13,12 +13,22 @@ return new class extends Migration
     {
         Schema::create('students', function (Blueprint $table) {
             $table->id();
+
             $table->string('first_name');
             $table->string('last_name');
-            $table->string('house_name');
-            $table->string('colour_hex')->default('#3b82f6'); // Default Blue
-            $table->integer('year_level');
-            $table->integer('points')->default(0);
+
+            // ✅ CORRECT RELATIONSHIP
+            $table->foreignId('house_id')
+                  ->nullable()
+                  ->constrained()
+                  ->nullOnDelete();
+
+            // ✅ STUDENT DATA
+            $table->integer('year_level')->nullable();
+
+            // ✅ THEIR OWN TOTAL
+            $table->integer('house_points')->default(0);
+
             $table->timestamps();
         });
     }

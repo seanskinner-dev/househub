@@ -7,120 +7,120 @@
 <style>
 body {
     margin: 0;
-    background: black;
     overflow: hidden;
+    background: black;
 }
 
-/* SCREENS */
-.screen {
-    position: absolute;
+/* iframe */
+iframe {
     width: 100vw;
     height: 100vh;
     border: none;
-
-    opacity: 0;
-    transform: translateX(5%);
-    transition: opacity 0.8s ease, transform 0.8s ease;
 }
 
-.screen.active {
-    opacity: 1;
-    transform: translateX(0);
-}
-
-/* NEXT BUTTON (debug only) */
-.next-btn {
+/* CONTROLS */
+.controls {
     position: fixed;
     bottom: 20px;
     right: 20px;
     z-index: 999;
+    display: flex;
+    gap: 10px;
+}
 
+/* BUTTONS */
+.btn {
     background: rgba(0,0,0,0.6);
     color: white;
-    border: none;
-    padding: 12px 18px;
-    font-size: 16px;
-    border-radius: 8px;
+    border: 2px solid white;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 14px;
     cursor: pointer;
 }
 
-.next-btn:hover {
-    background: rgba(255,255,255,0.2);
+/* SCREEN LABEL */
+.label {
+    position: fixed;
+    top: 15px;
+    left: 20px;
+    z-index: 999;
+
+    background: rgba(0,0,0,0.5);
+    padding: 8px 14px;
+    border-radius: 8px;
+
+    font-size: 14px;
+    color: white;
 }
 </style>
 </head>
 
 <body>
 
-<!-- ALL TV SCREENS -->
+<div class="label" id="label">Loading...</div>
 
-<!-- Core -->
-<iframe class="screen active" src="/tv/weather"></iframe>
-<iframe class="screen" src="/tv/leaderboard"></iframe>
-<iframe class="screen" src="/tv/top-students"></iframe>
-<iframe class="screen" src="/tv/house-race"></iframe>
-<iframe class="screen" src="/tv/teachers"></iframe>
-<iframe class="screen" src="/tv/house-trends"></iframe>
+<iframe id="screen" src=""></iframe>
 
-<!-- Extended -->
-<iframe class="screen" src="/tv/house-month"></iframe>
-<iframe class="screen" src="/tv/house-year"></iframe>
-<iframe class="screen" src="/tv/teachers-month"></iframe>
-<iframe class="screen" src="/tv/house-momentum"></iframe>
-
-<!-- NEXT BUTTON -->
-<button class="next-btn" onclick="manualNext()">Next ▶</button>
+<div class="controls">
+    <button class="btn" onclick="prevScreen()">← Prev</button>
+    <button class="btn" onclick="nextScreen()">Next →</button>
+</div>
 
 <script>
 
-const screens = document.querySelectorAll('.screen');
-
-let index = 0;
-let timer;
-
-// ⏱ timing
-const NORMAL = 12000;
-const HERO = 20000;
-
-// 🌟 hero screens
-const hero = [
-    0, // weather
-    1  // leaderboard
+const screens = [
+    { url: '/tv/house-race-live', name: 'House Race' },
+    { url: '/tv/live-activity', name: 'Live Activity' },
+    { url: '/tv/daily-winner', name: 'Daily Winner' },
+    { url: '/tv/hot-streak', name: 'Hot Streak' },
+    { url: '/tv/weekly-winner', name: 'Weekly Winner' },
+    { url: '/tv/teachers-top', name: 'Top Teachers' },
+    { url: '/tv/top-students', name: 'Top Students' },
+    { url: '/tv/house-total', name: 'House Totals' },
+    { url: '/tv/weather', name: 'Weather' }
 ];
 
-// 🔁 ROTATE
-function rotate() {
+let index = 0;
+let interval;
 
-    screens[index].classList.remove('active');
+/* LOAD SCREEN */
+function loadScreen() {
+    document.getElementById('screen').src = screens[index].url;
+    document.getElementById('label').innerText = screens[index].name;
+}
 
+/* NEXT */
+function nextScreen() {
     index = (index + 1) % screens.length;
-
-    screens[index].classList.add('active');
-
-    scheduleNext();
+    loadScreen();
 }
 
-// ⏱ TIMER CONTROL
-function scheduleNext() {
-    clearTimeout(timer);
-
-    const delay = hero.includes(index) ? HERO : NORMAL;
-
-    timer = setTimeout(rotate, delay);
+/* PREV */
+function prevScreen() {
+    index = (index - 1 + screens.length) % screens.length;
+    loadScreen();
 }
 
-// 👉 MANUAL NEXT
-function manualNext() {
-    rotate();
+/* AUTO ROTATION */
+function startRotation() {
+    interval = setInterval(nextScreen, 15000);
 }
 
-// 👉 KEYBOARD CONTROL (for testing)
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowRight') manualNext();
+/* RESET TIMER ON MANUAL CLICK */
+function resetRotation() {
+    clearInterval(interval);
+    startRotation();
+}
+
+/* BUTTON HOOKS */
+document.querySelectorAll('.btn').forEach(btn => {
+    btn.addEventListener('click', resetRotation);
 });
 
-// START
-scheduleNext();
+/* INIT */
+loadScreen();
+startRotation();
 
 </script>
 
