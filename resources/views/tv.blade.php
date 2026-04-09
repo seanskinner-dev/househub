@@ -1,203 +1,280 @@
-@extends('layouts.app')
-
-@section('content')
-
-<div class="tv-container">
-
-    <!-- SCREEN 1: HOUSE LEADERBOARD -->
-    <div class="tv-screen active" id="screen-1">
-        <div class="row h-100">
-            @foreach($houses as $index => $house)
-                <div class="col-3 d-flex">
-                    <div class="house-card w-100 text-center {{ $index == 0 ? 'winner' : '' }}"
-                         style="background: {{ $house->colour_hex }}">
-
-                        <div class="rank">
-                            #{{ $index + 1 }}
-                        </div>
-
-                        <h2 class="house-name">{{ $house->name }}</h2>
-
-                        <!-- ✅ FIXED -->
-                        <div class="points">
-                            {{ $house->points }}
-                        </div>
-
-                    </div>
-                </div>
-            @endforeach
-        </div>
-    </div>
-
-    <!-- SCREEN 2: LIVE ACTIVITY -->
-    <div class="tv-screen" id="screen-2">
-        <div class="activity-grid">
-            @foreach($recent as $item)
-                <div class="activity-row">
-                    <div class="student">
-                        {{ $item->first_name ?? '' }} {{ $item->last_name ?? $item->house_name }}
-                    </div>
-
-                    <div class="points-change {{ $item->amount > 0 ? 'plus' : 'minus' }}">
-                        {{ $item->amount > 0 ? '+' : '' }}{{ $item->amount }}
-                    </div>
-
-                    <div class="desc">
-                        {{ $item->description ?? '-' }}
-                    </div>
-                </div>
-            @endforeach
-        </div>
-    </div>
-
-    <!-- SCREEN 3: TOP TEACHER -->
-    <div class="tv-screen" id="screen-3">
-        <div class="row h-100">
-            <div class="col-12 text-center">
-                <h2>Top Teacher</h2>
-
-                @if($topTeacher)
-                    <h3>{{ $topTeacher->name }}</h3>
-                    <div class="points">
-                        {{ $topTeacher->total_points }} points
-                    </div>
-                @else
-                    <h3>No data</h3>
-                @endif
-
-            </div>
-        </div>
-    </div>
-
-    <!-- NEXT BUTTON -->
-    <button id="nextBtn" class="next-btn">Next ▶</button>
-
-</div>
-
-@endsection
-
-@push('scripts')
-
-<script>
-
-// ===============================
-// SCREEN CONTROL
-// ===============================
-let currentScreen = 0;
-const screens = document.querySelectorAll('.tv-screen');
-
-function showScreen(index) {
-    screens.forEach((s, i) => {
-        s.classList.toggle('active', i === index);
-    });
-}
-
-function nextScreen() {
-    currentScreen = (currentScreen + 1) % screens.length;
-    showScreen(currentScreen);
-}
-
-document.getElementById('nextBtn').addEventListener('click', nextScreen);
-setInterval(nextScreen, 10000);
-showScreen(0);
-
-</script>
-
-@endpush
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>House Leaderboard</title>
 
 <style>
-
-.tv-container {
+body {
+    margin: 0;
     height: 100vh;
-    background: #0f172a;
-    color: white;
-    overflow: hidden;
-}
-
-/* SCREENS */
-.tv-screen {
-    display: none;
-    height: 100%;
-}
-
-.tv-screen.active {
-    display: block;
-}
-
-/* HOUSE CARDS */
-.house-card {
-    padding: 40px;
-    border-radius: 18px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    transition: all 0.4s ease;
+
+    background: #000;
+    font-family: Arial, sans-serif;
+    color: white;
 }
 
-.house-card.winner {
-    transform: scale(1.08);
-    box-shadow: 0 0 30px rgba(255,255,255,0.4);
+/* TITLE */
+h1 {
+    text-align: center;
+    font-size: 5vh;
+    margin: 2vh 0;
+    font-weight: 700;
+}
+
+/* MAIN */
+.container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2vh;
+    padding: 1vh 2vw;
+}
+
+/* 💥 BASE CARD */
+.card {
+    border-radius: 1.5vw;
+    padding: 2vh 3vw;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    color: white;
+
+    /* 🔥 STRONG EDGE */
+    border: 4px solid white;
+}
+
+/* 🥇 TOP */
+.top-house {
+    flex: 2;
+    padding: 3vh 4vw;
+}
+
+/* 🥈🥉 */
+.second-row {
+    flex: 1.5;
+    display: flex;
+    gap: 1.5vw;
+}
+
+.side-house {
+    flex: 1;
+}
+
+/* REST */
+.list {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1vh;
+}
+
+.house {
+    flex: 1;
+}
+
+/* 🟡 HOUSE COLOURS — FULL SOLID */
+.gryffindor {
+    background: #740001;
+}
+
+.slytherin {
+    background: #1a472a;
+}
+
+.ravenclaw {
+    background: #0e1a40;
+}
+
+.hufflepuff {
+    background: #ffcc00;
+    color: black;
+}
+
+/* TEXT */
+.left {
+    display: flex;
+    align-items: center;
+    gap: 2vw;
+}
+
+.emoji {
+    font-size: 6vh;
+}
+
+.text {
+    display: flex;
+    flex-direction: column;
 }
 
 .rank {
-    font-size: 36px;
+    font-size: 2vh;
+    opacity: 0.9;
+}
+
+.name {
     font-weight: bold;
 }
 
-.house-name {
-    font-size: 32px;
-    margin: 15px 0;
-}
+/* SIZE */
+.top-house .name { font-size: 6vh; }
+.side-house .name { font-size: 4.5vh; }
+.house .name { font-size: 4vh; }
 
+/* POINTS */
 .points {
-    font-size: 64px;
     font-weight: bold;
 }
+.top-house .points { font-size: 7vh; }
+.side-house .points { font-size: 5vh; }
+.house .points { font-size: 4.5vh; }
 
-/* ACTIVITY */
-.activity-grid {
-    display: grid;
-    grid-template-rows: repeat(8, 1fr);
-    gap: 12px;
-    padding: 20px;
+/* 🏆 HERO */
+.top-house {
+    transform: scale(1.03);
 }
 
-.activity-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 22px;
+/* OPTIONAL: slight hover glow (nice on dev screen) */
+.card:hover {
+    filter: brightness(1.1);
 }
 
-.points-change.plus {
-    color: #22c55e;
-}
-
-.points-change.minus {
-    color: #ef4444;
-}
-
-/* BUTTON */
+/* 🔥 NEW: DISCREET NEXT BUTTON */
 .next-btn {
-    position: absolute;
+    position: fixed;
     bottom: 20px;
     right: 20px;
-    padding: 12px 20px;
-    background: #2563eb;
-    border: none;
-    border-radius: 8px;
+
+    background: rgba(255,255,255,0.08);
     color: white;
+    border: 1px solid rgba(255,255,255,0.2);
+
+    padding: 8px 12px;
+    border-radius: 10px;
+
+    font-size: 12px;
+    cursor: pointer;
+
+    opacity: 0.15;
+    transition: 0.2s;
 }
 
-/* TOP TEACHER */
-#screen-3 {
-    background: #1e3a8a;
-    text-align: center;
+.next-btn:hover {
+    opacity: 1;
+    background: rgba(255,255,255,0.2);
 }
-
-#screen-3 .points {
-    font-size: 48px;
-    font-weight: bold;
-    margin-top: 10px;
-}
-
 </style>
+</head>
+<body>
+
+@php
+function houseEmoji($house) {
+    return match($house) {
+        'Gryffindor' => '🦁',
+        'Slytherin' => '🐍',
+        'Ravenclaw' => '🦅',
+        'Hufflepuff' => '🦡',
+        default => '🏫',
+    };
+}
+
+function houseClass($name) {
+    return strtolower($name);
+}
+
+$top = $houses[0] ?? null;
+$second = $houses[1] ?? null;
+$third = $houses[2] ?? null;
+$rest = $houses->slice(3);
+@endphp
+
+<h1>House Leaderboard</h1>
+
+<div class="container">
+
+    @if($top)
+    <div class="card top-house {{ houseClass($top->name) }}">
+        <div class="left">
+            <div class="emoji">{{ houseEmoji($top->name) }}</div>
+            <div class="text">
+                <div class="rank">#1</div>
+                <div class="name">{{ $top->name }}</div>
+            </div>
+        </div>
+        <div class="points">{{ $top->points }}</div>
+    </div>
+    @endif
+
+    <div class="second-row">
+
+        @if($second)
+        <div class="card side-house {{ houseClass($second->name) }}">
+            <div class="left">
+                <div class="emoji">{{ houseEmoji($second->name) }}</div>
+                <div class="text">
+                    <div class="rank">#2</div>
+                    <div class="name">{{ $second->name }}</div>
+                </div>
+            </div>
+            <div class="points">{{ $second->points }}</div>
+        </div>
+        @endif
+
+        @if($third)
+        <div class="card side-house {{ houseClass($third->name) }}">
+            <div class="left">
+                <div class="emoji">{{ houseEmoji($third->name) }}</div>
+                <div class="text">
+                    <div class="rank">#3</div>
+                    <div class="name">{{ $third->name }}</div>
+                </div>
+            </div>
+            <div class="points">{{ $third->points }}</div>
+        </div>
+        @endif
+
+    </div>
+
+    <div class="list">
+        @foreach($rest as $index => $house)
+        <div class="card house {{ houseClass($house->name) }}">
+            <div class="left">
+                <div class="emoji">{{ houseEmoji($house->name) }}</div>
+                <div class="text">
+                    <div class="rank">#{{ $index + 4 }}</div>
+                    <div class="name">{{ $house->name }}</div>
+                </div>
+            </div>
+            <div class="points">{{ $house->points }}</div>
+        </div>
+        @endforeach
+    </div>
+
+</div>
+
+<!-- 🔥 NEW BUTTON (ONLY ADDITION) -->
+<button class="next-btn" onclick="nextScreen()">Next ▶</button>
+
+<script>
+window.setInterval = function() {};
+window.setTimeout = function(fn, t) {
+    return setTimeout(fn, t);
+};
+
+/* 🔥 NEW: TV NEXT HANDLER */
+function nextScreen() {
+    window.location.href = '/tv/house-trends';
+}
+
+/* 🔥 OPTIONAL: keyboard support */
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight') nextScreen();
+});
+</script>
+
+</body>
+</html>

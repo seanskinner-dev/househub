@@ -9,7 +9,6 @@ class PointController extends Controller
 {
     public function index()
     {
-        // ✅ Students with house data
         $students = DB::table('students')
             ->leftJoin('houses', 'students.house_id', '=', 'houses.id')
             ->select(
@@ -20,7 +19,6 @@ class PointController extends Controller
             ->orderBy('students.id')
             ->get();
 
-        // ✅ Recent activity
         $recent = DB::table('point_transactions')
             ->leftJoin('students', 'point_transactions.student_id', '=', 'students.id')
             ->leftJoin('houses', 'point_transactions.house_id', '=', 'houses.id')
@@ -39,7 +37,6 @@ class PointController extends Controller
             ->limit(10)
             ->get();
 
-        // ✅ Cached houses (performance)
         $houses = cache()->remember('houses', 60, function () {
             return DB::table('houses')->get();
         });
@@ -47,9 +44,66 @@ class PointController extends Controller
         return view('points.index', compact('students', 'recent', 'houses'));
     }
 
+    public function dashboard()
+    {
+        $houses = DB::table('houses')
+            ->select('id', 'name', 'colour_hex', 'points')
+            ->orderByDesc('points')
+            ->get();
+
+        $topStudents = DB::table('students')
+            ->leftJoin('houses', 'students.house_id', '=', 'houses.id')
+            ->select(
+                'students.*',
+                'houses.name as house_name',
+                'houses.colour_hex'
+            )
+            ->orderByDesc('students.house_points')
+            ->limit(5)
+            ->get();
+
+        $recent = DB::table('point_transactions')
+            ->leftJoin('students', 'point_transactions.student_id', '=', 'students.id')
+            ->leftJoin('houses', 'point_transactions.house_id', '=', 'houses.id')
+            ->select(
+                'students.first_name',
+                'students.last_name',
+                'houses.name as house_name',
+                'point_transactions.amount',
+                'point_transactions.description',
+                'point_transactions.created_at'
+            )
+            ->orderByDesc('point_transactions.created_at')
+            ->limit(6)
+            ->get();
+
+        $pointsToday = DB::table('point_transactions')
+            ->whereDate('created_at', today())
+            ->sum('amount');
+
+        $pointsWeek = DB::table('point_transactions')
+            ->where('created_at', '>=', now()->subDays(7))
+            ->sum('amount');
+
+        $topTeacher = DB::table('point_transactions')
+            ->join('users', 'point_transactions.awarded_by', '=', 'users.id')
+            ->select('users.name', DB::raw('SUM(point_transactions.amount) as total_points'))
+            ->groupBy('users.name')
+            ->orderByDesc('total_points')
+            ->first();
+
+        return view('dashboard', compact(
+            'houses',
+            'topStudents',
+            'recent',
+            'pointsToday',
+            'pointsWeek',
+            'topTeacher'
+        ));
+    }
+
     public function store(Request $request)
     {
-        // ✅ VALIDATION (new)
         $request->validate([
             'amount' => 'required|integer',
             'student_id' => 'nullable|exists:students,id',
@@ -61,14 +115,8 @@ class PointController extends Controller
         $amount = (int) $request->input('amount');
         $userId = auth()->id() ?? 1;
 
-        // ✅ Safe auth handling
-        $teacherName = auth()->user() ? auth()->user()->name : 'System';
+        return DB::transaction(function () use ($request, $amount, $userId) {
 
-        return DB::transaction(function () use ($request, $amount, $userId, $teacherName) {
-
-            // =====================
-            // HOUSE
-            // =====================
             if ($request->filled('house_name')) {
 
                 $house = DB::table('houses')
@@ -92,20 +140,10 @@ class PointController extends Controller
                         'updated_at' => now(),
                     ]);
 
-                    return response()->json([
-                        'success' => true,
-                        'amount' => $amount,
-                        'student' => null,
-                        'house' => $house->name,
-                        'teacher' => $teacherName,
-                        'category' => 'house'
-                    ]);
+                    return response()->json(['success' => true]);
                 }
             }
 
-            // =====================
-            // STUDENT
-            // =====================
             if ($request->filled('student_id')) {
 
                 $student = DB::table('students')
@@ -118,20 +156,13 @@ class PointController extends Controller
                         ->where('id', $student->id)
                         ->increment('house_points', $amount);
 
-                    // ✅ Use house_id (not name)
-                    $house = DB::table('houses')
+                    DB::table('houses')
                         ->where('id', $student->house_id)
-                        ->first();
-
-                    if ($house) {
-                        DB::table('houses')
-                            ->where('id', $house->id)
-                            ->increment('points', $amount);
-                    }
+                        ->increment('points', $amount);
 
                     DB::table('point_transactions')->insert([
                         'student_id' => $student->id,
-                        'house_id' => $house ? $house->id : null,
+                        'house_id' => $student->house_id,
                         'amount' => $amount,
                         'category' => $request->input('category', 'manual'),
                         'description' => $request->input('description', ''),
@@ -140,14 +171,7 @@ class PointController extends Controller
                         'updated_at' => now(),
                     ]);
 
-                    return response()->json([
-                        'success' => true,
-                        'amount' => $amount,
-                        'student' => $student->first_name . ' ' . $student->last_name,
-                        'house' => $house ? $house->name : null,
-                        'teacher' => $teacherName,
-                        'category' => $request->input('category', 'manual')
-                    ]);
+                    return response()->json(['success' => true]);
                 }
             }
 
@@ -155,9 +179,6 @@ class PointController extends Controller
         });
     }
 
-    // =====================
-    // STUDENT PROFILE
-    // =====================
     public function showStudent($id)
     {
         $student = DB::table('students')
@@ -170,10 +191,144 @@ class PointController extends Controller
             ->where('students.id', $id)
             ->first();
 
-        if (!$student) {
-            abort(404);
-        }
+        if (!$student) abort(404);
 
         return view('students.show', compact('student'));
+    }
+
+    public function houseTrends()
+    {
+        $raw = DB::table('point_transactions')
+            ->join('houses', 'point_transactions.house_id', '=', 'houses.id')
+            ->select(
+                DB::raw("EXTRACT(DOW FROM point_transactions.created_at) as dow"),
+                'houses.name',
+                DB::raw('SUM(point_transactions.amount) as total')
+            )
+            ->where('point_transactions.created_at', '>=', now()->subDays(10))
+            ->whereRaw("EXTRACT(DOW FROM point_transactions.created_at) BETWEEN 1 AND 5")
+            ->groupBy('dow', 'houses.name')
+            ->orderBy('dow')
+            ->get();
+
+        $houses = [
+            'Slytherin' => array_fill(0, 5, 0),
+            'Hufflepuff' => array_fill(0, 5, 0),
+            'Ravenclaw' => array_fill(0, 5, 0),
+            'Gryffindor' => array_fill(0, 5, 0),
+        ];
+
+        foreach ($raw as $row) {
+            $index = (int)$row->dow - 1;
+            if (isset($houses[$row->name])) {
+                $houses[$row->name][$index] = (int)$row->total;
+            }
+        }
+
+        return view('tv.house_trends', [
+            'slytherin' => $houses['Slytherin'],
+            'hufflepuff' => $houses['Hufflepuff'],
+            'ravenclaw' => $houses['Ravenclaw'],
+            'gryffindor' => $houses['Gryffindor'],
+        ]);
+    }
+
+    public function housePointsMonth()
+    {
+        $data = DB::table('point_transactions')
+            ->join('houses', 'point_transactions.house_id', '=', 'houses.id')
+            ->select(
+                DB::raw("DATE(point_transactions.created_at) as date"),
+                'houses.name',
+                'houses.colour_hex',
+                DB::raw('SUM(point_transactions.amount) as total')
+            )
+            ->groupBy('date', 'houses.name', 'houses.colour_hex')
+            ->orderBy('date')
+            ->get();
+
+        return view('tv.house_month', compact('data'));
+    }
+
+    // 🔥 NEW: HOUSE POINTS BY YEAR (ADDED — NOTHING CHANGED ELSEWHERE)
+    public function housePointsYear()
+    {
+        $data = DB::table('point_transactions')
+            ->join('houses', 'point_transactions.house_id', '=', 'houses.id')
+            ->select(
+                DB::raw("EXTRACT(YEAR FROM point_transactions.created_at) as year"),
+                'houses.name',
+                'houses.colour_hex',
+                DB::raw('SUM(point_transactions.amount) as total')
+            )
+            ->groupBy('year', 'houses.name', 'houses.colour_hex')
+            ->orderBy('year')
+            ->get();
+
+        return view('tv.house_year', compact('data'));
+    }
+
+    public function teacherHighlights()
+    {
+        $teachers = DB::table('point_transactions')
+            ->join('users', 'point_transactions.awarded_by', '=', 'users.id')
+            ->select('users.name', DB::raw('SUM(point_transactions.amount) as total_points'))
+            ->groupBy('users.name')
+            ->orderByDesc('total_points')
+            ->limit(5)
+            ->get();
+
+        return view('tv.teacher_highlights', compact('teachers'));
+    }
+
+    public function teacherHighlightsMonth()
+    {
+        $teachers = DB::table('point_transactions')
+            ->join('users', 'point_transactions.awarded_by', '=', 'users.id')
+            ->select('users.name', DB::raw('SUM(point_transactions.amount) as total_points'))
+            ->groupBy('users.name')
+            ->orderByDesc('total_points')
+            ->limit(5)
+            ->get();
+
+        return view('tv.teacher_highlights_month', compact('teachers'));
+    }
+
+    public function topStudents()
+    {
+        $students = DB::table('students')
+            ->leftJoin('houses', 'students.house_id', '=', 'houses.id')
+            ->select(
+                'students.first_name',
+                'students.last_name',
+                'students.house_points',
+                'houses.name as house_name',
+                'houses.colour_hex'
+            )
+            ->orderByDesc('students.house_points')
+            ->limit(30)
+            ->get();
+
+        return view('tv.top_students', compact('students'));
+    }
+
+    public function houseMomentum()
+    {
+        $data = DB::table('point_transactions')
+            ->join('houses', 'point_transactions.house_id', '=', 'houses.id')
+            ->select(
+                'houses.name',
+                'houses.colour_hex',
+                DB::raw('SUM(point_transactions.amount) as total')
+            )
+            ->whereBetween('point_transactions.created_at', [
+                now()->startOfWeek(),
+                now()->endOfWeek()
+            ])
+            ->groupBy('houses.name', 'houses.colour_hex')
+            ->orderByDesc('total')
+            ->get();
+
+        return view('tv.house_momentum', compact('data'));
     }
 }

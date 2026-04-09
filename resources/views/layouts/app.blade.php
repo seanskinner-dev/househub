@@ -5,13 +5,16 @@
 
     <style>
         body {
-            margin:0;
+            margin: 0;
             font-family: Inter, system-ui;
-            background:#2b2f36;
+            background: #0b0f19; /* 🔥 upgraded darker */
+            color: white;
         }
 
         .container {
-            padding:20px;
+            padding: 20px;
+            height: calc(100vh - 70px);
+            overflow: hidden;
         }
     </style>
 </head>
