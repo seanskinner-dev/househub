@@ -250,7 +250,6 @@ class PointController extends Controller
         return view('tv.house_month', compact('data'));
     }
 
-    // 🔥 NEW: HOUSE POINTS BY YEAR (ADDED — NOTHING CHANGED ELSEWHERE)
     public function housePointsYear()
     {
         $data = DB::table('point_transactions')
@@ -294,22 +293,25 @@ class PointController extends Controller
         return view('tv.teacher_highlights_month', compact('teachers'));
     }
 
+    // 🔥 UPDATED (TOP 12)
     public function topStudents()
     {
         $students = DB::table('students')
             ->leftJoin('houses', 'students.house_id', '=', 'houses.id')
             ->select(
+                'students.id',
                 'students.first_name',
                 'students.last_name',
-                'students.house_points',
+                DB::raw('COALESCE(students.house_points, 0) as points'),
+                'students.year_level',
                 'houses.name as house_name',
                 'houses.colour_hex'
             )
-            ->orderByDesc('students.house_points')
-            ->limit(30)
+            ->orderByDesc('points')
+            ->limit(12) // ✅ UPDATED
             ->get();
 
-        return view('tv.top_students', compact('students'));
+        return view('top_students', compact('students'));
     }
 
     public function houseMomentum()

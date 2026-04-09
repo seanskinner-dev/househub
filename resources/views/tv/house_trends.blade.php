@@ -10,49 +10,64 @@
 body {
     margin: 0;
     height: 100vh;
-    background: radial-gradient(circle at center, #01040a 0%, #000 100%);
+    background: linear-gradient(to bottom, #87CEEB, #e0f2fe);
     font-family: Arial, sans-serif;
-    color: white;
+    color: #111;
     display: flex;
     flex-direction: column;
     overflow: hidden;
 }
 
-/* 🔥 UPGRADED TITLE */
+/* TITLE */
 .title {
     text-align: center;
-    font-size: 5vh;
+    font-size: 6vh;
     margin: 2vh 0;
     font-weight: bold;
-    letter-spacing: 0.1vw;
-
-    text-shadow:
-        0 0 20px rgba(255,255,255,0.2);
 }
 
+/* WRAPPER */
 .chart-wrapper {
     flex: 1;
     padding: 2vh 3vw;
 }
 
 .chart-card {
-    height: 80vh;
-    background: #020617;
+    height: 82vh;
+    background: rgba(255,255,255,0.9);
     border-radius: 20px;
     padding: 30px;
 
     box-shadow:
-        0 0 60px rgba(0,0,0,0.9),
-        inset 0 0 20px rgba(255,255,255,0.02);
+        0 10px 40px rgba(0,0,0,0.15);
 }
 
-/* 🔥 HARD LOCK CANVAS */
 canvas {
     width: 100% !important;
     height: 100% !important;
 }
+
+/* NEXT BUTTON */
+.next-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+
+    background: white;
+    color: black;
+    border: none;
+    padding: 12px 18px;
+    font-size: 16px;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+}
 </style>
 </head>
+
 <body>
 
 @php
@@ -70,11 +85,18 @@ $gryffindor = $gryffindor ?? [0,0,0,0,0];
     </div>
 </div>
 
+<button class="next-btn" onclick="nextSlide()">Next ▶</button>
+
+<script>
+function nextSlide() {
+    if (window.parent && window.parent.manualNext) {
+        window.parent.manualNext();
+    }
+}
+</script>
+
 <script>
 (function () {
-
-    if (window.houseTrendChartLoaded) return;
-    window.houseTrendChartLoaded = true;
 
     const slytherin = @json($slytherin);
     const hufflepuff = @json($hufflepuff);
@@ -97,88 +119,56 @@ $gryffindor = $gryffindor ?? [0,0,0,0,0];
     }
 
     const totals = {
-        Slytherin: total(sly),
-        Hufflepuff: total(huf),
-        Ravenclaw: total(rav),
-        Gryffindor: total(gry)
+        sly: total(sly),
+        huf: total(huf),
+        rav: total(rav),
+        gry: total(gry)
     };
 
-    let leader = 'Slytherin';
-    Object.keys(totals).forEach(key => {
-        if (totals[key] > totals[leader]) leader = key;
-    });
+    const leader = Object.keys(totals).reduce((a, b) => totals[a] > totals[b] ? a : b);
 
-    // 🔥 PREMIUM STYLE
-    function getStyle(name, color, data) {
-        const isLeader = name === leader;
+    function dataset(label, color, data, key) {
+        const isLeader = key === leader;
 
         return {
-            label: name,
+            label: label,
             data: data,
             borderColor: color,
-            backgroundColor: color + '22',
-            borderWidth: isLeader ? 6 : 3,
+            backgroundColor: color.replace('1)', '0.25)'),
+            fill: true,
             tension: 0.4,
-            pointRadius: isLeader ? 4 : 0,
-            pointHoverRadius: 6,
-            pointBackgroundColor: color,
-            fill: true
+            borderWidth: isLeader ? 6 : 4,
+            pointRadius: 0
         };
     }
 
-    const canvas = document.getElementById('chart');
+    const ctx = document.getElementById('chart');
 
-    if (window.chartInstance) {
-        try { window.chartInstance.destroy(); } catch(e){}
-    }
-
-    // 🔥 GLOW PLUGIN (BIG VISUAL BOOST)
-    const glowPlugin = {
-        id: 'glow',
-        beforeDatasetsDraw(chart) {
-            const {ctx} = chart;
-
-            chart.data.datasets.forEach((dataset, i) => {
-                const meta = chart.getDatasetMeta(i);
-
-                ctx.save();
-                ctx.shadowColor = dataset.borderColor;
-                ctx.shadowBlur = 20;
-                ctx.lineWidth = dataset.borderWidth;
-
-                meta.dataset.draw(ctx);
-
-                ctx.restore();
-            });
-        }
-    };
-
-    window.chartInstance = new Chart(canvas, {
+    new Chart(ctx, {
         type: 'line',
         data: {
             labels: ['Mon','Tue','Wed','Thu','Fri'],
             datasets: [
-                getStyle('Slytherin', '#22c55e', sly),
-                getStyle('Hufflepuff', '#facc15', huf),
-                getStyle('Ravenclaw', '#3b82f6', rav),
-                getStyle('Gryffindor', '#ef4444', gry)
+                dataset('Slytherin 🐍', 'rgba(34,197,94,1)', sly, 'sly'),
+                dataset('Hufflepuff 🦡', 'rgba(250,204,21,1)', huf, 'huf'),
+                dataset('Ravenclaw 🦅', 'rgba(59,130,246,1)', rav, 'rav'),
+                dataset('Gryffindor 🦁', 'rgba(239,68,68,1)', gry, 'gry')
             ]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
             animation: false,
 
             plugins: {
                 legend: {
                     position: 'top',
                     labels: {
-                        color: '#fff',
+                        color: '#111',
                         font: {
                             size: 18,
                             weight: 'bold'
-                        },
-                        padding: 20
+                        }
                     }
                 }
             },
@@ -186,26 +176,22 @@ $gryffindor = $gryffindor ?? [0,0,0,0,0];
             scales: {
                 x: {
                     ticks: {
-                        color: '#9ca3af',
-                        font: { size: 14 }
+                        color: '#333',
+                        font: { size: 16 }
                     },
-                    grid: {
-                        display: false
-                    }
+                    grid: { display: false }
                 },
-
                 y: {
                     ticks: {
-                        color: '#9ca3af',
-                        font: { size: 14 }
+                        color: '#333',
+                        font: { size: 16 }
                     },
                     grid: {
-                        color: 'rgba(255,255,255,0.04)'
+                        color: 'rgba(0,0,0,0.08)'
                     }
                 }
             }
-        },
-        plugins: [glowPlugin]
+        }
     });
 
 })();
