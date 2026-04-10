@@ -19,11 +19,19 @@ class PointController extends Controller
             ->orderBy('students.id')
             ->get();
 
+        // ✅ FIXED: supports BOTH student + house events
         $recent = DB::table('point_transactions')
             ->leftJoin('students', 'point_transactions.student_id', '=', 'students.id')
             ->leftJoin('houses', 'point_transactions.house_id', '=', 'houses.id')
             ->leftJoin('users', 'point_transactions.awarded_by', '=', 'users.id')
             ->select(
+                DB::raw("
+                    CASE 
+                        WHEN point_transactions.student_id IS NULL 
+                        THEN houses.name 
+                        ELSE CONCAT(students.first_name, ' ', students.last_name)
+                    END as name
+                "),
                 'students.first_name',
                 'students.last_name',
                 'houses.name as house_name',
@@ -140,7 +148,14 @@ class PointController extends Controller
                         'updated_at' => now(),
                     ]);
 
-                    return response()->json(['success' => true]);
+                    return response()->json([
+                        'success' => true,
+                        'amount' => $amount,
+                        'student' => null,
+                        'house' => $house->name,
+                        'teacher' => auth()->user()->name ?? 'System',
+                        'category' => 'house'
+                    ]);
                 }
             }
 
@@ -171,7 +186,16 @@ class PointController extends Controller
                         'updated_at' => now(),
                     ]);
 
-                    return response()->json(['success' => true]);
+                    $house = DB::table('houses')->where('id', $student->house_id)->first();
+
+                    return response()->json([
+                        'success' => true,
+                        'amount' => $amount,
+                        'student' => $student->first_name . ' ' . $student->last_name,
+                        'house' => $house->name ?? null,
+                        'teacher' => auth()->user()->name ?? 'System',
+                        'category' => 'student'
+                    ]);
                 }
             }
 
@@ -293,7 +317,6 @@ class PointController extends Controller
         return view('tv.teacher_highlights_month', compact('teachers'));
     }
 
-    // 🔥 UPDATED (TOP 12)
     public function topStudents()
     {
         $students = DB::table('students')
@@ -308,7 +331,7 @@ class PointController extends Controller
                 'houses.colour_hex'
             )
             ->orderByDesc('points')
-            ->limit(12) // ✅ UPDATED
+            ->limit(12)
             ->get();
 
         return view('top_students', compact('students'));

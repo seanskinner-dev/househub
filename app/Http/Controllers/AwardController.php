@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Student;
+use App\Models\House;
 use App\Models\Award;
 use App\Models\Commendation;
 use Illuminate\Http\Request;
@@ -15,14 +16,15 @@ class AwardController extends Controller
      */
     public function index()
     {
-        // Get unique houses for the quick-add buttons
-        $houses = Student::select('house_name')
-            ->distinct()
-            ->orderBy('house_name')
+        $houses = House::query()
+            ->orderBy('name')
             ->get();
 
-        // Get all students for the search list
-        $students = Student::orderBy('first_name')->get();
+        $students = Student::query()
+            ->leftJoin('houses', 'students.house_id', '=', 'houses.id')
+            ->select('students.*', 'houses.name as house_name', 'houses.colour_hex')
+            ->orderBy('students.first_name')
+            ->get();
 
         return view('awards.index', compact('houses', 'students'));
     }
@@ -32,20 +34,69 @@ class AwardController extends Controller
      */
     public function storePoint(Request $request)
     {
-        // 1. Award to specific student
+        $request->validate([
+            'student_id' => 'nullable|exists:students,id',
+            'house_name' => 'nullable|exists:houses,name',
+            'amount' => 'nullable|integer',
+        ]);
+
+        $amount = (int) $request->input('amount', 1);
+        $userId = auth()->id() ?? 1;
+
+        DB::transaction(function () use ($request, $amount, $userId) {
+            if ($request->filled('student_id')) {
+                $student = Student::query()->findOrFail($request->student_id);
+
+                DB::table('students')
+                    ->where('id', $student->id)
+                    ->increment('house_points', $amount);
+
+                DB::table('houses')
+                    ->where('id', $student->house_id)
+                    ->increment('points', $amount);
+
+                DB::table('point_transactions')->insert([
+                    'student_id' => $student->id,
+                    'house_id' => $student->house_id,
+                    'amount' => $amount,
+                    'category' => 'manual',
+                    'description' => '',
+                    'awarded_by' => $userId,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                return;
+            }
+
+            if ($request->filled('house_name')) {
+                $house = House::query()
+                    ->where('name', $request->house_name)
+                    ->firstOrFail();
+
+                DB::table('houses')
+                    ->where('id', $house->id)
+                    ->increment('points', $amount);
+
+                DB::table('point_transactions')->insert([
+                    'student_id' => null,
+                    'house_id' => $house->id,
+                    'amount' => $amount,
+                    'category' => 'house',
+                    'description' => 'House points',
+                    'awarded_by' => $userId,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        });
+
         if ($request->filled('student_id')) {
-            Student::where('id', $request->student_id)
-                ->increment('house_points');
-            
-            return back()->with('success', 'Point added to student!');
-        } 
-        
-        // 2. Award to everyone in a house (Bulk Add)
+            return back()->with('success', 'Points updated for student!');
+        }
+
         if ($request->filled('house_name')) {
-            Student::where('house_name', $request->house_name)
-                ->increment('house_points');
-                
-            return back()->with('success', "Point added to all of House {$request->house_name}!");
+            return back()->with('success', "Points updated for House {$request->house_name}!");
         }
 
         return back()->with('error', 'No student or house selected.');
