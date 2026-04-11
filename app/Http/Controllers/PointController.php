@@ -36,7 +36,9 @@ class PointController extends Controller
 
     public function store(Request $request)
     {
-        $amount = (int) $request->input('amount');
+        // 🔧 FIX: default amount to 1 if missing
+        $amount = (int) $request->input('amount', 1);
+
         $userId = auth()->id() ?? 1;
         $teacherName = auth()->user()->name ?? 'System';
 
@@ -86,6 +88,7 @@ class PointController extends Controller
                         ->where('id', $student->id)
                         ->increment('house_points', $amount);
 
+                    // 🔧 FIX: safe house lookup
                     $house = DB::table('houses')
                         ->where('name', $student->house_name)
                         ->first();
@@ -100,7 +103,8 @@ class PointController extends Controller
                         'student_id' => $student->id,
                         'house_id' => $house->id ?? null,
                         'amount' => $amount,
-                        'category' => $request->input('category', 'manual'),
+                        // 🔧 FIX: support award / commendation type
+                        'category' => $request->input('type', 'manual'),
                         'description' => $request->input('description', ''),
                         'awarded_by' => $userId,
                         'created_at' => now(),
@@ -117,7 +121,10 @@ class PointController extends Controller
                 }
             }
 
-            return response()->json(['success' => false]);
+            return response()->json([
+                'success' => false,
+                'amount' => 0 // 🔧 FIX: prevent undefined / 0 bug
+            ]);
         });
     }
 
@@ -166,7 +173,6 @@ class PointController extends Controller
 
     public function tv()
     {
-        // GRAPH DATA
         $raw = DB::table('point_transactions')
             ->selectRaw('DATE(point_transactions.created_at) as date, houses.name as house, SUM(point_transactions.amount) as total')
             ->leftJoin('houses', 'point_transactions.house_id', '=', 'houses.id')
@@ -213,7 +219,6 @@ class PointController extends Controller
             return Carbon::parse($d)->format('D');
         });
 
-        // ✅ UPDATED TOP STUDENTS WITH HOUSE
         $topStudents = DB::table('point_transactions')
             ->join('students', 'point_transactions.student_id', '=', 'students.id')
             ->select(
@@ -234,7 +239,6 @@ class PointController extends Controller
             ->limit(30)
             ->get();
 
-        // TOP TEACHERS
         $topTeachers = DB::table('point_transactions')
             ->join('users', 'point_transactions.awarded_by', '=', 'users.id')
             ->select(
