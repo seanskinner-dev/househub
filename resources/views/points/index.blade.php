@@ -289,7 +289,16 @@
 <input type="hidden" name="amount" value="1">
 <input type="hidden" name="type" value="commendation">
 
-<textarea name="description"></textarea>
+<textarea name="description">
+Write a strong, specific reason for this commendation.
+
+Include:
+- What the student did
+- Why it matters
+- The impact it had
+
+Minimum 150 words.
+</textarea>
 
 <button type="submit">Save</button>
 <button type="button" onclick="closeModal()">Cancel</button>
@@ -362,6 +371,17 @@ document.querySelectorAll('form.ajax').forEach(form=>{
 form.addEventListener('submit',function(e){
 e.preventDefault();
 
+// 🔥 COMMENDATION VALIDATION
+if (this.querySelector('[name="type"]')?.value === 'commendation') {
+    let text = this.querySelector('[name="description"]').value.trim();
+    let wordCount = text.split(/\s+/).filter(w => w.length > 0).length;
+
+    if (wordCount < 150) {
+        alert('Commendation must be at least 150 words');
+        return;
+    }
+}
+
 let fd=new FormData(this);
 
 fetch('/points',{
@@ -375,10 +395,13 @@ body:fd
 .then(r=>r.json())
 .then(data=>{
 
-let amt = data.amount;
-if (amt === undefined || amt === null) amt = 0;
-amt = parseInt(amt);
-if (isNaN(amt)) amt = 0;
+// 🔥 FIXED PROPERLY
+let amt = Number(data.amount);
+
+if (isNaN(amt)) {
+    console.log('BAD AMOUNT:', data);
+    amt = 0;
+}
 
 let t=document.getElementById('toast');
 t.className='show '+(amt>0?'toast-success':'toast-error');
