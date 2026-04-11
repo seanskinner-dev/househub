@@ -224,9 +224,9 @@
 
 <div class="left">
 <div class="crest">
-    @if($student->house_name == 'Gryffindor') 🦁
-    @elseif($student->house_name == 'Slytherin') 🐍
-    @elseif($student->house_name == 'Ravenclaw') 🦅
+    @if(($student->house_name ?? '') == 'Gryffindor') 🦁
+    @elseif(($student->house_name ?? '') == 'Slytherin') 🐍
+    @elseif(($student->house_name ?? '') == 'Ravenclaw') 🦅
     @else 🦡
     @endif
 </div>
@@ -237,7 +237,9 @@
 {{ $student->first_name }} {{ $student->last_name }}
 </a>
 </div>
-<div class="meta">{{ $student->house_name }} • {{ $student->house_points }} pts</div>
+<div class="meta">
+{{ $student->house_name ?? 'Unknown' }} • {{ $student->house_points }} pts
+</div>
 </div>
 </div>
 
@@ -373,21 +375,16 @@ body:fd
 .then(r=>r.json())
 .then(data=>{
 
-console.log('RESPONSE:', data);
-
-// 🔥 FIXED amount handling
 let amt = data.amount;
 if (amt === undefined || amt === null) amt = 0;
 amt = parseInt(amt);
 if (isNaN(amt)) amt = 0;
 
-// toast
 let t=document.getElementById('toast');
 t.className='show '+(amt>0?'toast-success':'toast-error');
 t.innerText=(amt>0?'+ ':'')+amt;
 setTimeout(()=>t.className='',1000);
 
-// recent
 let list=document.getElementById('recentList');
 let item=document.createElement('div');
 item.className='activity';
