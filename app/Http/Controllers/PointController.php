@@ -10,7 +10,15 @@ class PointController extends Controller
 {
     public function index()
     {
-        $students = DB::table('students')->orderBy('id')->get();
+        // 🔥 ONLY CHANGE: JOIN houses to get house_name
+        $students = DB::table('students')
+            ->leftJoin('houses', 'students.house_id', '=', 'houses.id')
+            ->select(
+                'students.*',
+                'houses.name as house_name'
+            )
+            ->orderBy('students.id')
+            ->get();
 
         $recent = DB::table('point_transactions')
             ->leftJoin('students', 'point_transactions.student_id', '=', 'students.id')
