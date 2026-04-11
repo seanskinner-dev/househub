@@ -147,39 +147,6 @@
         #toast.show { opacity:1; }
         .toast-success { background:#22c55e; }
         .toast-error { background:#ef4444; }
-
-        .modal {
-            position:fixed;
-            top:0;
-            left:0;
-            width:100%;
-            height:100%;
-            background:rgba(0,0,0,0.7);
-            display:none;
-            align-items:center;
-            justify-content:center;
-        }
-
-        .modal-box {
-            background:#1f2329;
-            padding:30px;
-            border-radius:16px;
-            width:600px;
-            color:white;
-        }
-
-        textarea {
-            width:100%;
-            height:260px;
-            margin-top:10px;
-        }
-
-        label {
-            display:block;
-            margin-top:10px;
-            margin-bottom:5px;
-            font-weight:800;
-        }
     </style>
 </head>
 
@@ -216,16 +183,14 @@
 </div>
 </div>
 
-<input id="studentSearch" placeholder="Search students..." style="width:100%;padding:12px;margin-bottom:15px;border-radius:8px;border:none;">
-
 @foreach(collect($students)->sortBy('first_name') as $student)
 <div class="card">
 
 <div class="left">
 <div class="crest">
-    @if($student->house_name == 'Gryffindor') 🦁
-    @elseif($student->house_name == 'Slytherin') 🐍
-    @elseif($student->house_name == 'Ravenclaw') 🦅
+    @if(($student->house_name ?? '') == 'Gryffindor') 🦁
+    @elseif(($student->house_name ?? '') == 'Slytherin') 🐍
+    @elseif(($student->house_name ?? '') == 'Ravenclaw') 🦅
     @else 🦡
     @endif
 </div>
@@ -236,7 +201,9 @@
 {{ $student->first_name }} {{ $student->last_name }}
 </a>
 </div>
-<div class="meta">{{ $student->house_name }} • {{ $student->house_points }} pts</div>
+<div class="meta">
+{{ $student->house_name ?? '—' }} • {{ $student->house_points }} pts
+</div>
 </div>
 </div>
 
@@ -256,9 +223,6 @@
 <button class="btn plus">+1</button>
 </form>
 
-<button class="btn star" onclick="openCommendation({{ $student->id }})">⭐</button>
-<button class="btn award" onclick="openAward({{ $student->id }})">🏆</button>
-
 </div>
 </div>
 @endforeach
@@ -277,8 +241,6 @@
 <div id="toast"></div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-
 document.querySelectorAll('form.ajax').forEach(form=>{
 form.addEventListener('submit',function(e){
 e.preventDefault();
@@ -296,15 +258,15 @@ body:fd
 .then(r=>r.json())
 .then(data=>{
 
-let amt = Number(data.amount);
-if (isNaN(amt)) amt = 0;
+let amt = Number(data.amount) || 0;
 
+// toast
 let t=document.getElementById('toast');
 t.className='show '+(amt>0?'toast-success':'toast-error');
 t.innerText=(amt>0?'+ ':'')+amt;
 setTimeout(()=>t.className='',1000);
 
-// ✅ FIXED RECENT BLOCK
+// SAFE RECENT ACTIVITY
 let list=document.getElementById('recentList');
 let item=document.createElement('div');
 item.className='activity';
@@ -319,25 +281,17 @@ if (data.student) {
 
 item.innerHTML=`
 <strong>${label}</strong><br>
-
 <span class="${amt>0?'pos':'neg'}">
-${(amt > 0 ? '+ ' : '') + amt}
+${amt > 0 ? '+ ' : ''}${amt}
 </span>
-
 <br>
-
-<small>
-${data.student ? 'Student point' : 'House point'}
-• by ${data.teacher ?? 'System'}
-</small>
+<small>${data.student ? 'Student point' : 'House point'} • by ${data.teacher ?? 'System'}</small>
 `;
 
 list.prepend(item);
 
 });
 });
-});
-
 });
 </script>
 
