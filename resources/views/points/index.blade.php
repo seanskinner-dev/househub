@@ -218,7 +218,6 @@
 
 <input id="studentSearch" placeholder="Search students..." style="width:100%;padding:12px;margin-bottom:15px;border-radius:8px;border:none;">
 
-{{-- SORTED --}}
 @foreach(collect($students)->sortBy('first_name') as $student)
 <div class="card">
 
@@ -277,87 +276,9 @@
 
 <div id="toast"></div>
 
-<!-- MODALS -->
-
-<div id="commendationModal" class="modal">
-<div class="modal-box">
-<form class="ajax">
-@csrf
-<input type="hidden" name="student_id" id="commStudent">
-<input type="hidden" name="amount" value="1">
-<input type="hidden" name="type" value="commendation">
-
-<textarea name="description" placeholder="Highlight what the student has done well — effort, attitude, teamwork, or a moment worth recognising..."></textarea>
-
-<button type="submit">Save</button>
-<button type="button" onclick="closeModal()">Cancel</button>
-</form>
-</div>
-</div>
-
-<div id="awardModal" class="modal">
-<div class="modal-box">
-<form class="ajax">
-@csrf
-<input type="hidden" name="student_id" id="awardStudent">
-<input type="hidden" name="amount" id="awardPoints">
-<input type="hidden" name="type" value="award">
-
-<label>Award Title</label>
-<select id="awardSelect" onchange="setAwardDetails()">
-<option value="">Select Award</option>
-<option data-points="10">Prefect Recognition</option>
-<option data-points="15">Outstanding Magical Effort</option>
-<option data-points="20">Professor’s Excellence Award</option>
-<option data-points="25">Headmaster’s Honour</option>
-<option data-points="30">Order of Merlin</option>
-</select>
-
-<label>Comments</label>
-<textarea name="description" placeholder="Add a short note explaining why this award is being given..."></textarea>
-
-<button type="submit">Save</button>
-<button type="button" onclick="closeModal()">Cancel</button>
-</form>
-</div>
-</div>
-
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-// SEARCH
-document.getElementById('studentSearch').addEventListener('keyup', function(){
-    let val = this.value.toLowerCase();
-    document.querySelectorAll('.card').forEach(card=>{
-        let name = card.querySelector('.name').innerText.toLowerCase();
-        card.style.display = name.includes(val) ? 'flex' : 'none';
-    });
-});
-
-// MODALS
-window.openCommendation = function(id){
-    document.getElementById('commStudent').value = id;
-    document.getElementById('commendationModal').style.display = 'flex';
-};
-
-window.openAward = function(id){
-    document.getElementById('awardStudent').value = id;
-    document.getElementById('awardModal').style.display = 'flex';
-};
-
-window.closeModal = function(){
-    document.getElementById('commendationModal').style.display = 'none';
-    document.getElementById('awardModal').style.display = 'none';
-};
-
-window.setAwardDetails = function(){
-    let select = document.getElementById('awardSelect');
-    let selected = select.options[select.selectedIndex];
-    let points = selected.getAttribute('data-points');
-    document.getElementById('awardPoints').value = points;
-};
-
-// AJAX
 document.querySelectorAll('form.ajax').forEach(form=>{
 form.addEventListener('submit',function(e){
 e.preventDefault();
@@ -378,41 +299,42 @@ body:fd
 let amt = Number(data.amount);
 if (isNaN(amt)) amt = 0;
 
-// toast
 let t=document.getElementById('toast');
 t.className='show '+(amt>0?'toast-success':'toast-error');
 t.innerText=(amt>0?'+ ':'')+amt;
 setTimeout(()=>t.className='',1000);
 
-// recent
+// ✅ FIXED RECENT BLOCK
 let list=document.getElementById('recentList');
 let item=document.createElement('div');
 item.className='activity';
 
-let label = data.student || data.house || 'Unknown';
+let label = 'Unknown';
+
+if (data.student) {
+    label = data.student + (data.house ? ' (' + data.house + ')' : '');
+} else if (data.house) {
+    label = data.house;
+}
 
 item.innerHTML=`
 <strong>${label}</strong><br>
+
 <span class="${amt>0?'pos':'neg'}">
 ${(amt > 0 ? '+ ' : '') + amt}
 </span>
+
 <br>
-<small>by ${data.teacher ?? 'System'}</small>
+
+<small>
+${data.student ? 'Student point' : 'House point'}
+• by ${data.teacher ?? 'System'}
+</small>
 `;
 
 list.prepend(item);
 
-// ✅ CLOSE MODAL
-closeModal();
-
 });
-});
-});
-
-// house click
-document.querySelectorAll('.house-card').forEach(card=>{
-card.addEventListener('click',function(){
-this.closest('form').dispatchEvent(new Event('submit',{cancelable:true}));
 });
 });
 
