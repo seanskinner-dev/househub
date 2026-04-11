@@ -74,7 +74,7 @@
                                 </span>
                             </td>
                             <td class="p-6 text-right text-2xl font-bold">
-                                {{ $student->points }}
+                                {{ $student->house_points }}
                             </td>
                         </tr>
                     @endforeach

@@ -42,7 +42,8 @@
             @endphp
             <form method="POST" action="{{ route('points.store') }}">
                 @csrf
-                <input type="hidden" name="house_id" value="{{ $house->id }}">
+                <input type="hidden" name="house_name" value="{{ $house->name }}">
+                <input type="hidden" name="amount" value="1">
                 <button class="house-btn {{ $class }}">+1 {{ $house->name }}</button>
             </form>
         @endforeach
@@ -56,7 +57,7 @@
             <div>
                 <div class="name">
                     {{ $student->first_name }} {{ $student->last_name }}
-                    <span class="pts-badge">{{ $student->points ?? 0 }} pts</span>
+                    <span class="pts-badge">{{ $student->house_points ?? 0 }} pts</span>
                 </div>
                 <div class="meta">Y{{ $student->year_level }} • {{ $student->house_name }}</div>
             </div>
@@ -65,6 +66,7 @@
                 <form method="POST" action="{{ route('points.store') }}">
                     @csrf
                     <input type="hidden" name="student_id" value="{{ $student->id }}">
+                    <input type="hidden" name="amount" value="1">
                     <button class="point-btn" style="background:{{ $student->colour_hex }}">+1</button>
                 </form>
 

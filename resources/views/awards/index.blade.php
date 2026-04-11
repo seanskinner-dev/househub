@@ -100,7 +100,7 @@
             <form action="{{ route('points.store') }}" method="POST">
                 @csrf
                 <input type="hidden" name="house_name" value="{{ $name }}">
-                <input type="hidden" name="points" value="1">
+                <input type="hidden" name="amount" value="1">
                 <button type="submit" class="house-btn {{ $class }}" style="width: 100%">
                     {{ strtoupper($name) }}<br>+1 House Point
                 </button>
@@ -123,7 +123,7 @@
                     <form action="{{ route('points.store') }}" method="POST">
                         @csrf
                         <input type="hidden" name="student_id" value="{{ $student->id }}">
-                        <input type="hidden" name="points" value="1">
+                        <input type="hidden" name="amount" value="1">
                         <button type="submit" class="btn btn-plus" style="background: {{ $student->colour_hex }}">
                             +1
                         </button>

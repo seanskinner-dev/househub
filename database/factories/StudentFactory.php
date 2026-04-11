@@ -38,7 +38,7 @@ class StudentFactory extends Factory
             'house_name' => $house['name'],
             'colour_hex' => $house['color'],
             'year_level' => $this->faker->numberBetween(1, 7),
-            'points' => $this->faker->numberBetween(0, 150), // Starting points for the term
+            'house_points' => $this->faker->numberBetween(0, 150),
         ];
     }
 }

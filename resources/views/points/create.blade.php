@@ -82,7 +82,7 @@
                                 {{ $student->house_name }}
                             </span>
                         </td>
-                        <td class="p-4 text-center font-mono font-bold" id="points-{{ $student->id }}">{{ $student->points }}</td>
+                        <td class="p-4 text-center font-mono font-bold" id="house-points-{{ $student->id }}">{{ $student->house_points }}</td>
                         <td class="p-4 text-right space-x-2">
                             <button onclick="quickAdjust({{ $student->id }}, -1)" class="px-3 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200">-1</button>
                             <button onclick="quickAdjust({{ $student->id }}, 1)" class="px-3 py-1 bg-green-100 text-green-600 rounded hover:bg-green-200">+1</button>
@@ -112,7 +112,7 @@
             .then(res => res.json())
             .then(data => {
                 if(data.success) {
-                    document.getElementById('points-' + studentId).innerText = data.new_total;
+                    document.getElementById('house-points-' + studentId).innerText = data.new_total;
                 }
             });
         }

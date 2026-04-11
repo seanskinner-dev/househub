@@ -17,14 +17,16 @@ class HouseController extends Controller {
     }
 
     public function addPoints(Request $request) {
-        if ($request->has('house_id')) {
-            House::findOrFail($request->house_id)->increment('points', 1);
+        $amount = (int) $request->input('amount', 1);
+
+        if ($request->filled('house_name')) {
+            House::where('name', $request->house_name)->firstOrFail()->increment('points', $amount);
         }
 
         if ($request->has('student_id')) {
             $student = Student::findOrFail($request->student_id);
-            $student->increment('points', 1);
-            House::where('name', $student->house_name)->increment('points', 1);
+            $student->increment('house_points', $amount);
+            House::where('name', $student->house_name)->increment('points', $amount);
         }
 
         return redirect()->back();
