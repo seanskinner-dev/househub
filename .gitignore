@@ -9,3 +9,4 @@
 .env.*
 .phpunit.result.cache
 *.zip
+*.zip
