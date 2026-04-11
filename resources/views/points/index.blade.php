@@ -206,7 +206,8 @@
         @if($house->name == 'Gryffindor') 🦁
         @elseif($house->name == 'Slytherin') 🐍
         @elseif($house->name == 'Ravenclaw') 🦅
-        @else 🦡
+        @elseif($house->name == 'Hufflepuff') 🦡
+        @else ❓
         @endif
     </div>
     <div class="house-name">{{ $house->name }}</div>
@@ -227,7 +228,8 @@
     @if(($student->house_name ?? '') == 'Gryffindor') 🦁
     @elseif(($student->house_name ?? '') == 'Slytherin') 🐍
     @elseif(($student->house_name ?? '') == 'Ravenclaw') 🦅
-    @else 🦡
+    @elseif(($student->house_name ?? '') == 'Hufflepuff') 🦡
+    @else ❓
     @endif
 </div>
 
@@ -279,26 +281,19 @@
 
 <div id="toast"></div>
 
-<!-- MODALS SAME AS YOUR FILE (UNCHANGED) -->
+<!-- MODALS UNCHANGED -->
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-// 🔥 ADDITIONS ONLY — NOTHING REMOVED
-
+// HOUSE CLICK
 document.querySelectorAll('.house-card').forEach(card=>{
 card.addEventListener('click',function(){
     this.closest('form').dispatchEvent(new Event('submit',{cancelable:true}));
 });
 });
 
-window.setAwardDetails = function(){
-    let select = document.getElementById('awardSelect');
-    let selected = select.options[select.selectedIndex];
-    let points = selected.getAttribute('data-points');
-    document.getElementById('awardPoints').value = points;
-};
-
+// MODALS
 window.openCommendation = function(id){
     document.getElementById('commStudent').value = id;
     document.getElementById('commendationModal').style.display = 'flex';
@@ -314,42 +309,73 @@ window.closeModal = function(){
     document.getElementById('awardModal').style.display = 'none';
 };
 
+// AWARD POINTS
+window.setAwardDetails = function(){
+    let select = document.getElementById('awardSelect');
+    let selected = select.options[select.selectedIndex];
+    let points = selected.getAttribute('data-points');
+    document.getElementById('awardPoints').value = points;
+};
+
+// AJAX
 document.querySelectorAll('form.ajax').forEach(form=>{
 form.addEventListener('submit',function(e){
 e.preventDefault();
 
 let fd=new FormData(this);
-
-if(fd.get('type')==='commendation'){
-let words=(fd.get('description')||'').split(/\s+/).length;
-if(words<150){alert('150 words required');return;}
-}
-
+let type = fd.get('type');
 let fallbackAmount = parseInt(fd.get('amount')) || 0;
 let houseName = fd.get('house_name');
 
-fetch('/points',{method:'POST',headers:{
+// VALIDATION
+if(type === 'commendation'){
+    let text = fd.get('description') || '';
+    let words = text.trim().split(/\s+/).filter(w=>w.length>0).length;
+    if(words < 150){
+        alert('Commendation must be at least 150 words');
+        return;
+    }
+}
+
+fetch('/points',{
+method:'POST',
+headers:{
 'X-CSRF-TOKEN':document.querySelector('input[name="_token"]').value,
 'Accept':'application/json'
-},body:fd})
+},
+body:fd
+})
 .then(r=>r.json())
 .then(data=>{
 
 let amt = Number(data.amount);
 if (isNaN(amt)) amt = fallbackAmount;
 
+// LABEL FIX
 let label = data.student || data.house || houseName || 'Unknown';
+let typeLabel = type ? type : (houseName ? 'House points' : 'Student points');
 
+// TOAST
+let t=document.getElementById('toast');
+t.className='show '+(amt>0?'toast-success':'toast-error');
+t.innerText=(amt>0?'+ ':'')+amt;
+setTimeout(()=>t.className='',1000);
+
+// RECENT
 let list=document.getElementById('recentList');
 let item=document.createElement('div');
 item.className='activity';
 
-item.innerHTML=`<strong>${label}</strong><br>
-<span class="${amt>0?'pos':'neg'}">${amt}</span>`;
+item.innerHTML=`
+<strong>${label}</strong><br>
+<span class="${amt>0?'pos':'neg'}">${amt}</span>
+<br><small>${typeLabel} • by ${data.teacher ?? 'System'}</small>
+`;
 
 list.prepend(item);
 
 closeModal();
+
 });
 });
 });
