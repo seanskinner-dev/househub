@@ -51,6 +51,7 @@
             padding:20px;
             text-align:center;
             cursor:pointer;
+            border:none;
         }
 
         .house-emoji {
@@ -147,39 +148,6 @@
         #toast.show { opacity:1; }
         .toast-success { background:#22c55e; }
         .toast-error { background:#ef4444; }
-
-        .modal {
-            position:fixed;
-            top:0;
-            left:0;
-            width:100%;
-            height:100%;
-            background:rgba(0,0,0,0.7);
-            display:none;
-            align-items:center;
-            justify-content:center;
-        }
-
-        .modal-box {
-            background:#1f2329;
-            padding:30px;
-            border-radius:16px;
-            width:600px;
-            color:white;
-        }
-
-        textarea {
-            width:100%;
-            height:260px;
-            margin-top:10px;
-        }
-
-        label {
-            display:block;
-            margin-top:10px;
-            margin-bottom:5px;
-            font-weight:800;
-        }
     </style>
 </head>
 
@@ -200,7 +168,8 @@
 <input type="hidden" name="house_name" value="{{ $house->name }}">
 <input type="hidden" name="amount" value="1">
 
-<div class="house-card" style="--colour: {{ $house->colour_hex }}">
+<!-- 🔥 FIX: button instead of div -->
+<button type="submit" class="house-card" style="--colour: {{ $house->colour_hex }}">
     <div class="house-emoji">
         @if($house->name == 'Gryffindor') 🦁
         @elseif($house->name == 'Slytherin') 🐍
@@ -209,7 +178,8 @@
         @endif
     </div>
     <div class="house-name">{{ $house->name }}</div>
-</div>
+</button>
+
 </form>
 @endforeach
 
@@ -296,6 +266,7 @@ body:fd
 .then(r=>r.json())
 .then(data=>{
 
+// 🔥 FIX: correct number handling
 let amt = Number(data.amount);
 if (isNaN(amt)) amt = 0;
 
@@ -319,7 +290,7 @@ if (data.student) {
 item.innerHTML=`
 <strong>${label}</strong><br>
 <span class="${amt>0?'pos':'neg'}">
-${(amt > 0 ? '+ ' : '') + amt}
+${amt > 0 ? '+ ' : ''}${amt}
 </span>
 <br>
 <small>${data.student ? 'Student point' : 'House point'} • by ${data.teacher ?? 'System'}</small>
