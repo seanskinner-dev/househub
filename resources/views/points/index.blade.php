@@ -148,6 +148,39 @@
         #toast.show { opacity:1; }
         .toast-success { background:#22c55e; }
         .toast-error { background:#ef4444; }
+
+        .modal {
+            position:fixed;
+            top:0;
+            left:0;
+            width:100%;
+            height:100%;
+            background:rgba(0,0,0,0.7);
+            display:none;
+            align-items:center;
+            justify-content:center;
+        }
+
+        .modal-box {
+            background:#1f2329;
+            padding:30px;
+            border-radius:16px;
+            width:600px;
+            color:white;
+        }
+
+        textarea {
+            width:100%;
+            height:260px;
+            margin-top:10px;
+        }
+
+        label {
+            display:block;
+            margin-top:10px;
+            margin-bottom:5px;
+            font-weight:800;
+        }
     </style>
 </head>
 
@@ -168,8 +201,7 @@
 <input type="hidden" name="house_name" value="{{ $house->name }}">
 <input type="hidden" name="amount" value="1">
 
-<!-- 🔥 FIX: button instead of div -->
-<button type="submit" class="house-card" style="--colour: {{ $house->colour_hex }}">
+<div class="house-card" style="--colour: {{ $house->colour_hex }}">
     <div class="house-emoji">
         @if($house->name == 'Gryffindor') 🦁
         @elseif($house->name == 'Slytherin') 🐍
@@ -178,8 +210,7 @@
         @endif
     </div>
     <div class="house-name">{{ $house->name }}</div>
-</button>
-
+</div>
 </form>
 @endforeach
 
@@ -193,9 +224,9 @@
 
 <div class="left">
 <div class="crest">
-    @if(($student->house_name ?? '') == 'Gryffindor') 🦁
-    @elseif(($student->house_name ?? '') == 'Slytherin') 🐍
-    @elseif(($student->house_name ?? '') == 'Ravenclaw') 🦅
+    @if($student->house_name == 'Gryffindor') 🦁
+    @elseif($student->house_name == 'Slytherin') 🐍
+    @elseif($student->house_name == 'Ravenclaw') 🦅
     @else 🦡
     @endif
 </div>
@@ -206,7 +237,7 @@
 {{ $student->first_name }} {{ $student->last_name }}
 </a>
 </div>
-<div class="meta">{{ $student->house_name ?? '—' }} • {{ $student->house_points }} pts</div>
+<div class="meta">{{ $student->house_name }} • {{ $student->house_points }} pts</div>
 </div>
 </div>
 
@@ -246,9 +277,85 @@
 
 <div id="toast"></div>
 
+<!-- MODALS -->
+
+<div id="commendationModal" class="modal">
+<div class="modal-box">
+<form method="POST" action="/points" class="ajax">
+@csrf
+<input type="hidden" name="student_id" id="commStudent">
+<input type="hidden" name="amount" value="1">
+<input type="hidden" name="type" value="commendation">
+
+<textarea name="description"></textarea>
+
+<button type="submit">Save</button>
+<button type="button" onclick="closeModal()">Cancel</button>
+</form>
+</div>
+</div>
+
+<div id="awardModal" class="modal">
+<div class="modal-box">
+<form method="POST" action="/points" class="ajax">
+@csrf
+<input type="hidden" name="student_id" id="awardStudent">
+<input type="hidden" name="amount" id="awardPoints">
+<input type="hidden" name="type" value="award">
+
+<select id="awardSelect" onchange="setAwardDetails()">
+<option value="">Select Award</option>
+<option data-points="10">Prefect Recognition</option>
+<option data-points="15">Outstanding Magical Effort</option>
+<option data-points="20">Professor’s Excellence Award</option>
+<option data-points="25">Headmaster’s Honour</option>
+<option data-points="30">Order of Merlin</option>
+</select>
+
+<textarea name="description"></textarea>
+
+<button type="submit">Save</button>
+<button type="button" onclick="closeModal()">Cancel</button>
+</form>
+</div>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
+// SEARCH
+document.getElementById('studentSearch').addEventListener('keyup', function(){
+    let val = this.value.toLowerCase();
+    document.querySelectorAll('.card').forEach(card=>{
+        let name = card.querySelector('.name').innerText.toLowerCase();
+        card.style.display = name.includes(val) ? 'flex' : 'none';
+    });
+});
+
+// MODALS
+window.openCommendation = function(id){
+    document.getElementById('commStudent').value = id;
+    document.getElementById('commendationModal').style.display = 'flex';
+};
+
+window.openAward = function(id){
+    document.getElementById('awardStudent').value = id;
+    document.getElementById('awardModal').style.display = 'flex';
+};
+
+window.closeModal = function(){
+    document.getElementById('commendationModal').style.display = 'none';
+    document.getElementById('awardModal').style.display = 'none';
+};
+
+window.setAwardDetails = function(){
+    let select = document.getElementById('awardSelect');
+    let selected = select.options[select.selectedIndex];
+    let points = selected.getAttribute('data-points');
+    document.getElementById('awardPoints').value = points;
+};
+
+// AJAX
 document.querySelectorAll('form.ajax').forEach(form=>{
 form.addEventListener('submit',function(e){
 e.preventDefault();
@@ -266,39 +373,48 @@ body:fd
 .then(r=>r.json())
 .then(data=>{
 
-// 🔥 FIX: correct number handling
-let amt = Number(data.amount);
+console.log('RESPONSE:', data);
+
+// 🔥 FIXED amount handling
+let amt = data.amount;
+if (amt === undefined || amt === null) amt = 0;
+amt = parseInt(amt);
 if (isNaN(amt)) amt = 0;
 
+// toast
 let t=document.getElementById('toast');
 t.className='show '+(amt>0?'toast-success':'toast-error');
 t.innerText=(amt>0?'+ ':'')+amt;
 setTimeout(()=>t.className='',1000);
 
+// recent
 let list=document.getElementById('recentList');
 let item=document.createElement('div');
 item.className='activity';
 
-let label = 'Unknown';
-
-if (data.student) {
-    label = data.student + (data.house ? ' (' + data.house + ')' : '');
-} else if (data.house) {
-    label = data.house;
-}
+let label = data.student || data.house || 'Unknown';
 
 item.innerHTML=`
 <strong>${label}</strong><br>
 <span class="${amt>0?'pos':'neg'}">
-${amt > 0 ? '+ ' : ''}${amt}
+${(amt > 0 ? '+ ' : '') + amt}
 </span>
 <br>
-<small>${data.student ? 'Student point' : 'House point'} • by ${data.teacher ?? 'System'}</small>
+<small>by ${data.teacher ?? 'System'}</small>
 `;
 
 list.prepend(item);
 
+closeModal();
+
 });
+});
+});
+
+// house click
+document.querySelectorAll('.house-card').forEach(card=>{
+card.addEventListener('click',function(){
+this.closest('form').dispatchEvent(new Event('submit',{cancelable:true}));
 });
 });
 
