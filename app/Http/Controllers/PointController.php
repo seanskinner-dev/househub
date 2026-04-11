@@ -36,7 +36,7 @@ class PointController extends Controller
 
     public function store(Request $request)
     {
-        // 🔧 FIX: default amount to 1 if missing
+        // 🔧 FIX: default amount
         $amount = (int) $request->input('amount', 1);
 
         $userId = auth()->id() ?? 1;
@@ -44,6 +44,10 @@ class PointController extends Controller
 
         return DB::transaction(function () use ($request, $amount, $userId, $teacherName) {
 
+            $student = null;
+            $house = null;
+
+            // 🔧 FIX: handle house click WITHOUT early return
             if ($request->filled('house_name')) {
 
                 $house = DB::table('houses')
@@ -66,13 +70,6 @@ class PointController extends Controller
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);
-
-                    return response()->json([
-                        'success' => true,
-                        'amount' => $amount,
-                        'house' => $house->name,
-                        'teacher' => $teacherName
-                    ]);
                 }
             }
 
@@ -88,7 +85,6 @@ class PointController extends Controller
                         ->where('id', $student->id)
                         ->increment('house_points', $amount);
 
-                    // 🔧 FIX: safe house lookup
                     $house = DB::table('houses')
                         ->where('name', $student->house_name)
                         ->first();
@@ -103,27 +99,23 @@ class PointController extends Controller
                         'student_id' => $student->id,
                         'house_id' => $house->id ?? null,
                         'amount' => $amount,
-                        // 🔧 FIX: support award / commendation type
+                        // 🔧 FIX: use type instead of category
                         'category' => $request->input('type', 'manual'),
                         'description' => $request->input('description', ''),
                         'awarded_by' => $userId,
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);
-
-                    return response()->json([
-                        'success' => true,
-                        'amount' => $amount,
-                        'student' => $student->first_name . ' ' . $student->last_name,
-                        'house' => $student->house_name,
-                        'teacher' => $teacherName
-                    ]);
                 }
             }
 
+            // 🔧 FIX: ALWAYS return valid response
             return response()->json([
-                'success' => false,
-                'amount' => 0 // 🔧 FIX: prevent undefined / 0 bug
+                'success' => true,
+                'amount' => $amount,
+                'student' => $student ? $student->first_name . ' ' . $student->last_name : null,
+                'house' => $house ? $house->name : null,
+                'teacher' => $teacherName
             ]);
         });
     }
