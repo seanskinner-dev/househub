@@ -281,19 +281,57 @@
 
 <div id="toast"></div>
 
-<!-- MODALS UNCHANGED -->
+<!-- 🔥 ADDED MODALS BACK (YOU WERE MISSING THESE) -->
+
+<div id="commendationModal" class="modal">
+<div class="modal-box">
+<form method="POST" class="ajax">
+@csrf
+<input type="hidden" name="student_id" id="commStudent">
+<input type="hidden" name="amount" value="1">
+<input type="hidden" name="type" value="commendation">
+
+<textarea name="description">Write a strong reason. Minimum 150 words.</textarea>
+
+<button>Save</button>
+<button type="button" onclick="closeModal()">Cancel</button>
+</form>
+</div>
+</div>
+
+<div id="awardModal" class="modal">
+<div class="modal-box">
+<form method="POST" class="ajax">
+@csrf
+<input type="hidden" name="student_id" id="awardStudent">
+<input type="hidden" name="amount" id="awardPoints">
+<input type="hidden" name="type" value="award">
+
+<select id="awardSelect" onchange="setAwardDetails()">
+<option data-points="10" selected>Prefect Recognition</option>
+<option data-points="15">Outstanding Magical Effort</option>
+<option data-points="20">Professor’s Excellence Award</option>
+<option data-points="25">Headmaster’s Honour</option>
+<option data-points="30">Order of Merlin</option>
+</select>
+
+<textarea name="description">Describe why this award is given.</textarea>
+
+<button>Save</button>
+<button type="button" onclick="closeModal()">Cancel</button>
+</form>
+</div>
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-// HOUSE CLICK
 document.querySelectorAll('.house-card').forEach(card=>{
 card.addEventListener('click',function(){
     this.closest('form').dispatchEvent(new Event('submit',{cancelable:true}));
 });
 });
 
-// MODALS
 window.openCommendation = function(id){
     document.getElementById('commStudent').value = id;
     document.getElementById('commendationModal').style.display = 'flex';
@@ -301,6 +339,11 @@ window.openCommendation = function(id){
 
 window.openAward = function(id){
     document.getElementById('awardStudent').value = id;
+
+    let sel=document.getElementById('awardSelect');
+    let pts=sel.options[sel.selectedIndex].getAttribute('data-points');
+    document.getElementById('awardPoints').value = pts;
+
     document.getElementById('awardModal').style.display = 'flex';
 };
 
@@ -309,68 +352,54 @@ window.closeModal = function(){
     document.getElementById('awardModal').style.display = 'none';
 };
 
-// AWARD POINTS
 window.setAwardDetails = function(){
-    let select = document.getElementById('awardSelect');
-    let selected = select.options[select.selectedIndex];
-    let points = selected.getAttribute('data-points');
-    document.getElementById('awardPoints').value = points;
+    let sel=document.getElementById('awardSelect');
+    let pts=sel.options[sel.selectedIndex].getAttribute('data-points');
+    document.getElementById('awardPoints').value = pts;
 };
 
-// AJAX
 document.querySelectorAll('form.ajax').forEach(form=>{
 form.addEventListener('submit',function(e){
 e.preventDefault();
 
 let fd=new FormData(this);
-let type = fd.get('type');
-let fallbackAmount = parseInt(fd.get('amount')) || 0;
-let houseName = fd.get('house_name');
+let fallback=parseInt(fd.get('amount'))||0;
+let type=fd.get('type');
+let houseName=fd.get('house_name');
 
-// VALIDATION
-if(type === 'commendation'){
-    let text = fd.get('description') || '';
-    let words = text.trim().split(/\s+/).filter(w=>w.length>0).length;
-    if(words < 150){
-        alert('Commendation must be at least 150 words');
-        return;
-    }
+if(type==='commendation'){
+let words=(fd.get('description')||'').trim().split(/\s+/).length;
+if(words<150){alert('150 words required');return;}
 }
 
-fetch('/points',{
-method:'POST',
-headers:{
+fetch('/points',{method:'POST',headers:{
 'X-CSRF-TOKEN':document.querySelector('input[name="_token"]').value,
 'Accept':'application/json'
-},
-body:fd
-})
+},body:fd})
 .then(r=>r.json())
 .then(data=>{
 
-let amt = Number(data.amount);
-if (isNaN(amt)) amt = fallbackAmount;
+let amt=Number(data.amount);
+if(isNaN(amt)) amt=fallback;
 
-// LABEL FIX
-let label = data.student || data.house || houseName || 'Unknown';
-let typeLabel = type ? type : (houseName ? 'House points' : 'Student points');
+let label=data.student||data.house||houseName||'Student';
 
-// TOAST
+let typeLabel='Points';
+if(type==='commendation') typeLabel='Commendation';
+if(type==='award') typeLabel='Award';
+if(houseName) typeLabel='House points';
+
 let t=document.getElementById('toast');
 t.className='show '+(amt>0?'toast-success':'toast-error');
 t.innerText=(amt>0?'+ ':'')+amt;
 setTimeout(()=>t.className='',1000);
 
-// RECENT
 let list=document.getElementById('recentList');
 let item=document.createElement('div');
 item.className='activity';
-
-item.innerHTML=`
-<strong>${label}</strong><br>
+item.innerHTML=`<strong>${label}</strong><br>
 <span class="${amt>0?'pos':'neg'}">${amt}</span>
-<br><small>${typeLabel} • by ${data.teacher ?? 'System'}</small>
-`;
+<br><small>${typeLabel} • by ${data.teacher ?? 'System'}</small>`;
 
 list.prepend(item);
 
