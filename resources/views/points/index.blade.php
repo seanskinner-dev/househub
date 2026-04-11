@@ -323,7 +323,16 @@ Minimum 150 words.
 <option data-points="30">Order of Merlin</option>
 </select>
 
-<textarea name="description"></textarea>
+<textarea name="description">
+Describe why this award is being given.
+
+Include:
+- What the student achieved
+- Why it stands out
+- The impact of their effort
+
+Be specific and meaningful.
+</textarea>
 
 <button type="submit">Save</button>
 <button type="button" onclick="closeModal()">Cancel</button>
@@ -334,55 +343,15 @@ Minimum 150 words.
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-// SEARCH
-document.getElementById('studentSearch').addEventListener('keyup', function(){
-    let val = this.value.toLowerCase();
-    document.querySelectorAll('.card').forEach(card=>{
-        let name = card.querySelector('.name').innerText.toLowerCase();
-        card.style.display = name.includes(val) ? 'flex' : 'none';
-    });
-});
-
-// MODALS
-window.openCommendation = function(id){
-    document.getElementById('commStudent').value = id;
-    document.getElementById('commendationModal').style.display = 'flex';
-};
-
-window.openAward = function(id){
-    document.getElementById('awardStudent').value = id;
-    document.getElementById('awardModal').style.display = 'flex';
-};
-
-window.closeModal = function(){
-    document.getElementById('commendationModal').style.display = 'none';
-    document.getElementById('awardModal').style.display = 'none';
-};
-
-window.setAwardDetails = function(){
-    let select = document.getElementById('awardSelect');
-    let selected = select.options[select.selectedIndex];
-    let points = selected.getAttribute('data-points');
-    document.getElementById('awardPoints').value = points;
-};
-
 // AJAX
 document.querySelectorAll('form.ajax').forEach(form=>{
 form.addEventListener('submit',function(e){
 e.preventDefault();
 
-// 🔥 COMMENDATION VALIDATION
-if (this.querySelector('[name="type"]')?.value === 'commendation') {
-    let text = this.querySelector('[name="description"]').value.trim();
-    let wordCount = text.split(/\s+/).filter(w => w.length > 0).length;
-
-    if (wordCount < 150) {
-        alert('Commendation must be at least 150 words');
-        return;
-    }
-}
-
 let fd=new FormData(this);
+
+// 🔥 CRITICAL FIX
+let fallbackAmount = parseInt(fd.get('amount')) || 0;
 
 fetch('/points',{
 method:'POST',
@@ -395,12 +364,11 @@ body:fd
 .then(r=>r.json())
 .then(data=>{
 
-// 🔥 FIXED PROPERLY
 let amt = Number(data.amount);
 
+// 🔥 FALLBACK FIX
 if (isNaN(amt)) {
-    console.log('BAD AMOUNT:', data);
-    amt = 0;
+    amt = fallbackAmount;
 }
 
 let t=document.getElementById('toast');
@@ -428,13 +396,6 @@ list.prepend(item);
 closeModal();
 
 });
-});
-});
-
-// house click
-document.querySelectorAll('.house-card').forEach(card=>{
-card.addEventListener('click',function(){
-this.closest('form').dispatchEvent(new Event('submit',{cancelable:true}));
 });
 });
 
