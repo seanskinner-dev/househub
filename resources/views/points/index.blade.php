@@ -236,9 +236,7 @@
 {{ $student->first_name }} {{ $student->last_name }}
 </a>
 </div>
-<div class="meta">
-{{ $student->house_name ?? '—' }} • {{ $student->house_points }} pts
-</div>
+<div class="meta">{{ $student->house_name ?? '—' }} • {{ $student->house_points }} pts</div>
 </div>
 </div>
 
