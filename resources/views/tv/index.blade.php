@@ -118,6 +118,7 @@
     right: 20px;
 }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 </head>
 
 <body>
@@ -233,8 +234,6 @@
     <button id="nextBtn" class="next-btn">Next ▶</button>
 
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
