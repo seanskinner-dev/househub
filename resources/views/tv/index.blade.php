@@ -574,11 +574,6 @@
             background: #facc15;
         }
 
-        .weather-icon.rain::before {
-            content: "🌧";
-            font-size: 80px;
-        }
-
         .weather-icon.lightning::before {
             content: "⚡";
             font-size: 80px;
@@ -586,12 +581,6 @@
 
         .sun {
             animation: sunPulse 4s ease-in-out infinite;
-        }
-
-        .rain::before {
-            display: block;
-            line-height: 1;
-            animation: rainBounce 1s ease-in-out infinite;
         }
 
         .lightning::before {
@@ -675,9 +664,66 @@
             50%      { transform: scale(1.08); }
         }
 
-        @keyframes rainBounce {
-            0%, 100% { transform: translateY(0); }
-            50%      { transform: translateY(10px); }
+        .rain-drops {
+            position: relative;
+            width: 120px;
+            height: 120px;
+        }
+
+        .rain-drops span {
+            position: absolute;
+            width: 3px;
+            height: 14px;
+            background: #60a5fa;
+            border-radius: 2px;
+            opacity: 0.8;
+            animation: rainDrop 0.9s linear infinite;
+        }
+
+        .rain-drops span:nth-child(1) { left: 5%; }
+        .rain-drops span:nth-child(2) { left: 15%; }
+        .rain-drops span:nth-child(3) { left: 25%; }
+        .rain-drops span:nth-child(4) { left: 35%; }
+        .rain-drops span:nth-child(5) { left: 45%; }
+        .rain-drops span:nth-child(6) { left: 55%; }
+        .rain-drops span:nth-child(7) { left: 65%; }
+        .rain-drops span:nth-child(8) { left: 75%; }
+        .rain-drops span:nth-child(9) { left: 85%; }
+        .rain-drops span:nth-child(10) { left: 95%; }
+
+        .rain-drops span:nth-child(odd) {
+            animation-delay: 0.2s;
+        }
+
+        .rain-drops span:nth-child(even) {
+            animation-delay: 0.4s;
+        }
+
+        .rain-drops.light span:nth-child(n+5) {
+            display: none;
+        }
+
+        .rain-drops.medium span:nth-child(n+8) {
+            display: none;
+        }
+
+        .rain-drops.heavy span {
+            display: block;
+            animation-duration: 0.6s;
+        }
+
+        @keyframes rainDrop {
+            0% {
+                top: -10px;
+                opacity: 0;
+            }
+            30% {
+                opacity: 1;
+            }
+            100% {
+                top: 120px;
+                opacity: 0;
+            }
         }
 
         @keyframes lightningFlash {
@@ -885,7 +931,23 @@
             <div class="weather-hero rain-active">
 
                 <div class="weather-icon sun"></div>
-                <div class="weather-icon rain"></div>
+                @php
+                    $rain = 20; // replace per row later
+                @endphp
+                <div class="weather-icon rain">
+                    <div class="rain-drops @if($rain >= 60)heavy@elseif($rain >= 40)medium@else light@endif">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
                 <div class="weather-icon lightning"></div>
 
             </div>
@@ -899,7 +961,7 @@
                         <span class="weather-fill" style="width: 48%"></span>
                     </span>
                     <span class="weather-temp">14°</span>
-                    <span class="weather-rain">@if($rain >= 60)🌧 {{ $rain }}%@elseif($rain >= 30){{ $rain }}%@endif</span>
+                    <span class="weather-rain">@if($rain >= 60){{ $rain }}%@elseif($rain >= 30){{ $rain }}%@endif</span>
                 </div>
 
                 <div class="weather-row recess">
@@ -909,7 +971,7 @@
                         <span class="weather-fill" style="width: 60%"></span>
                     </span>
                     <span class="weather-temp">16°</span>
-                    <span class="weather-rain">@if($rain >= 60)🌧 {{ $rain }}%@elseif($rain >= 30){{ $rain }}%@endif</span>
+                    <span class="weather-rain">@if($rain >= 60){{ $rain }}%@elseif($rain >= 30){{ $rain }}%@endif</span>
                 </div>
 
                 <div class="weather-row">
@@ -919,7 +981,7 @@
                         <span class="weather-fill" style="width: 72%"></span>
                     </span>
                     <span class="weather-temp">18°</span>
-                    <span class="weather-rain">@if($rain >= 60)🌧 {{ $rain }}%@elseif($rain >= 30){{ $rain }}%@endif</span>
+                    <span class="weather-rain">@if($rain >= 60){{ $rain }}%@elseif($rain >= 30){{ $rain }}%@endif</span>
                 </div>
 
                 <div class="weather-row lunch">
@@ -929,7 +991,7 @@
                         <span class="weather-fill" style="width: 78%"></span>
                     </span>
                     <span class="weather-temp">19°</span>
-                    <span class="weather-rain">@if($rain >= 60)🌧 {{ $rain }}%@elseif($rain >= 30){{ $rain }}%@endif</span>
+                    <span class="weather-rain">@if($rain >= 60){{ $rain }}%@elseif($rain >= 30){{ $rain }}%@endif</span>
                 </div>
 
                 <div class="weather-row">
@@ -939,7 +1001,7 @@
                         <span class="weather-fill" style="width: 66%"></span>
                     </span>
                     <span class="weather-temp">17°</span>
-                    <span class="weather-rain">@if($rain >= 60)🌧 {{ $rain }}%@elseif($rain >= 30){{ $rain }}%@endif</span>
+                    <span class="weather-rain">@if($rain >= 60){{ $rain }}%@elseif($rain >= 30){{ $rain }}%@endif</span>
                 </div>
 
             </div>
