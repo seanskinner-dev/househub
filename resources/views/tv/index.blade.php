@@ -321,7 +321,18 @@
         .streak-list {
             display: flex;
             flex-direction: column;
-            gap: 40px;
+            gap: 28px;
+        }
+
+        .streak-line {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        .streak-sep {
+            opacity: 0.5;
         }
 
         .streak-item {
@@ -462,18 +473,27 @@
             <div class="streak-list">
 
                 <div class="streak-item gryffindor">
-                    <div class="streak-name">🦁 JOSH</div>
-                    <div class="streak-value">5 DAY STREAK</div>
+                    <div class="streak-line">
+                        <span class="streak-name">🦁 JOSH</span>
+                        <span class="streak-sep">—</span>
+                        <span class="streak-value">5 DAY STREAK</span>
+                    </div>
                 </div>
 
                 <div class="streak-item slytherin">
-                    <div class="streak-name">🐍 EMMA</div>
-                    <div class="streak-value">4 DAY STREAK</div>
+                    <div class="streak-line">
+                        <span class="streak-name">🐍 EMMA</span>
+                        <span class="streak-sep">—</span>
+                        <span class="streak-value">4 DAY STREAK</span>
+                    </div>
                 </div>
 
                 <div class="streak-item ravenclaw">
-                    <div class="streak-name">🦅 LIAM</div>
-                    <div class="streak-value">3 DAY STREAK</div>
+                    <div class="streak-line">
+                        <span class="streak-name">🦅 LIAM</span>
+                        <span class="streak-sep">—</span>
+                        <span class="streak-value">3 DAY STREAK</span>
+                    </div>
                 </div>
 
             </div>
