@@ -593,6 +593,7 @@
         .student-row:nth-child(2) { animation-delay: 0.2s; }
         .student-row:nth-child(3) { animation-delay: 0.3s; }
         .student-row:nth-child(4) { animation-delay: 0.4s; }
+        .student-row:nth-child(5) { animation-delay: 0.5s; }
 
         .student-row:hover {
             opacity: 1;
