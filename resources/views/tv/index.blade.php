@@ -285,6 +285,42 @@
             right: 20px;
             z-index: 10001;
         }
+
+        .streak-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .streak-title {
+            font-size: clamp(40px, 6vw, 80px);
+            font-weight: 800;
+            margin-bottom: 40px;
+        }
+
+        .streak-list {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        .streak-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .streak-name {
+            font-size: clamp(36px, 5vw, 70px);
+            font-weight: 700;
+        }
+
+        .streak-value {
+            font-size: clamp(28px, 4vw, 50px);
+            opacity: 0.8;
+        }
     </style>
 </head>
 
@@ -340,6 +376,37 @@
             </div>
 
         </div>
+    </div>
+
+    <div class="tv-screen" id="screen-2">
+
+        <div class="streak-container">
+
+            <div class="streak-title">
+                🔥 STREAKS
+            </div>
+
+            <div class="streak-list">
+
+                <div class="streak-item">
+                    <div class="streak-name">JOSH</div>
+                    <div class="streak-value">5 DAY STREAK</div>
+                </div>
+
+                <div class="streak-item">
+                    <div class="streak-name">EMMA</div>
+                    <div class="streak-value">4 DAY STREAK</div>
+                </div>
+
+                <div class="streak-item">
+                    <div class="streak-name">LIAM</div>
+                    <div class="streak-value">3 DAY STREAK</div>
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
 
     <button type="button" id="nextBtn" class="next-btn">Next ▶</button>
