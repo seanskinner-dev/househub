@@ -1,6 +1,3 @@
-<!-- CURSOR TEST 1-->
-
-<!-- CURSOR WRITE TEST -->
 @extends('layouts.app')
 
 @section('content')
