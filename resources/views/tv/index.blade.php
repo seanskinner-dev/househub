@@ -117,6 +117,35 @@
     bottom: 20px;
     right: 20px;
 }
+
+.center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.list {
+    padding: 40px;
+}
+
+.list h1 {
+    font-size: 60px;
+    text-align: center;
+}
+
+.list .row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 36px;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.list .row.gryffindor { background: #740001; }
+.list .row.slytherin  { background: #1a472a; }
+.list .row.ravenclaw  { background: #1e40af; }
+.list .row.hufflepuff { background: #ffcc00; color: #111; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 </head>
@@ -146,8 +175,90 @@
         </div>
     </div>
 
-    <!-- SCREEN 2 (GRAPH FIXED) -->
+    <!-- SCREEN 2 — WEATHER -->
     <div class="tv-screen" id="screen-2">
+        <div class="center" style="font-size:80px;">
+            🌧️ 12°C
+        </div>
+    </div>
+
+    <!-- SCREEN 3 — TOP STUDENTS (POINTS) -->
+    <div class="tv-screen" id="screen-3">
+        <div class="list">
+            <h1>Top Students</h1>
+
+            @foreach($topStudents as $index => $student)
+                <div class="row {{ strtolower($student->house_name ?? 'gryffindor') }}">
+                    <span>#{{ $index + 1 }} {{ $student->first_name }}</span>
+                    <span>{{ $student->total }}</span>
+                </div>
+            @endforeach
+
+        </div>
+    </div>
+
+    <!-- SCREEN 4 — COMMENDATIONS -->
+    <div class="tv-screen" id="screen-4">
+        <div class="list">
+            <h1>Commendations</h1>
+
+            @foreach($topStudents as $index => $student)
+                <div class="row {{ strtolower($student->house_name ?? 'gryffindor') }}">
+                    <span>#{{ $index + 1 }} {{ $student->first_name }}</span>
+                    <span>{{ $student->commendations ?? 0 }}</span>
+                </div>
+            @endforeach
+
+        </div>
+    </div>
+
+    <!-- SCREEN 5 — STREAKS -->
+    <div class="tv-screen" id="screen-5">
+        <div class="list">
+            <h1>🔥 On a Streak</h1>
+
+            @foreach($topStudents as $index => $student)
+                <div class="row {{ strtolower($student->house_name ?? 'gryffindor') }}">
+                    <span>{{ $student->first_name }}</span>
+                    <span>{{ rand(2, 7) }} days</span>
+                </div>
+            @endforeach
+
+        </div>
+    </div>
+
+    <!-- SCREEN 6 — LIVE ACTIVITY -->
+    <div class="tv-screen" id="screen-6">
+        <div class="list">
+            <h1>Live Activity</h1>
+
+            @foreach($recent ?? [] as $item)
+                <div class="row">
+                    <span>{{ $item->description ?? 'Activity' }}</span>
+                    <span>+{{ $item->amount ?? 1 }}</span>
+                </div>
+            @endforeach
+
+        </div>
+    </div>
+
+    <!-- SCREEN 7 — TEACHERS -->
+    <div class="tv-screen" id="screen-7">
+        <div class="list">
+            <h1>Top Teachers</h1>
+
+            @foreach($topTeachers as $index => $teacher)
+                <div class="row">
+                    <span>#{{ $index + 1 }} {{ $teacher->name }}</span>
+                    <span>{{ $teacher->total }}</span>
+                </div>
+            @endforeach
+
+        </div>
+    </div>
+
+    <!-- SCREEN 8 — HOUSE POINTS TREND (chart) -->
+    <div class="tv-screen" id="screen-8">
         <div class="graph-wrapper">
 
             <div class="graph-title">
@@ -166,71 +277,6 @@
         </div>
     </div>
 
-    <!-- SCREEN 3 -->
-    <div class="tv-screen" id="screen-3">
-        <div class="students-wrapper">
-
-            <div class="students-title">
-                Top 30 Students (This Week)
-            </div>
-
-            <div class="students-grid">
-
-                @foreach($topStudents as $index => $student)
-
-                    @php
-                        $house = strtolower($student->house_name ?? 'gryffindor');
-
-                        $icons = [
-                            'gryffindor' => '🦁',
-                            'slytherin'  => '🐍',
-                            'ravenclaw'  => '🦅',
-                            'hufflepuff' => '🦡',
-                        ];
-                    @endphp
-
-                    <div class="student-row {{ $house }}">
-
-                        <div class="name">
-                            <span class="rank">#{{ $index + 1 }}</span>
-                            <span>{{ $icons[$house] ?? '⭐' }}</span>
-                            {{ $student->first_name }} {{ $student->last_name }}
-                        </div>
-
-                        <div class="points">
-                            {{ $student->total }}
-                        </div>
-
-                    </div>
-
-                @endforeach
-
-            </div>
-
-        </div>
-    </div>
-
-    <!-- SCREEN 4 -->
-    <div class="tv-screen" id="screen-4">
-        <div class="teachers-wrapper">
-
-            <div class="teachers-title">
-                Top Teachers (This Week)
-            </div>
-
-            <div class="teachers-list">
-                @foreach($topTeachers as $index => $teacher)
-                    <div class="teacher-row">
-                        <span>#{{ $index + 1 }}</span>
-                        <span>{{ $teacher->name }}</span>
-                        <span>{{ $teacher->total }}</span>
-                    </div>
-                @endforeach
-            </div>
-
-        </div>
-    </div>
-
     <button id="nextBtn" class="next-btn">Next ▶</button>
 
 </div>
@@ -240,6 +286,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let currentScreen = 0;
     const screens = document.querySelectorAll('.tv-screen');
+    const trendChartEl = document.querySelector('#trendChart');
+    const chartHost = trendChartEl ? trendChartEl.closest('.tv-screen') : null;
+    const chartScreenIndex = chartHost ? Array.prototype.indexOf.call(screens, chartHost) : -1;
 
     let chartRendered = false;
     const broadcastUrl = @json(route('broadcast-messages.latest'));
@@ -255,7 +304,7 @@ document.addEventListener("DOMContentLoaded", function () {
         currentScreen = (currentScreen + 1) % screens.length;
         showScreen(currentScreen);
 
-        if (currentScreen === 1 && !chartRendered) {
+        if (chartScreenIndex !== -1 && currentScreen === chartScreenIndex && !chartRendered) {
             renderChart();
             chartRendered = true;
         }
