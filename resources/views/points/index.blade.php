@@ -104,6 +104,16 @@
             color:#555;
         }
 
+        /* Student cards: dark text on light background (override layout inherit) */
+        .card .name,
+        .card .name .student-link {
+            color: #111;
+        }
+
+        .card .meta {
+            color: #444;
+        }
+
         .actions {
             display:flex;
             gap:8px;
