@@ -23,6 +23,11 @@ Route::get('/', function () {
 });
 
 // =============================
+// BROADCAST (PUBLIC READ FOR TV)
+// =============================
+Route::get('/broadcast-messages/latest', [BroadcastMessageController::class, 'latest'])->name('broadcast-messages.latest');
+
+// =============================
 // AUTHENTICATED ROUTES
 // =============================
 Route::middleware(['auth'])->group(function () {
@@ -43,7 +48,6 @@ Route::middleware(['auth'])->group(function () {
     // BROADCAST MESSAGE MODE
     // =============================
     Route::post('/broadcast-messages', [BroadcastMessageController::class, 'store'])->name('broadcast-messages.store');
-    Route::get('/broadcast-messages/latest', [BroadcastMessageController::class, 'latest'])->name('broadcast-messages.latest');
 
     // =============================
     // STUDENT PROFILE

@@ -4,6 +4,21 @@
 
 <div class="tv-container">
 
+    <div id="broadcastBanner" style="
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    background:#dc2626;
+    color:white;
+    text-align:center;
+    font-size:40px;
+    font-weight:bold;
+    padding:20px;
+    display:none;
+    z-index:9999;
+"></div>
+
     <!-- SCREEN 1 -->
     <div class="tv-screen" id="screen-1">
         <div class="row h-100">
@@ -159,6 +174,27 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 });
+
+setInterval(fetchBroadcast, 5000);
+
+function fetchBroadcast() {
+    fetch('/broadcast-messages/latest')
+    .then(res => res.json())
+    .then(data => {
+
+        let banner = document.getElementById('broadcastBanner');
+
+        if (data && data.message) {
+            banner.innerText = data.message;
+            banner.style.display = 'block';
+        } else {
+            banner.style.display = 'none';
+        }
+
+    });
+}
+
+fetchBroadcast();
 </script>
 
 @endpush
