@@ -521,7 +521,7 @@
             flex-shrink: 0;
             text-align: center;
             color: #fff;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
 
         .top-hero .crown {
@@ -574,15 +574,15 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
             width: 100%;
             max-width: 1100px;
             overflow: hidden;
         }
 
         .student-row {
-            font-size: clamp(28px, 3vw, 48px);
-            line-height: 1.2;
+            font-size: clamp(26px, 3vw, 44px);
+            line-height: 1.1;
             opacity: 0;
             transform: translateY(20px);
             animation: fadeUp 0.6s ease forwards;
@@ -593,7 +593,6 @@
         .student-row:nth-child(2) { animation-delay: 0.2s; }
         .student-row:nth-child(3) { animation-delay: 0.3s; }
         .student-row:nth-child(4) { animation-delay: 0.4s; }
-        .student-row:nth-child(5) { animation-delay: 0.5s; }
 
         .student-row:hover {
             opacity: 1;
@@ -614,7 +613,7 @@
         }
 
         .student-row.top-item {
-            font-size: clamp(28px, 3vw, 48px);
+            font-size: clamp(26px, 3vw, 44px);
         }
 
         .top-rank {
@@ -895,7 +894,7 @@
                 </div>
 
                 <div class="top-list">
-                    @foreach($topStudents->skip(1) as $index => $student)
+                    @foreach($topStudents->skip(1)->take(4) as $index => $student)
                         @php
                             $houseClass = strtolower(str_replace(' ', '', $student->house_name ?? 'gryffindor'));
                             $houseEmoji = match ($houseClass) {
