@@ -35,6 +35,8 @@ class BroadcastMessageController extends Controller
             ->latest('created_at')
             ->first();
 
-        return response()->json($message);
+        return response()->json([
+            'message' => $message?->message,
+        ]);
     }
 }
