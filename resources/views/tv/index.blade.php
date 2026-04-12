@@ -513,6 +513,91 @@
         .top-item.hufflepuff .top-name {
             color: #facc15;
         }
+
+        .weather-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .weather-title {
+            font-size: clamp(40px, 6vw, 80px);
+            font-weight: 800;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .weather-location {
+            font-size: clamp(16px, 2vw, 28px);
+            font-weight: 600;
+            margin-top: 10px;
+            opacity: 0.7;
+            letter-spacing: 0.08em;
+        }
+
+        .weather-graph {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 60%;
+        }
+
+        .weather-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: clamp(28px, 4vw, 50px);
+            font-weight: 700;
+            padding: 12px 24px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.05);
+        }
+
+        .weather-time {
+            flex: 0 0 auto;
+            min-width: clamp(100px, 14vw, 180px);
+            opacity: 0.8;
+        }
+
+        .weather-bar {
+            flex: 1;
+            height: 14px;
+            margin: 0 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .weather-fill {
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                #60a5fa,
+                #4ade80,
+                #facc15
+            );
+            border-radius: 8px;
+        }
+
+        .weather-temp {
+            flex: 0 0 auto;
+            font-weight: 900;
+        }
+
+        .weather-rain {
+            flex: 0 0 auto;
+            min-width: clamp(100px, 12vw, 160px);
+            text-align: right;
+            opacity: 0.8;
+        }
+
+        .weather-row.recess,
+        .weather-row.lunch {
+            border: 2px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.1);
+        }
     </style>
 </head>
 
@@ -690,6 +775,70 @@
                     <span class="top-name">🦁 NOAH</span>
                     <span class="top-sep">—</span>
                     <span class="top-points">85 pts</span>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="tv-screen" id="screen-weather">
+
+        <div class="weather-container">
+
+            <div class="weather-title">
+                ☁️ TODAY'S WEATHER
+                <div class="weather-location">
+                    AUSTINS FERRY, TASMANIA
+                </div>
+            </div>
+
+            <div class="weather-graph">
+
+                <div class="weather-row">
+                    <span class="weather-time">8AM</span>
+                    <span class="weather-bar">
+                        <span class="weather-fill" style="width: 48%"></span>
+                    </span>
+                    <span class="weather-temp">14°</span>
+                    <span class="weather-rain">🌧 20%</span>
+                </div>
+
+                <div class="weather-row recess">
+                    <span class="weather-time">RECESS</span>
+                    <span class="weather-bar">
+                        <span class="weather-fill" style="width: 60%"></span>
+                    </span>
+                    <span class="weather-temp">16°</span>
+                    <span class="weather-rain">🌧 10%</span>
+                </div>
+
+                <div class="weather-row">
+                    <span class="weather-time">12PM</span>
+                    <span class="weather-bar">
+                        <span class="weather-fill" style="width: 72%"></span>
+                    </span>
+                    <span class="weather-temp">18°</span>
+                    <span class="weather-rain">🌧 5%</span>
+                </div>
+
+                <div class="weather-row lunch">
+                    <span class="weather-time">LUNCH</span>
+                    <span class="weather-bar">
+                        <span class="weather-fill" style="width: 78%"></span>
+                    </span>
+                    <span class="weather-temp">19°</span>
+                    <span class="weather-rain">🌧 15%</span>
+                </div>
+
+                <div class="weather-row">
+                    <span class="weather-time">3PM</span>
+                    <span class="weather-bar">
+                        <span class="weather-fill" style="width: 66%"></span>
+                    </span>
+                    <span class="weather-temp">17°</span>
+                    <span class="weather-rain">🌧 25%</span>
                 </div>
 
             </div>
