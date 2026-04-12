@@ -11,6 +11,11 @@ class Student extends Model
 {
     use HasFactory;
 
+    public function house()
+    {
+        return $this->belongsTo(House::class, 'house_name', 'name');
+    }
+
     /**
      * Get the student's full name.
      */

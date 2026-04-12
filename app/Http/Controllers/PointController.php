@@ -224,21 +224,9 @@ class PointController extends Controller
             return Carbon::parse($d)->format('D');
         });
 
-        $topStudents = DB::table('point_transactions')
-            ->join('students', 'point_transactions.student_id', '=', 'students.id')
-            ->leftJoin('houses', 'students.house_id', '=', 'houses.id')
-            ->select(
-                'students.id',
-                'students.first_name',
-                'students.last_name',
-                DB::raw('MAX(houses.name) as house_name'),
-                DB::raw('SUM(point_transactions.amount) as total')
-            )
-            ->where('point_transactions.created_at', '>=', now()->subDays(7))
-            ->whereNotNull('point_transactions.student_id')
-            ->groupBy('students.id', 'students.first_name', 'students.last_name')
-            ->orderByDesc('total')
-            ->limit(30)
+        $topStudents = \App\Models\Student::with('house')
+            ->orderByDesc('house_points')
+            ->limit(5)
             ->get();
 
         $topTeachers = DB::table('point_transactions')
