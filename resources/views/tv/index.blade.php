@@ -511,10 +511,63 @@
             margin-bottom: 40px;
         }
 
+        .top-hero {
+            font-size: clamp(80px, 10vw, 160px);
+            font-weight: 900;
+            text-align: center;
+            color: #fff;
+            margin-bottom: 40px;
+            text-shadow:
+                0 0 30px rgba(255, 255, 255, 0.2),
+                0 0 60px rgba(255, 215, 0, 0.4);
+            animation: goldPulse 3s ease-in-out infinite;
+        }
+
+        .hero-points {
+            font-size: clamp(40px, 5vw, 80px);
+            opacity: 0.8;
+        }
+
+        @keyframes goldPulse {
+            0%, 100% {
+                text-shadow:
+                    0 0 20px rgba(255, 215, 0, 0.4),
+                    0 0 40px rgba(255, 215, 0, 0.3);
+            }
+            50% {
+                text-shadow:
+                    0 0 40px rgba(255, 215, 0, 0.8),
+                    0 0 80px rgba(255, 215, 0, 0.6);
+            }
+        }
+
         .top-list {
             display: flex;
             flex-direction: column;
             gap: 20px;
+        }
+
+        .student-row {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.6s ease forwards;
+            transition: opacity 0.3s;
+        }
+
+        .student-row:nth-child(1) { animation-delay: 0.1s; }
+        .student-row:nth-child(2) { animation-delay: 0.2s; }
+        .student-row:nth-child(3) { animation-delay: 0.3s; }
+        .student-row:nth-child(4) { animation-delay: 0.4s; }
+
+        .student-row:hover {
+            opacity: 1;
+        }
+
+        @keyframes fadeUp {
+            to {
+                opacity: 0.7;
+                transform: translateY(0);
+            }
         }
 
         .top-item {
@@ -791,44 +844,33 @@
                 🏆 TOP STUDENTS
             </div>
 
-            <div class="top-list">
-
-                <div class="top-item gryffindor">
-                    <span class="top-rank">1.</span>
-                    <span class="top-name">🦁 JOSH</span>
-                    <span class="top-sep">—</span>
-                    <span class="top-points">120 pts</span>
+            @if($topStudents->isNotEmpty())
+                <div class="top-hero">
+                    🏆 {{ $topStudents[0]->name }}
+                    <div class="hero-points">{{ $topStudents[0]->house_points }} pts</div>
                 </div>
 
-                <div class="top-item slytherin">
-                    <span class="top-rank">2.</span>
-                    <span class="top-name">🐍 EMMA</span>
-                    <span class="top-sep">—</span>
-                    <span class="top-points">110 pts</span>
+                <div class="top-list">
+                    @foreach($topStudents->skip(1) as $index => $student)
+                        @php
+                            $houseClass = strtolower(str_replace(' ', '', $student->house_name ?? 'gryffindor'));
+                            $houseEmoji = match ($houseClass) {
+                                'gryffindor' => '🦁',
+                                'slytherin' => '🐍',
+                                'ravenclaw' => '🦅',
+                                'hufflepuff' => '🦡',
+                                default => '⭐',
+                            };
+                        @endphp
+                        <div class="student-row top-item {{ $houseClass }}">
+                            <span class="top-rank">{{ $index + 2 }}.</span>
+                            <span class="top-name">{{ $houseEmoji }} {{ strtoupper($student->name) }}</span>
+                            <span class="top-sep">—</span>
+                            <span class="top-points">{{ $student->house_points }} pts</span>
+                        </div>
+                    @endforeach
                 </div>
-
-                <div class="top-item ravenclaw">
-                    <span class="top-rank">3.</span>
-                    <span class="top-name">🦅 LIAM</span>
-                    <span class="top-sep">—</span>
-                    <span class="top-points">95 pts</span>
-                </div>
-
-                <div class="top-item hufflepuff">
-                    <span class="top-rank">4.</span>
-                    <span class="top-name">🦡 OLIVIA</span>
-                    <span class="top-sep">—</span>
-                    <span class="top-points">90 pts</span>
-                </div>
-
-                <div class="top-item gryffindor">
-                    <span class="top-rank">5.</span>
-                    <span class="top-name">🦁 NOAH</span>
-                    <span class="top-sep">—</span>
-                    <span class="top-points">85 pts</span>
-                </div>
-
-            </div>
+            @endif
 
         </div>
 
