@@ -887,14 +887,6 @@
                 🏆 TOP STUDENTS
             </div>
 
-            <div style="position:absolute; top:100px; left:20px; color:white; font-size:20px; z-index:9999;">
-                <strong>DEBUG:</strong><br>
-
-                @foreach($topStudents as $i => $s)
-                    {{ $i }} — {{ $s->name }} — {{ $s->house_points }} pts<br>
-                @endforeach
-            </div>
-
             @if($leader)
                 <div class="top-hero">
                     <div class="crown">👑</div>
