@@ -530,7 +530,7 @@
         <div class="tv-layout">
 
             <div class="hero-house">
-                <div class="house-card {{ strtolower($series[0]['name'] ?? 'gryffindor') }} winner">
+                <div class="house-card {{ strtolower(str_replace(' ', '', $series[0]['name'] ?? 'gryffindor')) }} winner">
 
                     <div class="rank">#1</div>
 
@@ -549,7 +549,7 @@
                 @foreach($series as $index => $house)
                     @if($index > 0)
                         <div class="mini-house">
-                            <div class="house-card {{ strtolower($house['name'] ?? 'gryffindor') }}">
+                            <div class="house-card {{ strtolower(str_replace(' ', '', $house['name'] ?? 'gryffindor')) }}">
 
                                 <div class="rank">#{{ $index + 1 }}</div>
 
