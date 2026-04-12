@@ -286,6 +286,23 @@
             z-index: 10001;
         }
 
+        @keyframes firePulse {
+            0%   { transform: scale(1); }
+            50%  { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes streakFadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         .streak-container {
             height: 100vh;
             display: flex;
@@ -310,6 +327,28 @@
         .streak-item {
             display: flex;
             flex-direction: column;
+            animation: streakFadeIn 0.6s ease-out;
+        }
+
+        .streak-item:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .streak-item:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        .streak-item:first-child {
+            transform: scale(1.1);
+            opacity: 1;
+        }
+
+        .streak-item:not(:first-child) {
+            opacity: 0.7;
+        }
+
+        .streak-item:first-child .streak-name {
+            animation: firePulse 2.5s ease-in-out infinite;
         }
 
         .streak-name {
@@ -319,6 +358,8 @@
 
         .streak-value {
             font-size: clamp(28px, 4vw, 50px);
+            font-weight: 900;
+            letter-spacing: 0.05em;
             opacity: 0.8;
         }
     </style>
