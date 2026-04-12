@@ -457,6 +457,62 @@
         .activity-item.hufflepuff .activity-house {
             color: #facc15;
         }
+
+        .top-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .top-title {
+            font-size: clamp(40px, 6vw, 80px);
+            font-weight: 800;
+            margin-bottom: 40px;
+        }
+
+        .top-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .top-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: clamp(30px, 4.5vw, 55px);
+            font-weight: 700;
+        }
+
+        .top-rank {
+            opacity: 0.6;
+        }
+
+        .top-sep {
+            opacity: 0.5;
+        }
+
+        .top-points {
+            font-weight: 900;
+        }
+
+        .top-item.gryffindor .top-name {
+            color: #ff4d4d;
+        }
+
+        .top-item.slytherin .top-name {
+            color: #4ade80;
+        }
+
+        .top-item.ravenclaw .top-name {
+            color: #60a5fa;
+        }
+
+        .top-item.hufflepuff .top-name {
+            color: #facc15;
+        }
     </style>
 </head>
 
@@ -583,6 +639,57 @@
                     <span class="activity-house">Ravenclaw</span>
                     <span class="activity-sep">—</span>
                     <span class="activity-student">Liam</span>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="tv-screen" id="screen-4">
+
+        <div class="top-container">
+
+            <div class="top-title">
+                🏆 TOP STUDENTS
+            </div>
+
+            <div class="top-list">
+
+                <div class="top-item gryffindor">
+                    <span class="top-rank">1.</span>
+                    <span class="top-name">🦁 JOSH</span>
+                    <span class="top-sep">—</span>
+                    <span class="top-points">120 pts</span>
+                </div>
+
+                <div class="top-item slytherin">
+                    <span class="top-rank">2.</span>
+                    <span class="top-name">🐍 EMMA</span>
+                    <span class="top-sep">—</span>
+                    <span class="top-points">110 pts</span>
+                </div>
+
+                <div class="top-item ravenclaw">
+                    <span class="top-rank">3.</span>
+                    <span class="top-name">🦅 LIAM</span>
+                    <span class="top-sep">—</span>
+                    <span class="top-points">95 pts</span>
+                </div>
+
+                <div class="top-item hufflepuff">
+                    <span class="top-rank">4.</span>
+                    <span class="top-name">🦡 OLIVIA</span>
+                    <span class="top-sep">—</span>
+                    <span class="top-points">90 pts</span>
+                </div>
+
+                <div class="top-item gryffindor">
+                    <span class="top-rank">5.</span>
+                    <span class="top-name">🦁 NOAH</span>
+                    <span class="top-sep">—</span>
+                    <span class="top-points">85 pts</span>
                 </div>
 
             </div>
