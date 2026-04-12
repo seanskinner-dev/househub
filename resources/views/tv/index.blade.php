@@ -1,25 +1,10 @@
-<!-- AUTOSAVE TEST -->
-
 @extends('layouts.app')
 
 @section('content')
 
 <div class="tv-container">
 
-    <div id="broadcastBanner" style="
-    position:fixed;
-    top:0;
-    left:0;
-    width:100%;
-    background:#dc2626;
-    color:white;
-    text-align:center;
-    font-size:40px;
-    font-weight:bold;
-    padding:20px;
-    display:none;
-    z-index:9999;
-"></div>
+    <div id="broadcastBanner" class="tv-broadcast-banner" role="status" aria-live="polite"></div>
 
     <!-- SCREEN 1 -->
     <div class="tv-screen" id="screen-1">
@@ -138,6 +123,8 @@ document.addEventListener("DOMContentLoaded", function () {
     let currentScreen = 0;
     const screens = document.querySelectorAll('.tv-screen');
     let chartRendered = false;
+    const broadcastUrl = @json(route('broadcast-messages.latest'));
+    const broadcastBanner = document.getElementById('broadcastBanner');
 
     function showScreen(index) {
         screens.forEach((s, i) => {
@@ -175,28 +162,30 @@ document.addEventListener("DOMContentLoaded", function () {
         }).render();
     }
 
+    function fetchBroadcast() {
+        if (!broadcastBanner) return;
+
+        fetch(broadcastUrl)
+            .then(function (res) {
+                if (!res.ok) throw new Error('broadcast fetch failed');
+                return res.json();
+            })
+            .then(function (data) {
+                if (data && data.message) {
+                    broadcastBanner.textContent = data.message;
+                    broadcastBanner.style.display = 'block';
+                } else {
+                    broadcastBanner.style.display = 'none';
+                }
+            })
+            .catch(function () {
+                broadcastBanner.style.display = 'none';
+            });
+    }
+
+    fetchBroadcast();
+    setInterval(fetchBroadcast, 5000);
 });
-
-setInterval(fetchBroadcast, 5000);
-
-function fetchBroadcast() {
-    fetch('/broadcast-messages/latest')
-    .then(res => res.json())
-    .then(data => {
-
-        let banner = document.getElementById('broadcastBanner');
-
-        if (data && data.message) {
-            banner.innerText = data.message;
-            banner.style.display = 'block';
-        } else {
-            banner.style.display = 'none';
-        }
-
-    });
-}
-
-fetchBroadcast();
 </script>
 
 @endpush
@@ -210,6 +199,21 @@ fetchBroadcast();
     width: 100vw;
     background: #0f172a;
     color: white;
+}
+
+.tv-broadcast-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: #dc2626;
+    color: white;
+    text-align: center;
+    font-size: 40px;
+    font-weight: bold;
+    padding: 20px;
+    display: none;
+    z-index: 9999;
 }
 
 /* FIXED SCREEN HEIGHT */

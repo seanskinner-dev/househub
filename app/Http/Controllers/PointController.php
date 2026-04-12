@@ -93,9 +93,13 @@ class PointController extends Controller
                         ->where('id', $student->id)
                         ->increment('house_points', $amount);
 
-                    $house = DB::table('houses')
-                        ->where('name', $student->house_name)
-                        ->first();
+                    $house = null;
+                    if (! empty($student->house_id)) {
+                        $house = DB::table('houses')->where('id', $student->house_id)->first();
+                    }
+                    if (! $house && ! empty($student->house_name)) {
+                        $house = DB::table('houses')->where('name', $student->house_name)->first();
+                    }
 
                     if ($house) {
                         DB::table('houses')
@@ -157,11 +161,12 @@ class PointController extends Controller
     {
         $award = DB::table('awards')
             ->leftJoin('students', 'awards.student_id', '=', 'students.id')
+            ->leftJoin('houses', 'students.house_id', '=', 'houses.id')
             ->select(
                 'awards.*',
                 'students.first_name',
                 'students.last_name',
-                'students.house_name'
+                'houses.name as house_name'
             )
             ->where('awards.id', $id)
             ->first();
@@ -221,20 +226,17 @@ class PointController extends Controller
 
         $topStudents = DB::table('point_transactions')
             ->join('students', 'point_transactions.student_id', '=', 'students.id')
+            ->leftJoin('houses', 'students.house_id', '=', 'houses.id')
             ->select(
                 'students.id',
                 'students.first_name',
                 'students.last_name',
-                'students.house_name',
+                DB::raw('MAX(houses.name) as house_name'),
                 DB::raw('SUM(point_transactions.amount) as total')
             )
             ->where('point_transactions.created_at', '>=', now()->subDays(7))
-            ->groupBy(
-                'students.id',
-                'students.first_name',
-                'students.last_name',
-                'students.house_name'
-            )
+            ->whereNotNull('point_transactions.student_id')
+            ->groupBy('students.id', 'students.first_name', 'students.last_name')
             ->orderByDesc('total')
             ->limit(30)
             ->get();
