@@ -268,7 +268,6 @@ document.addEventListener("DOMContentLoaded", function () {
     background: #dc2626;
     color: white;
 
-    display: flex;
     align-items: center;
     justify-content: center;
 
