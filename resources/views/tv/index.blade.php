@@ -61,13 +61,57 @@
             overflow: hidden;
         }
 
-        .house-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1fr 1fr;
+        .tv-layout {
+            display: flex;
+            flex-direction: column;
             height: 100vh;
-            width: 100vw;
-            gap: 0;
+            width: 100%;
+            min-height: 0;
+        }
+
+        .hero-house {
+            flex: 0 0 65%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-height: 0;
+        }
+
+        .hero-house > .house-card {
+            width: 100%;
+            height: 100%;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .hero-house .house-card.winner {
+            filter: brightness(1.15);
+        }
+
+        .other-houses {
+            flex: 0 0 35%;
+            display: flex;
+            flex-direction: row;
+            min-height: 0;
+            width: 100%;
+        }
+
+        .mini-house {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: stretch;
+            min-width: 0;
+            opacity: 0.85;
+        }
+
+        .mini-house > .house-card {
+            flex: 1;
+            width: 100%;
+            min-height: 0;
         }
 
         .house-card {
@@ -143,6 +187,34 @@
             text-shadow: 0 8px 30px rgba(0,0,0,0.8);
         }
 
+        .hero-house .house-card .rank {
+            font-size: clamp(28px, 4vw, 42px);
+            margin-bottom: 12px;
+        }
+
+        .hero-house .house-card .house-name {
+            font-size: clamp(40px, 7vw, 80px);
+        }
+
+        .hero-house .house-card .points {
+            font-size: clamp(100px, 24vw, 260px);
+            margin-top: 16px;
+        }
+
+        .mini-house .house-card .rank {
+            font-size: clamp(16px, 2vw, 24px);
+            margin-bottom: 6px;
+        }
+
+        .mini-house .house-card .house-name {
+            font-size: clamp(18px, 3vw, 36px);
+        }
+
+        .mini-house .house-card .points {
+            font-size: clamp(36px, 8vw, 88px);
+            margin-top: 8px;
+        }
+
         @keyframes breathe {
             0%   { transform: scale(1); }
             50%  { transform: scale(1.02); }
@@ -174,22 +246,46 @@
     <div id="broadcastBanner" class="tv-broadcast-banner" role="status" aria-live="polite"></div>
 
     <div class="tv-screen" id="screen-1">
-        <div class="house-grid">
-            @foreach($series as $index => $house)
-                <div class="house-card {{ strtolower($house['name'] ?? 'gryffindor') }} {{ $index === 0 ? 'winner' : '' }}">
+        <div class="tv-layout">
 
-                    <div class="rank">#{{ $index + 1 }}</div>
+            <div class="hero-house">
+                <div class="house-card {{ strtolower($series[0]['name'] ?? 'gryffindor') }} winner">
+
+                    <div class="rank">#1</div>
 
                     <div class="house-name">
-                        {{ strtoupper($house['name']) }}
+                        {{ strtoupper($series[0]['name']) }}
                     </div>
 
-                    <div class="points" data-points="{{ array_sum($house['data'] ?? []) }}">
+                    <div class="points" data-points="{{ array_sum($series[0]['data'] ?? []) }}">
                         0
                     </div>
 
                 </div>
-            @endforeach
+            </div>
+
+            <div class="other-houses">
+                @foreach($series as $index => $house)
+                    @if($index > 0)
+                        <div class="mini-house">
+                            <div class="house-card {{ strtolower($house['name'] ?? 'gryffindor') }}">
+
+                                <div class="rank">#{{ $index + 1 }}</div>
+
+                                <div class="house-name">
+                                    {{ strtoupper($house['name']) }}
+                                </div>
+
+                                <div class="points" data-points="{{ array_sum($house['data'] ?? []) }}">
+                                    0
+                                </div>
+
+                            </div>
+                        </div>
+                    @endif
+                @endforeach
+            </div>
+
         </div>
     </div>
 
