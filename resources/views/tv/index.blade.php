@@ -537,6 +537,38 @@
             letter-spacing: 0.08em;
         }
 
+        .weather-hero {
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .weather-icon.sun {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: #facc15;
+            box-shadow: 0 0 40px rgba(250, 204, 21, 0.6);
+            animation: sunPulse 4s ease-in-out infinite;
+        }
+
+        .weather-icon.rain::before {
+            content: "||||||||||||";
+            display: block;
+            color: #60a5fa;
+            font-size: 20px;
+            animation: rainFall 0.6s linear infinite;
+        }
+
+        .weather-icon.lightning::before {
+            content: "⚡";
+            font-size: 60px;
+            animation: lightningFlash 3s infinite;
+        }
+
         .weather-graph {
             display: flex;
             flex-direction: column;
@@ -597,6 +629,24 @@
         .weather-row.lunch {
             border: 2px solid rgba(255,255,255,0.2);
             background: rgba(255,255,255,0.1);
+        }
+
+        @keyframes sunPulse {
+            0%   { transform: scale(1); box-shadow: 0 0 30px rgba(250,204,21,0.5); }
+            50%  { transform: scale(1.1); box-shadow: 0 0 60px rgba(250,204,21,0.8); }
+            100% { transform: scale(1); box-shadow: 0 0 30px rgba(250,204,21,0.5); }
+        }
+
+        @keyframes rainFall {
+            0%   { transform: translateY(-10px); opacity: 0; }
+            100% { transform: translateY(10px); opacity: 1; }
+        }
+
+        @keyframes lightningFlash {
+            0%, 90%, 100% { opacity: 0; }
+            92% { opacity: 1; }
+            94% { opacity: 0; }
+            96% { opacity: 1; }
         }
     </style>
 </head>
@@ -792,6 +842,14 @@
                 <div class="weather-location">
                     AUSTINS FERRY, TASMANIA
                 </div>
+            </div>
+
+            <div class="weather-hero">
+
+                <div class="weather-icon sun"></div>
+                <div class="weather-icon rain"></div>
+                <div class="weather-icon lightning"></div>
+
             </div>
 
             <div class="weather-graph">
