@@ -405,6 +405,58 @@
         .streak-item:first-child.hufflepuff .streak-name {
             text-shadow: 0 0 20px rgba(250, 204, 21, 0.6);
         }
+
+        .activity-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .activity-title {
+            font-size: clamp(40px, 6vw, 80px);
+            font-weight: 800;
+            margin-bottom: 40px;
+        }
+
+        .activity-list {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: clamp(32px, 5vw, 60px);
+            font-weight: 700;
+        }
+
+        .activity-points {
+            font-weight: 900;
+        }
+
+        .activity-sep {
+            opacity: 0.5;
+        }
+
+        .activity-item.gryffindor .activity-house {
+            color: #ff4d4d;
+        }
+
+        .activity-item.slytherin .activity-house {
+            color: #4ade80;
+        }
+
+        .activity-item.ravenclaw .activity-house {
+            color: #60a5fa;
+        }
+
+        .activity-item.hufflepuff .activity-house {
+            color: #facc15;
+        }
     </style>
 </head>
 
@@ -494,6 +546,43 @@
                         <span class="streak-sep">—</span>
                         <span class="streak-value">3 DAY STREAK</span>
                     </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="tv-screen" id="screen-3">
+
+        <div class="activity-container">
+
+            <div class="activity-title">
+                ⚡ LIVE ACTIVITY
+            </div>
+
+            <div class="activity-list">
+
+                <div class="activity-item gryffindor">
+                    <span class="activity-points">+1</span>
+                    <span class="activity-house">Gryffindor</span>
+                    <span class="activity-sep">—</span>
+                    <span class="activity-student">Josh</span>
+                </div>
+
+                <div class="activity-item slytherin">
+                    <span class="activity-points">+5</span>
+                    <span class="activity-house">Slytherin</span>
+                    <span class="activity-sep">—</span>
+                    <span class="activity-student">Emma</span>
+                </div>
+
+                <div class="activity-item ravenclaw">
+                    <span class="activity-points">+1</span>
+                    <span class="activity-house">Ravenclaw</span>
+                    <span class="activity-sep">—</span>
+                    <span class="activity-student">Liam</span>
                 </div>
 
             </div>
