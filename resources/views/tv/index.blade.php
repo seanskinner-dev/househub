@@ -2,6 +2,10 @@
 
 @section('content')
 
+<pre style="color:white; font-size:20px;">
+{{ print_r($series ?? 'NO DATA', true) }}
+</pre>
+
 <style>
 .page-content {
     padding: 0 !important;
