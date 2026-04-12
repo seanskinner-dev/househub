@@ -63,10 +63,10 @@
 
         .tv-screen {
             display: none;
+            flex-direction: column;
             height: 100vh;
             width: 100vw;
             overflow: hidden;
-            flex-direction: column;
             box-sizing: border-box;
         }
 
@@ -498,34 +498,57 @@
         .house.hufflepuff { color: #facc15; }
 
         .top-container {
-            height: 100vh;
+            flex: 1;
+            min-height: 0;
+            width: 100%;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-sizing: border-box;
+            padding: 12px 20px;
         }
 
         .top-title {
+            flex-shrink: 0;
             font-size: clamp(40px, 6vw, 80px);
             font-weight: 800;
-            margin-bottom: 40px;
+            margin-bottom: 20px;
         }
 
         .top-hero {
-            font-size: clamp(80px, 10vw, 160px);
-            font-weight: 900;
+            flex-shrink: 0;
             text-align: center;
             color: #fff;
-            margin-bottom: 40px;
+            margin-bottom: 20px;
+        }
+
+        .top-hero .hero-name {
+            font-size: clamp(80px, 10vw, 160px);
+            font-weight: 900;
             text-shadow:
                 0 0 30px rgba(255, 255, 255, 0.2),
                 0 0 60px rgba(255, 215, 0, 0.4);
             animation: goldPulse 3s ease-in-out infinite;
         }
 
+        .top-hero .hero-house {
+            font-size: clamp(24px, 3vw, 40px);
+            font-weight: 700;
+            opacity: 0.8;
+            margin-top: 10px;
+        }
+
+        .top-hero .hero-house.gryffindor { color: #ef4444; }
+        .top-hero .hero-house.slytherin { color: #22c55e; }
+        .top-hero .hero-house.ravenclaw { color: #60a5fa; }
+        .top-hero .hero-house.hufflepuff { color: #facc15; }
+
         .hero-points {
             font-size: clamp(40px, 5vw, 80px);
             opacity: 0.8;
+            margin-top: 5px;
         }
 
         @keyframes goldPulse {
@@ -542,12 +565,20 @@
         }
 
         .top-list {
+            flex: 1;
+            min-height: 0;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            max-width: 1100px;
+            overflow: hidden;
         }
 
         .student-row {
+            font-size: clamp(28px, 3vw, 48px);
+            line-height: 1.2;
             opacity: 0;
             transform: translateY(20px);
             animation: fadeUp 0.6s ease forwards;
@@ -574,8 +605,11 @@
             display: flex;
             align-items: center;
             gap: 16px;
-            font-size: clamp(30px, 4.5vw, 55px);
             font-weight: 700;
+        }
+
+        .student-row.top-item {
+            font-size: clamp(28px, 3vw, 48px);
         }
 
         .top-rank {
@@ -845,9 +879,19 @@
             </div>
 
             @if($topStudents->isNotEmpty())
+                @php
+                    $heroHouseKey = strtolower(str_replace(' ', '', $topStudents[0]->house?->name ?? ''));
+                @endphp
                 <div class="top-hero">
-                    🏆 {{ $topStudents[0]->name }}
-                    <div class="hero-points">{{ $topStudents[0]->house_points }} pts</div>
+                    <div class="hero-name">
+                        🏆 {{ $topStudents[0]->name }}
+                    </div>
+                    <div class="hero-house {{ $heroHouseKey }}">
+                        {{ $topStudents[0]->house?->name ?? '' }}
+                    </div>
+                    <div class="hero-points">
+                        {{ $topStudents[0]->house_points }} pts
+                    </div>
                 </div>
 
                 <div class="top-list">
