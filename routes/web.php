@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\OfficeMessageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PointController;
 
@@ -30,6 +31,12 @@ Route::middleware(['auth'])->group(function () {
     // =============================
     Route::get('/points', [PointController::class, 'index'])->name('points.index');
     Route::post('/points', [PointController::class, 'store'])->name('points.store');
+
+    // =============================
+    // OFFICE MESSAGE MODE (OMM)
+    // =============================
+    Route::post('/office-messages', [OfficeMessageController::class, 'store'])->name('office-messages.store');
+    Route::patch('/office-messages/{id}', [OfficeMessageController::class, 'update'])->name('office-messages.update');
 
     // =============================
     // STUDENT PROFILE
