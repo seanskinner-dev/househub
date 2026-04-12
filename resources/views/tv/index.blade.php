@@ -362,6 +362,38 @@
             letter-spacing: 0.05em;
             opacity: 0.8;
         }
+
+        .streak-item.gryffindor .streak-name {
+            color: #ff4d4d;
+        }
+
+        .streak-item.slytherin .streak-name {
+            color: #4ade80;
+        }
+
+        .streak-item.ravenclaw .streak-name {
+            color: #60a5fa;
+        }
+
+        .streak-item.hufflepuff .streak-name {
+            color: #facc15;
+        }
+
+        .streak-item:first-child.gryffindor .streak-name {
+            text-shadow: 0 0 20px rgba(255, 77, 77, 0.6);
+        }
+
+        .streak-item:first-child.slytherin .streak-name {
+            text-shadow: 0 0 20px rgba(74, 222, 128, 0.6);
+        }
+
+        .streak-item:first-child.ravenclaw .streak-name {
+            text-shadow: 0 0 20px rgba(96, 165, 250, 0.6);
+        }
+
+        .streak-item:first-child.hufflepuff .streak-name {
+            text-shadow: 0 0 20px rgba(250, 204, 21, 0.6);
+        }
     </style>
 </head>
 
@@ -429,18 +461,18 @@
 
             <div class="streak-list">
 
-                <div class="streak-item">
-                    <div class="streak-name">JOSH</div>
+                <div class="streak-item gryffindor">
+                    <div class="streak-name">🦁 JOSH</div>
                     <div class="streak-value">5 DAY STREAK</div>
                 </div>
 
-                <div class="streak-item">
-                    <div class="streak-name">EMMA</div>
+                <div class="streak-item slytherin">
+                    <div class="streak-name">🐍 EMMA</div>
                     <div class="streak-value">4 DAY STREAK</div>
                 </div>
 
-                <div class="streak-item">
-                    <div class="streak-name">LIAM</div>
+                <div class="streak-item ravenclaw">
+                    <div class="streak-name">🦅 LIAM</div>
                     <div class="streak-value">3 DAY STREAK</div>
                 </div>
 
