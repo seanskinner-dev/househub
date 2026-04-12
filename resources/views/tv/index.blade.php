@@ -538,12 +538,27 @@
         }
 
         .weather-hero {
-            height: 200px;
+            height: 180px;
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 40px;
             margin-bottom: 40px;
+        }
+
+        .weather-icon {
+            display: none;
+        }
+
+        .weather-hero.sun-active .sun {
+            display: block;
+        }
+
+        .weather-hero.rain-active .rain {
+            display: block;
+        }
+
+        .weather-hero.storm-active .lightning {
+            display: block;
         }
 
         .weather-icon.sun {
@@ -551,21 +566,31 @@
             height: 120px;
             border-radius: 50%;
             background: #facc15;
-            box-shadow: 0 0 40px rgba(250, 204, 21, 0.6);
-            animation: sunPulse 4s ease-in-out infinite;
         }
 
         .weather-icon.rain::before {
-            content: "||||||||||||";
-            display: block;
-            color: #60a5fa;
-            font-size: 20px;
-            animation: rainFall 0.6s linear infinite;
+            content: "🌧";
+            font-size: 80px;
         }
 
         .weather-icon.lightning::before {
             content: "⚡";
-            font-size: 60px;
+            font-size: 80px;
+        }
+
+        .sun {
+            animation: sunPulse 4s ease-in-out infinite;
+        }
+
+        .rain::before {
+            display: block;
+            line-height: 1;
+            animation: rainBounce 1s ease-in-out infinite;
+        }
+
+        .lightning::before {
+            display: block;
+            line-height: 1;
             animation: lightningFlash 3s infinite;
         }
 
@@ -632,14 +657,13 @@
         }
 
         @keyframes sunPulse {
-            0%   { transform: scale(1); box-shadow: 0 0 30px rgba(250,204,21,0.5); }
-            50%  { transform: scale(1.1); box-shadow: 0 0 60px rgba(250,204,21,0.8); }
-            100% { transform: scale(1); box-shadow: 0 0 30px rgba(250,204,21,0.5); }
+            0%, 100% { transform: scale(1); }
+            50%      { transform: scale(1.08); }
         }
 
-        @keyframes rainFall {
-            0%   { transform: translateY(-10px); opacity: 0; }
-            100% { transform: translateY(10px); opacity: 1; }
+        @keyframes rainBounce {
+            0%, 100% { transform: translateY(0); }
+            50%      { transform: translateY(10px); }
         }
 
         @keyframes lightningFlash {
@@ -844,7 +868,7 @@
                 </div>
             </div>
 
-            <div class="weather-hero">
+            <div class="weather-hero rain-active">
 
                 <div class="weather-icon sun"></div>
                 <div class="weather-icon rain"></div>
