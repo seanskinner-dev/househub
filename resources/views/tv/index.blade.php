@@ -742,10 +742,25 @@
         .weather-description {
             font-size: clamp(28px, 4vw, 50px);
             text-align: center;
-            opacity: 0.8;
+            font-weight: 700;
             margin-top: 12px;
-            font-weight: 600;
             letter-spacing: 0.04em;
+            transition: all 0.5s ease;
+        }
+
+        .weather-good {
+            color: #4ade80;
+            text-shadow: 0 0 20px rgba(74, 222, 128, 0.4);
+        }
+
+        .weather-warning {
+            color: #facc15;
+            text-shadow: 0 0 20px rgba(250, 204, 21, 0.4);
+        }
+
+        .weather-bad {
+            color: #f87171;
+            text-shadow: 0 0 20px rgba(248, 113, 113, 0.4);
         }
 
         .weather-secondary {
@@ -1017,15 +1032,47 @@
                         {{ $weather[1]['temp'] }}°
                     </div>
 
-                    <div class="weather-description">
-                        @if($maxCode >= 95 || $maxRain >= 60)
-                            Storm Conditions
-                        @elseif($maxRain >= 40)
-                            Rain Expected
-                        @elseif($maxCode >= 2)
-                            Cloudy
+                    @php
+                        $recessRain = (collect($weather)->firstWhere('label', 'RECESS') ?? [])['rain'] ?? 0;
+                        $lunchRain = (collect($weather)->firstWhere('label', 'LUNCH') ?? [])['rain'] ?? 0;
+
+                        $rainThreshold = 40;
+                        $heavyThreshold = 70;
+
+                        $desc = '';
+                        $severityClass = 'weather-good';
+
+                        if ($recessRain >= $rainThreshold && $lunchRain >= $rainThreshold) {
+                            $desc = 'Rain at Recess & Lunch';
+                            $severityClass = ($recessRain >= $heavyThreshold || $lunchRain >= $heavyThreshold)
+                                ? 'weather-bad'
+                                : 'weather-warning';
+                        } elseif ($recessRain >= $rainThreshold) {
+                            $desc = 'Rain at Recess';
+                            $severityClass = ($recessRain >= $heavyThreshold)
+                                ? 'weather-bad'
+                                : 'weather-warning';
+                        } elseif ($lunchRain >= $rainThreshold) {
+                            $desc = 'Rain at Lunch';
+                            $severityClass = ($lunchRain >= $heavyThreshold)
+                                ? 'weather-bad'
+                                : 'weather-warning';
+                        } elseif ($maxRain >= $rainThreshold) {
+                            $desc = 'Showers Today';
+                            $severityClass = 'weather-warning';
+                        } else {
+                            $desc = 'No Rain During Breaks';
+                            $severityClass = 'weather-good';
+                        }
+                    @endphp
+
+                    <div class="weather-description {{ $severityClass }}">
+                        @if($severityClass === 'weather-bad')
+                            🌧 {{ $desc }}
+                        @elseif($severityClass === 'weather-warning')
+                            🌦 {{ $desc }}
                         @else
-                            Clear Skies
+                            ☀️ {{ $desc }}
                         @endif
                     </div>
 
