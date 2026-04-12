@@ -18,7 +18,9 @@
             height: 100vh;
             width: 100vw;
             overflow: hidden;
-            background: #0f172a;
+            background:
+                radial-gradient(circle at center, rgba(0,0,0,0) 60%, rgba(0,0,0,0.7) 100%),
+                #0f172a;
             color: #fff;
         }
 
@@ -78,38 +80,78 @@
             padding: 16px;
             min-height: 0;
             min-width: 0;
-            background: #334155;
+            transform-origin: center center;
+            box-shadow:
+                inset 0 0 80px rgba(0,0,0,0.3),
+                0 20px 60px rgba(0,0,0,0.5);
+            background-image: linear-gradient(
+                145deg,
+                rgba(255,255,255,0.08),
+                rgba(0,0,0,0.2)
+            );
+            background-color: #334155;
             color: #fff;
+            animation: breathe 6s ease-in-out infinite;
         }
 
-        .house-card.gryffindor { background: #740001; color: #fff; }
-        .house-card.slytherin  { background: #1a472a; color: #fff; }
-        .house-card.ravenclaw  { background: #0e1a40; color: #fff; }
-        .house-card.hufflepuff { background: #ffcc00; color: #111; }
+        .house-card.gryffindor {
+            background-color: #740001;
+            color: #fff;
+        }
+        .house-card.slytherin {
+            background-color: #1a472a;
+            color: #fff;
+        }
+        .house-card.ravenclaw {
+            background-color: #0e1a40;
+            color: #fff;
+        }
+        .house-card.hufflepuff {
+            background-color: #ffcc00;
+            color: #111;
+        }
 
         .house-card.winner {
-            transform: scale(1.05);
             transform-origin: center center;
             z-index: 2;
+            box-shadow:
+                inset 0 0 80px rgba(0,0,0,0.3),
+                0 20px 60px rgba(0,0,0,0.5),
+                0 0 100px rgba(255,255,255,0.25);
+            filter: brightness(1.1);
+            animation: breatheWinner 6s ease-in-out infinite;
         }
 
         .house-card .rank {
             font-size: clamp(22px, 3vw, 32px);
-            opacity: 0.85;
+            opacity: 0.6;
             margin-bottom: 8px;
         }
 
         .house-card .house-name {
             font-size: clamp(28px, 5vw, 56px);
             font-weight: bold;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.08em;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.6);
         }
 
         .house-card .points {
             font-size: clamp(64px, 14vw, 140px);
-            font-weight: bold;
+            font-weight: 900;
             margin-top: 12px;
             line-height: 1;
+            text-shadow: 0 8px 30px rgba(0,0,0,0.8);
+        }
+
+        @keyframes breathe {
+            0%   { transform: scale(1); }
+            50%  { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes breatheWinner {
+            0%, 100% { transform: scale(1.05); }
+            50%      { transform: scale(1.071); }
         }
 
         .next-btn {
