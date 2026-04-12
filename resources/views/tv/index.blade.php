@@ -521,38 +521,40 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 20px 0;
+            padding: 24px 16px 16px;
             min-height: 0;
             overflow: hidden;
         }
 
-        .weather-title {
-            text-align: center;
-            font-size: clamp(40px, 6vw, 80px);
-            font-weight: 800;
-            margin-bottom: 20px;
-            flex-shrink: 0;
-        }
-
-        .weather-location {
-            font-size: clamp(16px, 2vw, 28px);
-            opacity: 0.7;
-            margin-top: 8px;
-        }
-
         .weather-hero {
-            height: 120px;
+            flex: 1;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            flex-shrink: 0;
+            min-height: 0;
         }
 
-        .weather-icon {
+        .weather-scene {
+            height: 200px;
+            position: relative;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .weather-scene > div {
             display: none;
         }
 
         .weather-hero.sun-active .sun {
+            display: block;
+        }
+
+        .weather-hero.cloud-active .cloud {
             display: block;
         }
 
@@ -564,163 +566,134 @@
             display: block;
         }
 
-        .weather-hero.cloud-active .cloud {
-            display: block;
+        .sun {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: #facc15;
+            box-shadow: 0 0 80px rgba(250, 204, 21, 0.7);
+            animation: weatherSunPulse 6s ease-in-out infinite;
+        }
+
+        @keyframes weatherSunPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.06); }
         }
 
         .cloud {
-            width: 120px;
-            height: 60px;
-            background: #cbd5f5;
-            border-radius: 50px;
-            position: relative;
-            animation: cloudDrift 8s ease-in-out infinite;
-        }
-
-        .cloud::before,
-        .cloud::after {
-            content: '';
-            position: absolute;
-            background: #cbd5f5;
-            border-radius: 50%;
-        }
-
-        .cloud::before {
-            width: 70px;
-            height: 70px;
-            top: -30px;
-            left: 10px;
-        }
-
-        .cloud::after {
-            width: 90px;
+            width: 180px;
             height: 90px;
-            top: -40px;
-            right: 10px;
+            background: #e2e8f0;
+            border-radius: 50px;
+            animation: weatherCloudDrift 10s ease-in-out infinite;
         }
 
-        @keyframes cloudDrift {
-            0% { transform: translateX(-10px); }
-            50% { transform: translateX(10px); }
-            100% { transform: translateX(-10px); }
+        @keyframes weatherCloudDrift {
+            0% { transform: translateX(-12px); }
+            50% { transform: translateX(12px); }
+            100% { transform: translateX(-12px); }
         }
 
-        .sun {
-            width: 100px;
-            height: 100px;
-            background: #facc15;
-            border-radius: 50%;
-            animation: sunPulse 4s ease-in-out infinite;
-        }
-
-        @keyframes sunPulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.08); }
-            100% { transform: scale(1); }
-        }
-
-        .rain-drops {
-            position: relative;
+        .rain {
             width: 120px;
             height: 120px;
+            position: relative;
         }
 
-        .rain-drops span {
+        .rain::before {
+            content: "";
             position: absolute;
-            width: 3px;
-            height: 14px;
-            background: #60a5fa;
-            border-radius: 2px;
-            opacity: 0.8;
-            animation: rainDrop 0.9s linear infinite;
+            left: 50%;
+            top: 0;
+            width: 2px;
+            height: 100%;
+            margin-left: -1px;
+            background: repeating-linear-gradient(
+                transparent,
+                transparent 6px,
+                #60a5fa 6px,
+                #60a5fa 12px
+            );
+            animation: weatherRainFall 1s linear infinite;
+            opacity: 0.85;
         }
 
-        .rain-drops span:nth-child(1) { left: 5%; }
-        .rain-drops span:nth-child(2) { left: 15%; }
-        .rain-drops span:nth-child(3) { left: 25%; }
-        .rain-drops span:nth-child(4) { left: 35%; }
-        .rain-drops span:nth-child(5) { left: 45%; }
-        .rain-drops span:nth-child(6) { left: 55%; }
-        .rain-drops span:nth-child(7) { left: 65%; }
-        .rain-drops span:nth-child(8) { left: 75%; }
-        .rain-drops span:nth-child(9) { left: 85%; }
-        .rain-drops span:nth-child(10) { left: 95%; }
-
-        .rain-drops span:nth-child(odd) {
-            animation-delay: 0.2s;
+        @keyframes weatherRainFall {
+            0% { transform: translateY(-12px); }
+            100% { transform: translateY(12px); }
         }
 
-        .rain-drops span:nth-child(even) {
-            animation-delay: 0.4s;
-        }
-
-        @keyframes rainDrop {
-            0% { top: -10px; opacity: 0; }
-            30% { opacity: 1; }
-            100% { top: 120px; opacity: 0; }
-        }
-
-        .rain-drops.light span:nth-child(n+5) {
-            display: none;
-        }
-
-        .rain-drops.medium span:nth-child(n+8) {
-            display: none;
-        }
-
-        .rain-drops.heavy span {
-            animation-duration: 0.6s;
+        .lightning {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 120px;
+            min-height: 120px;
         }
 
         .lightning::before {
             content: "⚡";
-            font-size: 80px;
-            display: block;
+            font-size: 100px;
             line-height: 1;
-            animation: lightningFlash 3s infinite;
+            opacity: 0;
+            animation: weatherLightningFlash 4s infinite;
         }
 
-        @keyframes lightningFlash {
-            0%, 90%, 100% { opacity: 0; }
-            92% { opacity: 1; }
-            94% { opacity: 0; }
-            96% { opacity: 1; }
+        @keyframes weatherLightningFlash {
+            0%, 88%, 100% { opacity: 0; }
+            90% { opacity: 1; }
+            92% { opacity: 0; }
+            94% { opacity: 1; }
         }
 
-        .weather-graph {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-evenly;
-            min-height: 0;
+        .weather-main {
+            width: 100%;
+            max-width: 960px;
         }
 
-        .weather-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 20px;
+        .weather-temp-main {
+            font-size: clamp(120px, 20vw, 260px);
+            font-weight: 900;
+            text-align: center;
+            line-height: 1;
+            letter-spacing: -0.02em;
+        }
+
+        .weather-description {
             font-size: clamp(28px, 4vw, 50px);
-            font-weight: 700;
+            text-align: center;
+            opacity: 0.8;
+            margin-top: 12px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+        }
+
+        .weather-secondary {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            gap: 12px 8px;
+            padding: 20px;
+            font-size: clamp(22px, 3vw, 36px);
+            opacity: 0.7;
             flex-shrink: 0;
         }
 
-        .weather-time {
-            opacity: 0.8;
+        .weather-mini {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
         }
 
-        .weather-temp {
-            font-weight: 900;
+        .weather-mini span:first-child {
+            font-weight: 600;
+            opacity: 0.85;
         }
 
-        .weather-rain {
-            min-width: clamp(72px, 10vw, 140px);
-            text-align: right;
-            opacity: 0.8;
-        }
-
-        .weather-rain:empty {
-            display: none;
+        .weather-mini span:last-child {
+            font-weight: 800;
         }
     </style>
 </head>
@@ -916,13 +889,6 @@
 
         <div class="weather-container">
 
-            <div class="weather-title">
-                ☁️ TODAY'S WEATHER
-                <div class="weather-location">
-                    AUSTINS FERRY, TASMANIA
-                </div>
-            </div>
-
             <div class="weather-hero
                 @if($maxCode >= 95 || $maxRain >= 60)
                     storm-active
@@ -935,44 +901,44 @@
                 @endif
             ">
 
-                <div class="weather-icon sun"></div>
+                <div class="weather-scene">
 
-                <div class="weather-icon cloud"></div>
+                    <div class="sun"></div>
+                    <div class="cloud"></div>
+                    <div class="rain"></div>
+                    <div class="lightning"></div>
 
-                <div class="weather-icon rain">
-                    <div class="rain-drops
-                        @if($maxRain >= 60)
-                            heavy
-                        @elseif($maxRain >= 40)
-                            medium
-                        @else
-                            light
-                        @endif
-                    ">
-                        @for($i = 0; $i < 10; $i++)
-                            <span></span>
-                        @endfor
-                    </div>
                 </div>
 
-                <div class="weather-icon lightning"></div>
+                <div class="weather-main">
+
+                    <div class="weather-temp-main">
+                        {{ $weather[1]['temp'] }}°
+                    </div>
+
+                    <div class="weather-description">
+                        @if($maxCode >= 95 || $maxRain >= 60)
+                            Storm Conditions
+                        @elseif($maxRain >= 40)
+                            Rain Expected
+                        @elseif($maxCode >= 2)
+                            Cloudy
+                        @else
+                            Clear Skies
+                        @endif
+                    </div>
+
+                </div>
 
             </div>
 
-            <div class="weather-graph">
+            <div class="weather-secondary">
 
                 @foreach($weather as $slot)
 
-                    @php $rain = $slot['rain']; @endphp
-
-                    <div class="weather-row">
-
-                        <span class="weather-time">{{ $slot['label'] }}</span>
-
-                        <span class="weather-temp">{{ $slot['temp'] }}°</span>
-
-                        <span class="weather-rain">@if($rain >= 60)🌧 {{ $rain }}%@elseif($rain >= 30){{ $rain }}%@endif</span>
-
+                    <div class="weather-mini">
+                        <span>{{ $slot['label'] }}</span>
+                        <span>{{ $slot['temp'] }}°</span>
                     </div>
 
                 @endforeach
