@@ -600,6 +600,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let currentScreen = 0;
     const screens = document.querySelectorAll('.tv-screen');
+    console.log('TV screens found:', screens.length);
     const broadcastUrl = @json(route('broadcast-messages.latest'));
     const broadcastBanner = document.getElementById('broadcastBanner');
 
