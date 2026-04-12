@@ -66,6 +66,8 @@
             height: 100vh;
             width: 100vw;
             overflow: hidden;
+            flex-direction: column;
+            box-sizing: border-box;
         }
 
         .tv-layout {
@@ -515,17 +517,21 @@
         }
 
         .weather-container {
-            height: 100%;
+            flex: 1;
             display: flex;
             flex-direction: column;
+            justify-content: space-between;
+            padding: 20px 0;
+            min-height: 0;
             overflow: hidden;
         }
 
         .weather-title {
             font-size: clamp(40px, 6vw, 80px);
             font-weight: 800;
-            margin-bottom: 40px;
+            margin-bottom: 20px;
             text-align: center;
+            flex-shrink: 0;
         }
 
         .weather-location {
@@ -537,11 +543,12 @@
         }
 
         .weather-hero {
-            height: 180px;
+            height: 120px;
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-bottom: 40px;
+            margin-bottom: 20px;
+            flex-shrink: 0;
         }
 
         .weather-icon {
@@ -600,7 +607,7 @@
             align-self: center;
             display: flex;
             flex-direction: column;
-            justify-content: space-evenly;
+            justify-content: space-between;
         }
 
         .weather-row {
@@ -609,9 +616,10 @@
             justify-content: space-between;
             font-size: clamp(28px, 4vw, 50px);
             font-weight: 700;
-            padding: 12px 24px;
+            padding: 14px 20px;
             border-radius: 12px;
             background: rgba(255,255,255,0.05);
+            flex-shrink: 0;
         }
 
         .weather-time {
@@ -955,7 +963,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function showScreen(index) {
         screens.forEach((s, i) => {
-            s.style.display = (i === index) ? 'block' : 'none';
+            s.style.display = (i === index) ? 'flex' : 'none';
         });
     }
 
