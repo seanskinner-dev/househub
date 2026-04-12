@@ -9,8 +9,19 @@
             margin: 0;
         }
 
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
+            background: radial-gradient(circle at center, transparent 60%, rgba(0,0,0,0.6));
+        }
+
 /* BASE */
 .tv-container {
+    position: relative;
+    z-index: 2;
     height: 100vh;
     width: 100vw;
     background: #0f172a;
@@ -66,12 +77,16 @@
 .house-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    padding: 6px;
+    box-sizing: border-box;
     height: 100vh;
     width: 100vw;
 }
 
 .house-card {
     position: relative;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -88,12 +103,25 @@
 }
 
 .house-card.winner {
-    box-shadow: 0 0 60px rgba(255,255,255,0.5);
-    animation: fadeIn 0.8s ease forwards, pulse 2s ease-in-out 0.8s infinite;
+    box-shadow: 0 0 80px rgba(255,255,255,0.6);
+    z-index: 2;
+    animation: fadeInWinner 0.8s ease forwards, pulse 2s ease-in-out 0.8s infinite;
+}
+
+.house-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.08), transparent);
+    opacity: 0.4;
+    animation: shimmer 6s infinite;
+    pointer-events: none;
 }
 
 .house-card-inner {
     position: relative;
+    z-index: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -107,13 +135,14 @@
 .house-card .house-name {
     font-size: 48px;
     font-weight: bold;
-    letter-spacing: 2px;
+    letter-spacing: 3px;
 }
 
 .house-card .points {
     font-size: 140px;
     font-weight: bold;
     margin: 20px 0;
+    letter-spacing: 2px;
     text-shadow: 0 0 20px rgba(255,255,255,0.4);
 }
 
@@ -145,10 +174,26 @@
     100% { transform: translateY(0px); }
 }
 
+@keyframes fadeInWinner {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1.08);
+    }
+}
+
 @keyframes pulse {
-    0% { transform: scale(1.05); }
-    50% { transform: scale(1.08); }
-    100% { transform: scale(1.05); }
+    0% { transform: scale(1.08); }
+    50% { transform: scale(1.11); }
+    100% { transform: scale(1.08); }
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
 }
 
 .next-btn {
