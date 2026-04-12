@@ -417,9 +417,30 @@
         }
 
         .activity-title {
+            position: relative;
             font-size: clamp(40px, 6vw, 80px);
             font-weight: 800;
             margin-bottom: 40px;
+            overflow: hidden;
+        }
+
+        .activity-title::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.1),
+                transparent
+            );
+            animation: shimmer 3s infinite;
+            pointer-events: none;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
         }
 
         .activity-list {
@@ -434,6 +455,29 @@
             gap: 16px;
             font-size: clamp(32px, 5vw, 60px);
             font-weight: 700;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: activityFadeIn 0.6s ease forwards;
+        }
+
+        .activity-item:nth-child(1) { animation-delay: 0.1s; }
+        .activity-item:nth-child(2) { animation-delay: 0.2s; }
+        .activity-item:nth-child(3) { animation-delay: 0.3s; }
+
+        @keyframes activityFadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .activity-item strong {
+            animation: pulsePoints 2.5s ease-in-out infinite;
+        }
+
+        @keyframes pulsePoints {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
         }
 
         .activity-points {
@@ -444,21 +488,14 @@
             opacity: 0.5;
         }
 
-        .activity-item.gryffindor .activity-house {
-            color: #ff4d4d;
+        .house {
+            font-weight: 700;
         }
 
-        .activity-item.slytherin .activity-house {
-            color: #4ade80;
-        }
-
-        .activity-item.ravenclaw .activity-house {
-            color: #60a5fa;
-        }
-
-        .activity-item.hufflepuff .activity-house {
-            color: #facc15;
-        }
+        .house.gryffindor { color: #ef4444; }
+        .house.slytherin { color: #22c55e; }
+        .house.ravenclaw { color: #60a5fa; }
+        .house.hufflepuff { color: #facc15; }
 
         .top-container {
             height: 100vh;
@@ -720,22 +757,22 @@
             <div class="activity-list">
 
                 <div class="activity-item gryffindor">
-                    <span class="activity-points">+1</span>
-                    <span class="activity-house">Gryffindor</span>
+                    <strong class="activity-points">+1</strong>
+                    <span class="house gryffindor">🦁 Gryffindor</span>
                     <span class="activity-sep">—</span>
                     <span class="activity-student">Josh</span>
                 </div>
 
                 <div class="activity-item slytherin">
-                    <span class="activity-points">+5</span>
-                    <span class="activity-house">Slytherin</span>
+                    <strong class="activity-points">+5</strong>
+                    <span class="house slytherin">🐍 Slytherin</span>
                     <span class="activity-sep">—</span>
                     <span class="activity-student">Emma</span>
                 </div>
 
                 <div class="activity-item ravenclaw">
-                    <span class="activity-points">+1</span>
-                    <span class="activity-house">Ravenclaw</span>
+                    <strong class="activity-points">+1</strong>
+                    <span class="house ravenclaw">🦅 Ravenclaw</span>
                     <span class="activity-sep">—</span>
                     <span class="activity-student">Liam</span>
                 </div>
