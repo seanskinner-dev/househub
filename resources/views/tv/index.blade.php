@@ -15,6 +15,9 @@
     width: 100vw;
     background: #0f172a;
     color: white;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
 }
 
 .tv-broadcast-banner {
@@ -60,56 +63,92 @@
     width: 100%;
 }
 
-/* GRAPH FIX */
-.graph-wrapper {
-    height: 100%;
-    width: 100%;
-    padding: 40px 60px;
+.house-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    height: 100vh;
+    width: 100vw;
+}
+
+.house-card {
+    position: relative;
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    align-items: stretch;
+    color: white;
+    min-height: 0;
+
+    transition: box-shadow 0.4s ease;
+    animation: fadeIn 0.8s ease forwards;
 }
 
-#trendChart {
-    flex: 1;
+.house-card:hover {
+    filter: brightness(1.06);
 }
 
-/* TITLE */
-.students-title {
-    font-size: 48px;
-    text-align: center;
-    margin-bottom: 20px;
+.house-card.winner {
+    box-shadow: 0 0 60px rgba(255,255,255,0.5);
+    animation: fadeIn 0.8s ease forwards, pulse 2s ease-in-out 0.8s infinite;
 }
 
-/* 2 COLUMN */
-.students-grid {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 14px;
-    padding: 0 40px;
-}
-
-/* BUTTON STYLE */
-.student-row {
-    display: flex !important;
-    justify-content: space-between;
+.house-card-inner {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     align-items: center;
-
-    padding: 12px 16px;
-    border-radius: 8px;
-
-    font-size: 20px;
-    font-weight: 600;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    animation: float 6s ease-in-out infinite;
 }
 
-/* HOUSE COLOURS */
-.student-row.gryffindor { background: #740001; }
-.student-row.slytherin  { background: #1a472a; }
-.student-row.ravenclaw  { background: #1e40af; }
-.student-row.hufflepuff { background: #ffcc00; color:#111; }
-
-/* POINTS */
-.student-row .points {
+.house-card .house-name {
+    font-size: 48px;
     font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.house-card .points {
+    font-size: 140px;
+    font-weight: bold;
+    margin: 20px 0;
+    text-shadow: 0 0 20px rgba(255,255,255,0.4);
+}
+
+.house-card .rank {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    font-size: 28px;
+    background: rgba(0,0,0,0.4);
+    padding: 6px 12px;
+    border-radius: 6px;
+    opacity: 0.9;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+    100% { transform: translateY(0px); }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1.05); }
+    50% { transform: scale(1.08); }
+    100% { transform: scale(1.05); }
 }
 
 .next-btn {
@@ -118,36 +157,7 @@
     right: 20px;
 }
 
-.center {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.list {
-    padding: 40px;
-}
-
-.list h1 {
-    font-size: 60px;
-    text-align: center;
-}
-
-.list .row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 36px;
-    padding: 10px;
-    border-radius: 8px;
-    margin-bottom: 10px;
-}
-
-.list .row.gryffindor { background: #740001; }
-.list .row.slytherin  { background: #1a472a; }
-.list .row.ravenclaw  { background: #1e40af; }
-.list .row.hufflepuff { background: #ffcc00; color: #111; }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 </head>
 
 <body>
@@ -162,118 +172,27 @@
 
     <!-- SCREEN 1 -->
     <div class="tv-screen" id="screen-1">
-        <div class="row h-100">
+        <div class="house-grid">
             @foreach($series as $index => $house)
-                <div class="col-3 d-flex">
-                    <div class="house-card w-100 text-center"
-                         style="background: {{ $house['color'] }}">
+                <div class="house-card {{ $index === 0 ? 'winner' : '' }}"
+                     style="background: linear-gradient(135deg, {{ $house['color'] }}, #000000)">
+
+                    <div class="house-card-inner">
+
                         <div class="rank">#{{ $index + 1 }}</div>
-                        <h2 class="house-name">{{ $house['name'] }}</h2>
+
+                        <div class="house-name">
+                            {{ strtoupper($house['name']) }}
+                        </div>
+
+                        <div class="points" data-points="{{ array_sum($house['data'] ?? []) }}">
+                            0
+                        </div>
+
                     </div>
+
                 </div>
             @endforeach
-        </div>
-    </div>
-
-    <!-- SCREEN 2 — WEATHER -->
-    <div class="tv-screen" id="screen-2">
-        <div class="center" style="font-size:80px;">
-            🌧️ 12°C
-        </div>
-    </div>
-
-    <!-- SCREEN 3 — TOP STUDENTS (POINTS) -->
-    <div class="tv-screen" id="screen-3">
-        <div class="list">
-            <h1>Top Students</h1>
-
-            @foreach($topStudents as $index => $student)
-                <div class="row {{ strtolower($student->house_name ?? 'gryffindor') }}">
-                    <span>#{{ $index + 1 }} {{ $student->first_name }}</span>
-                    <span>{{ $student->total }}</span>
-                </div>
-            @endforeach
-
-        </div>
-    </div>
-
-    <!-- SCREEN 4 — COMMENDATIONS -->
-    <div class="tv-screen" id="screen-4">
-        <div class="list">
-            <h1>Commendations</h1>
-
-            @foreach($topStudents as $index => $student)
-                <div class="row {{ strtolower($student->house_name ?? 'gryffindor') }}">
-                    <span>#{{ $index + 1 }} {{ $student->first_name }}</span>
-                    <span>{{ $student->commendations ?? 0 }}</span>
-                </div>
-            @endforeach
-
-        </div>
-    </div>
-
-    <!-- SCREEN 5 — STREAKS -->
-    <div class="tv-screen" id="screen-5">
-        <div class="list">
-            <h1>🔥 On a Streak</h1>
-
-            @foreach($topStudents as $index => $student)
-                <div class="row {{ strtolower($student->house_name ?? 'gryffindor') }}">
-                    <span>{{ $student->first_name }}</span>
-                    <span>{{ rand(2, 7) }} days</span>
-                </div>
-            @endforeach
-
-        </div>
-    </div>
-
-    <!-- SCREEN 6 — LIVE ACTIVITY -->
-    <div class="tv-screen" id="screen-6">
-        <div class="list">
-            <h1>Live Activity</h1>
-
-            @foreach($recent ?? [] as $item)
-                <div class="row">
-                    <span>{{ $item->description ?? 'Activity' }}</span>
-                    <span>+{{ $item->amount ?? 1 }}</span>
-                </div>
-            @endforeach
-
-        </div>
-    </div>
-
-    <!-- SCREEN 7 — TEACHERS -->
-    <div class="tv-screen" id="screen-7">
-        <div class="list">
-            <h1>Top Teachers</h1>
-
-            @foreach($topTeachers as $index => $teacher)
-                <div class="row">
-                    <span>#{{ $index + 1 }} {{ $teacher->name }}</span>
-                    <span>{{ $teacher->total }}</span>
-                </div>
-            @endforeach
-
-        </div>
-    </div>
-
-    <!-- SCREEN 8 — HOUSE POINTS TREND (chart) -->
-    <div class="tv-screen" id="screen-8">
-        <div class="graph-wrapper">
-
-            <div class="graph-title">
-                House Points Trend
-            </div>
-
-            <div class="house-legend">
-                <div>🦁 Gryffindor</div>
-                <div>🐍 Slytherin</div>
-                <div>🦅 Ravenclaw</div>
-                <div>🦡 Hufflepuff</div>
-            </div>
-
-            <div id="trendChart"></div>
-
         </div>
     </div>
 
@@ -286,11 +205,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let currentScreen = 0;
     const screens = document.querySelectorAll('.tv-screen');
-    const trendChartEl = document.querySelector('#trendChart');
-    const chartHost = trendChartEl ? trendChartEl.closest('.tv-screen') : null;
-    const chartScreenIndex = chartHost ? Array.prototype.indexOf.call(screens, chartHost) : -1;
-
-    let chartRendered = false;
     const broadcastUrl = @json(route('broadcast-messages.latest'));
     const broadcastBanner = document.getElementById('broadcastBanner');
 
@@ -303,36 +217,36 @@ document.addEventListener("DOMContentLoaded", function () {
     function nextScreen() {
         currentScreen = (currentScreen + 1) % screens.length;
         showScreen(currentScreen);
-
-        if (chartScreenIndex !== -1 && currentScreen === chartScreenIndex && !chartRendered) {
-            renderChart();
-            chartRendered = true;
-        }
     }
 
     document.getElementById('nextBtn').addEventListener('click', nextScreen);
-    setInterval(nextScreen, 10000);
+
+    function animatePoints() {
+        document.querySelectorAll('.points').forEach(el => {
+            const target = parseInt(el.dataset.points || 0);
+            let current = 0;
+
+            const increment = Math.max(1, Math.ceil(target / 40));
+
+            const interval = setInterval(() => {
+                current += increment;
+
+                if (current >= target) {
+                    el.innerText = target;
+                    clearInterval(interval);
+                } else {
+                    el.innerText = current;
+                }
+            }, 20);
+        });
+    }
+
     showScreen(0);
+    animatePoints();
 
     setTimeout(() => {
         showScreen(0);
     }, 100);
-
-    function renderChart() {
-        new ApexCharts(document.querySelector("#trendChart"), {
-            chart: {
-                type: 'area',
-                height: '100%',
-                toolbar: { show: false }
-            },
-            series: @json($series),
-            colors: ['#740001','#1a472a','#0e1a40','#ffcc00'],
-            stroke: { curve: 'smooth', width: 5 },
-            xaxis: { categories: @json($dates) },
-            yaxis: { min: 0 },
-            legend: { show: false }
-        }).render();
-    }
 
     function fetchBroadcast() {
         const emergencyScreen = document.getElementById('emergencyScreen');
