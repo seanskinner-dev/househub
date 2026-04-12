@@ -2,6 +2,12 @@
 
 @section('content')
 
+<style>
+.page-content {
+    padding: 0 !important;
+}
+</style>
+
 <div class="tv-container">
 
     <div id="broadcastBanner" class="tv-broadcast-banner" role="status" aria-live="polite"></div>
