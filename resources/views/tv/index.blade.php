@@ -160,6 +160,10 @@ document.addEventListener("DOMContentLoaded", function () {
     setInterval(nextScreen, 10000);
     showScreen(0);
 
+    setTimeout(() => {
+        showScreen(0);
+    }, 100);
+
     function renderChart() {
         new ApexCharts(document.querySelector("#trendChart"), {
             chart: {
