@@ -2,10 +2,6 @@
 
 @section('content')
 
-<pre style="color:white; font-size:20px;">
-{{ print_r($series ?? 'NO DATA', true) }}
-</pre>
-
 <style>
 .page-content {
     padding: 0 !important;
@@ -136,7 +132,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let currentScreen = 0;
     const screens = document.querySelectorAll('.tv-screen');
-    screens.forEach(el => el.style.display = 'block');
 
     let chartRendered = false;
     const broadcastUrl = @json(route('broadcast-messages.latest'));
@@ -284,10 +279,6 @@ document.addEventListener("DOMContentLoaded", function () {
     display: none;
     height: 100vh;
     width: 100%;
-}
-
-.tv-broadcast-banner + .tv-screen {
-    display: block;
 }
 
 /* GRAPH FIX */
