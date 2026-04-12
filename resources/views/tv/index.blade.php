@@ -617,27 +617,8 @@
             transform: scale(0.9);
         }
 
-        .weather-scene > div {
-            display: none;
-        }
-
-        .weather-hero.sun-active .sun {
-            display: block;
-        }
-
-        .weather-hero.cloud-active .cloud {
-            display: block;
-        }
-
-        .weather-hero.rain-active .rain {
-            display: block;
-        }
-
-        .weather-hero.storm-active .lightning {
-            display: block;
-        }
-
         .sun {
+            display: none;
             width: 140px;
             height: 140px;
             border-radius: 50%;
@@ -646,18 +627,29 @@
             animation: weatherSunPulse 6s ease-in-out infinite;
         }
 
+        .weather-hero.sun-active .sun {
+            display: block;
+        }
+
         @keyframes weatherSunPulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.06); }
         }
 
         .cloud {
+            display: none;
             width: 180px;
             height: 90px;
             background: #e2e8f0;
             border-radius: 50px;
             opacity: 0.6;
             animation: cloudFloat 20s ease-in-out infinite;
+        }
+
+        .weather-hero.cloud-active .cloud,
+        .weather-hero.rain-active .cloud,
+        .weather-hero.storm-active .cloud {
+            display: block;
         }
 
         @keyframes cloudFloat {
@@ -667,9 +659,15 @@
         }
 
         .rain {
+            display: none;
             width: 120px;
             height: 120px;
             position: relative;
+        }
+
+        .weather-hero.rain-active .rain,
+        .weather-hero.storm-active .rain {
+            display: block;
         }
 
         .rain::before {
@@ -696,11 +694,15 @@
         }
 
         .lightning {
-            display: flex;
+            display: none;
             align-items: center;
             justify-content: center;
             min-width: 120px;
             min-height: 120px;
+        }
+
+        .weather-hero.storm-active .lightning {
+            display: flex;
         }
 
         .lightning::before {
