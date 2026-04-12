@@ -163,7 +163,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function fetchBroadcast() {
-        if (!broadcastBanner) return;
+        const emergencyScreen = document.getElementById('emergencyScreen');
+        const emergencyText = document.getElementById('emergencyText');
 
         fetch(broadcastUrl)
             .then(function (res) {
@@ -171,15 +172,42 @@ document.addEventListener("DOMContentLoaded", function () {
                 return res.json();
             })
             .then(function (data) {
-                if (data && data.message) {
-                    broadcastBanner.textContent = data.message;
-                    broadcastBanner.style.display = 'block';
+                const message = data && data.message ? String(data.message) : '';
+
+                if (message && message.startsWith('EMERGENCY:')) {
+                    if (emergencyScreen) {
+                        emergencyScreen.style.display = 'flex';
+                    }
+                    if (emergencyText) {
+                        emergencyText.innerText = message.slice('EMERGENCY:'.length).trim();
+                    }
+                    document.querySelectorAll('.tv-screen').forEach(function (el) {
+                        el.style.display = 'none';
+                    });
+                    if (broadcastBanner) {
+                        broadcastBanner.style.display = 'none';
+                    }
                 } else {
-                    broadcastBanner.style.display = 'none';
+                    if (emergencyScreen) {
+                        emergencyScreen.style.display = 'none';
+                    }
+                    document.querySelectorAll('.tv-screen').forEach(function (el) {
+                        el.style.display = 'block';
+                    });
+                    if (broadcastBanner) {
+                        if (message) {
+                            broadcastBanner.textContent = message;
+                            broadcastBanner.style.display = 'block';
+                        } else {
+                            broadcastBanner.style.display = 'none';
+                        }
+                    }
                 }
             })
             .catch(function () {
-                broadcastBanner.style.display = 'none';
+                if (broadcastBanner) {
+                    broadcastBanner.style.display = 'none';
+                }
             });
     }
 
