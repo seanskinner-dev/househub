@@ -878,6 +878,11 @@
 
         <div class="top-container">
 
+            @php
+                $leader = $topStudents[0] ?? null;
+                $list = $topStudents->slice(1, 4)->values();
+            @endphp
+
             <div class="top-title">
                 🏆 TOP STUDENTS
             </div>
@@ -890,38 +895,26 @@
                 @endforeach
             </div>
 
-            @if($topStudents->isNotEmpty())
+            @if($leader)
                 <div class="top-hero">
                     <div class="crown">👑</div>
                     <div class="hero-name">
-                        {{ $topStudents[0]->name }}
+                        {{ $leader->name }}
                     </div>
                     <div class="hero-points">
-                        {{ $topStudents[0]->house_points }} pts
+                        {{ $leader->house_points }} pts
                     </div>
                 </div>
-
-                <div class="top-list">
-                    @foreach($topStudents->skip(1)->take(4) as $index => $student)
-                        @php
-                            $houseClass = strtolower(str_replace(' ', '', $student->house_name ?? 'gryffindor'));
-                            $houseEmoji = match ($houseClass) {
-                                'gryffindor' => '🦁',
-                                'slytherin' => '🐍',
-                                'ravenclaw' => '🦅',
-                                'hufflepuff' => '🦡',
-                                default => '⭐',
-                            };
-                        @endphp
-                        <div class="student-row top-item {{ $houseClass }}">
-                            <span class="top-rank">{{ $index + 2 }}.</span>
-                            <span class="top-name">{{ $houseEmoji }} {{ strtoupper($student->name) }}</span>
-                            <span class="top-sep">—</span>
-                            <span class="top-points">{{ $student->house_points }} pts</span>
-                        </div>
-                    @endforeach
-                </div>
             @endif
+
+            <div class="top-list">
+                @foreach($list as $index => $student)
+                    <div class="student-row">
+                        {{ $index + 2 }}.
+                        {{ $student->name }} — {{ $student->house_points }} pts
+                    </div>
+                @endforeach
+            </div>
 
         </div>
 
