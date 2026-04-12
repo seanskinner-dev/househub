@@ -287,6 +287,10 @@ document.addEventListener("DOMContentLoaded", function () {
     width: 100%;
 }
 
+.tv-broadcast-banner + .tv-screen {
+    display: block;
+}
+
 /* GRAPH FIX */
 .graph-wrapper {
     height: 100%;
