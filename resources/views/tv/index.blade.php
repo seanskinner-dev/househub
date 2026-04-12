@@ -528,8 +528,6 @@
         }
 
         .weather-hero {
-            position: relative;
-            overflow: hidden;
             flex: 1;
             display: flex;
             flex-direction: column;
@@ -538,194 +536,10 @@
             min-height: 0;
         }
 
-        .weather-hero::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            z-index: 0;
-            background-size: cover;
-            background-position: center;
-            transition: all 1s ease;
-            filter: blur(4px) brightness(0.9);
-            animation: skyDrift 60s linear infinite;
-        }
-
-        .weather-hero.sun-active::before {
-            background-image: url('https://images.unsplash.com/photo-1502082553048-f009c37129b9');
-        }
-
-        .weather-hero.cloud-active::before {
-            background-image: url('https://images.unsplash.com/photo-1499346030926-9a72daac6c63');
-        }
-
-        .weather-hero.rain-active::before {
-            background-image: url('https://images.unsplash.com/photo-1501594907352-04cda38ebc29');
-        }
-
-        .weather-hero.storm-active::before {
-            background-image: url('https://images.unsplash.com/photo-1500673922987-e212871fec22');
-            animation: skyDrift 60s linear infinite, stormFlash 6s infinite;
-        }
-
-        .weather-hero::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(
-                to bottom,
-                rgba(0, 0, 0, 0.2),
-                rgba(0, 0, 0, 0.6)
-            );
-            z-index: 0;
-        }
-
-        .weather-hero.sun-active::after {
-            background: radial-gradient(
-                circle at 50% 30%,
-                rgba(255, 223, 100, 0.25),
-                rgba(0, 0, 0, 0.6)
-            );
-        }
-
-        .weather-hero.rain-active::after {
-            background: linear-gradient(
-                to bottom,
-                rgba(0, 0, 0, 0.4),
-                rgba(0, 0, 0, 0.7)
-            );
-        }
-
-        .weather-hero.rain-active {
-            filter: contrast(0.9) brightness(0.8);
-        }
-
-        .weather-hero > * {
-            position: relative;
-            z-index: 1;
-        }
-
-        .weather-scene {
-            height: 200px;
-            position: relative;
-            margin-bottom: 20px;
-            width: 100%;
-            max-width: 400px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0.7;
-            transform: scale(0.9);
-        }
-
-        .sun {
-            display: none;
-            width: 140px;
-            height: 140px;
-            border-radius: 50%;
-            background: #facc15;
-            box-shadow: 0 0 80px rgba(250, 204, 21, 0.7);
-            animation: weatherSunPulse 6s ease-in-out infinite;
-        }
-
-        .weather-hero.sun-active .sun {
-            display: block;
-        }
-
-        @keyframes weatherSunPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.06); }
-        }
-
-        .cloud {
-            display: none;
-            width: 180px;
-            height: 90px;
-            background: #e2e8f0;
-            border-radius: 50px;
-            opacity: 0.6;
-            animation: cloudFloat 20s ease-in-out infinite;
-        }
-
-        .weather-hero.cloud-active .cloud,
-        .weather-hero.rain-active .cloud,
-        .weather-hero.storm-active .cloud {
-            display: block;
-        }
-
-        @keyframes cloudFloat {
-            0% { transform: translateX(-20px); }
-            50% { transform: translateX(20px); }
-            100% { transform: translateX(-20px); }
-        }
-
-        .rain {
-            display: none;
-            width: 120px;
-            height: 120px;
-            position: relative;
-        }
-
-        .weather-hero.rain-active .rain,
-        .weather-hero.storm-active .rain {
-            display: block;
-        }
-
-        .rain::before {
-            content: "";
-            position: absolute;
-            left: 50%;
-            top: 0;
-            width: 2px;
-            height: 100%;
-            margin-left: -1px;
-            background: repeating-linear-gradient(
-                transparent,
-                transparent 6px,
-                #60a5fa 6px,
-                #60a5fa 12px
-            );
-            animation: weatherRainFall 1s linear infinite;
-            opacity: 0.85;
-        }
-
-        @keyframes weatherRainFall {
-            0% { transform: translateY(-12px); }
-            100% { transform: translateY(12px); }
-        }
-
-        .lightning {
-            display: none;
-            align-items: center;
-            justify-content: center;
-            min-width: 120px;
-            min-height: 120px;
-        }
-
-        .weather-hero.storm-active .lightning {
-            display: flex;
-        }
-
-        .lightning::before {
-            content: "⚡";
-            font-size: 100px;
-            line-height: 1;
-            opacity: 0;
-            animation: weatherLightningFlash 4s infinite;
-        }
-
-        @keyframes weatherLightningFlash {
-            0%, 88%, 100% { opacity: 0; }
-            90% { opacity: 1; }
-            92% { opacity: 0; }
-            94% { opacity: 1; }
-        }
-
         .weather-main {
             width: 100%;
             max-width: 960px;
-            backdrop-filter: blur(6px);
             padding: 20px 40px;
-            border-radius: 20px;
         }
 
         .weather-temp-main {
@@ -763,48 +577,35 @@
             text-shadow: 0 0 20px rgba(248, 113, 113, 0.4);
         }
 
-        .weather-secondary {
+        .weather-breaks {
             display: flex;
-            justify-content: space-around;
-            align-items: flex-end;
-            flex-wrap: wrap;
-            gap: 12px 8px;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(16px);
-            border-radius: 16px;
-            margin: 0 40px 20px;
-            padding: 20px;
-            font-size: clamp(22px, 3vw, 36px);
-            opacity: 0.6;
+            justify-content: center;
+            gap: 80px;
+            margin-top: 40px;
             flex-shrink: 0;
         }
 
-        .weather-mini {
+        .weather-break {
+            font-size: clamp(28px, 4vw, 48px);
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
+            gap: 10px;
+            opacity: 0.9;
         }
 
-        .weather-mini span:first-child {
+        .weather-break span:first-child {
             font-weight: 600;
-            opacity: 0.85;
+            opacity: 0.7;
         }
 
-        .weather-mini span:last-child {
-            font-weight: 800;
+        .weather-break .rain {
+            color: #60a5fa;
+            text-shadow: 0 0 20px rgba(96, 165, 250, 0.4);
         }
 
-        @keyframes skyDrift {
-            0% { transform: scale(1.05) translateX(0); }
-            50% { transform: scale(1.05) translateX(-10px); }
-            100% { transform: scale(1.05) translateX(0); }
-        }
-
-        @keyframes stormFlash {
-            0%, 96%, 100% { filter: blur(4px) brightness(0.9); }
-            97% { filter: blur(4px) brightness(2.2); }
-            98% { filter: blur(4px) brightness(0.9); }
+        .weather-break .dry {
+            color: #facc15;
         }
 
         @keyframes weatherFade {
@@ -998,33 +799,44 @@
 
     <div class="tv-screen" id="screen-weather">
 
-        @php
-            $maxRain = max(array_column($weather, 'rain'));
-            $maxCode = max(array_column($weather, 'code'));
-        @endphp
-
         <div class="weather-container">
 
-            <div class="weather-hero
-                @if($maxCode >= 95 || $maxRain >= 60)
-                    storm-active
-                @elseif($maxRain >= 40)
-                    rain-active
-                @elseif($maxCode >= 2)
-                    cloud-active
-                @else
-                    sun-active
-                @endif
-            ">
+            @php
+                $maxRain = max(array_column($weather, 'rain'));
+                $recessRain = (collect($weather)->firstWhere('label', 'RECESS') ?? [])['rain'] ?? 0;
+                $lunchRain = (collect($weather)->firstWhere('label', 'LUNCH') ?? [])['rain'] ?? 0;
 
-                <div class="weather-scene">
+                $rainThreshold = 40;
+                $heavyThreshold = 70;
 
-                    <div class="sun"></div>
-                    <div class="cloud"></div>
-                    <div class="rain"></div>
-                    <div class="lightning"></div>
+                $desc = '';
+                $severityClass = 'weather-good';
 
-                </div>
+                if ($recessRain >= $rainThreshold && $lunchRain >= $rainThreshold) {
+                    $desc = 'Rain at Recess & Lunch';
+                    $severityClass = ($recessRain >= $heavyThreshold || $lunchRain >= $heavyThreshold)
+                        ? 'weather-bad'
+                        : 'weather-warning';
+                } elseif ($recessRain >= $rainThreshold) {
+                    $desc = 'Rain at Recess';
+                    $severityClass = ($recessRain >= $heavyThreshold)
+                        ? 'weather-bad'
+                        : 'weather-warning';
+                } elseif ($lunchRain >= $rainThreshold) {
+                    $desc = 'Rain at Lunch';
+                    $severityClass = ($lunchRain >= $heavyThreshold)
+                        ? 'weather-bad'
+                        : 'weather-warning';
+                } elseif ($maxRain >= $rainThreshold) {
+                    $desc = 'Showers Today';
+                    $severityClass = 'weather-warning';
+                } else {
+                    $desc = 'No Rain During Breaks';
+                    $severityClass = 'weather-good';
+                }
+            @endphp
+
+            <div class="weather-hero">
 
                 <div class="weather-main">
 
@@ -1032,64 +844,34 @@
                         {{ $weather[1]['temp'] }}°
                     </div>
 
-                    @php
-                        $recessRain = (collect($weather)->firstWhere('label', 'RECESS') ?? [])['rain'] ?? 0;
-                        $lunchRain = (collect($weather)->firstWhere('label', 'LUNCH') ?? [])['rain'] ?? 0;
-
-                        $rainThreshold = 40;
-                        $heavyThreshold = 70;
-
-                        $desc = '';
-                        $severityClass = 'weather-good';
-
-                        if ($recessRain >= $rainThreshold && $lunchRain >= $rainThreshold) {
-                            $desc = 'Rain at Recess & Lunch';
-                            $severityClass = ($recessRain >= $heavyThreshold || $lunchRain >= $heavyThreshold)
-                                ? 'weather-bad'
-                                : 'weather-warning';
-                        } elseif ($recessRain >= $rainThreshold) {
-                            $desc = 'Rain at Recess';
-                            $severityClass = ($recessRain >= $heavyThreshold)
-                                ? 'weather-bad'
-                                : 'weather-warning';
-                        } elseif ($lunchRain >= $rainThreshold) {
-                            $desc = 'Rain at Lunch';
-                            $severityClass = ($lunchRain >= $heavyThreshold)
-                                ? 'weather-bad'
-                                : 'weather-warning';
-                        } elseif ($maxRain >= $rainThreshold) {
-                            $desc = 'Showers Today';
-                            $severityClass = 'weather-warning';
-                        } else {
-                            $desc = 'No Rain During Breaks';
-                            $severityClass = 'weather-good';
-                        }
-                    @endphp
-
                     <div class="weather-description {{ $severityClass }}">
-                        @if($severityClass === 'weather-bad')
-                            🌧 {{ $desc }}
-                        @elseif($severityClass === 'weather-warning')
-                            🌦 {{ $desc }}
-                        @else
-                            ☀️ {{ $desc }}
-                        @endif
+                        {{ $desc }}
                     </div>
 
                 </div>
 
             </div>
 
-            <div class="weather-secondary">
+            <div class="weather-breaks">
 
-                @foreach($weather as $slot)
+                @php
+                    $recessRain = (collect($weather)->firstWhere('label', 'RECESS') ?? [])['rain'] ?? 0;
+                    $lunchRain = (collect($weather)->firstWhere('label', 'LUNCH') ?? [])['rain'] ?? 0;
+                @endphp
 
-                    <div class="weather-mini">
-                        <span>{{ $slot['label'] }}</span>
-                        <span>{{ $slot['temp'] }}°</span>
-                    </div>
+                <div class="weather-break">
+                    <span>RECESS</span>
+                    <span class="{{ $recessRain >= 40 ? 'rain' : 'dry' }}">
+                        {{ $recessRain >= 40 ? '🌧' : '☀️' }}
+                    </span>
+                </div>
 
-                @endforeach
+                <div class="weather-break">
+                    <span>LUNCH</span>
+                    <span class="{{ $lunchRain >= 40 ? 'rain' : 'dry' }}">
+                        {{ $lunchRain >= 40 ? '🌧' : '☀️' }}
+                    </span>
+                </div>
 
             </div>
 
