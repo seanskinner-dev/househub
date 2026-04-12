@@ -88,6 +88,9 @@
 
         .hero-house .house-card.winner {
             filter: brightness(1.15);
+            animation:
+                breatheWinner 6s ease-in-out infinite,
+                winnerGlow 3s ease-in-out infinite;
         }
 
         .other-houses {
@@ -105,13 +108,14 @@
             justify-content: center;
             align-items: stretch;
             min-width: 0;
-            opacity: 0.85;
+            opacity: 0.75;
         }
 
         .mini-house > .house-card {
             flex: 1;
             width: 100%;
             min-height: 0;
+            animation: none;
         }
 
         .house-card {
@@ -224,6 +228,27 @@
         @keyframes breatheWinner {
             0%, 100% { transform: scale(1.05); }
             50%      { transform: scale(1.071); }
+        }
+
+        @keyframes winnerGlow {
+            0% {
+                box-shadow:
+                    inset 0 0 80px rgba(0,0,0,0.3),
+                    0 20px 60px rgba(0,0,0,0.5),
+                    0 0 0 rgba(255,255,255,0);
+            }
+            50% {
+                box-shadow:
+                    inset 0 0 80px rgba(0,0,0,0.3),
+                    0 20px 60px rgba(0,0,0,0.5),
+                    0 0 60px rgba(255,255,255,0.25);
+            }
+            100% {
+                box-shadow:
+                    inset 0 0 80px rgba(0,0,0,0.3),
+                    0 20px 60px rgba(0,0,0,0.5),
+                    0 0 0 rgba(255,255,255,0);
+            }
         }
 
         .next-btn {
