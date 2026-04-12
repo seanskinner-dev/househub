@@ -515,11 +515,10 @@
         }
 
         .weather-container {
-            height: 100vh;
+            height: 100%;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            overflow: hidden;
         }
 
         .weather-title {
@@ -595,10 +594,13 @@
         }
 
         .weather-graph {
+            flex: 1;
+            min-height: 0;
+            width: 60%;
+            align-self: center;
             display: flex;
             flex-direction: column;
-            gap: 20px;
-            width: 60%;
+            justify-content: space-evenly;
         }
 
         .weather-row {
@@ -648,6 +650,10 @@
             min-width: clamp(100px, 12vw, 160px);
             text-align: right;
             opacity: 0.8;
+        }
+
+        .weather-rain:empty {
+            display: none;
         }
 
         .weather-row.recess,
@@ -879,48 +885,53 @@
             <div class="weather-graph">
 
                 <div class="weather-row">
+                    @php $rain = 20; @endphp
                     <span class="weather-time">8AM</span>
                     <span class="weather-bar">
                         <span class="weather-fill" style="width: 48%"></span>
                     </span>
                     <span class="weather-temp">14°</span>
-                    <span class="weather-rain">🌧 20%</span>
+                    <span class="weather-rain">@if($rain >= 60)🌧 {{ $rain }}%@elseif($rain >= 30){{ $rain }}%@endif</span>
                 </div>
 
                 <div class="weather-row recess">
+                    @php $rain = 10; @endphp
                     <span class="weather-time">RECESS</span>
                     <span class="weather-bar">
                         <span class="weather-fill" style="width: 60%"></span>
                     </span>
                     <span class="weather-temp">16°</span>
-                    <span class="weather-rain">🌧 10%</span>
+                    <span class="weather-rain">@if($rain >= 60)🌧 {{ $rain }}%@elseif($rain >= 30){{ $rain }}%@endif</span>
                 </div>
 
                 <div class="weather-row">
+                    @php $rain = 5; @endphp
                     <span class="weather-time">12PM</span>
                     <span class="weather-bar">
                         <span class="weather-fill" style="width: 72%"></span>
                     </span>
                     <span class="weather-temp">18°</span>
-                    <span class="weather-rain">🌧 5%</span>
+                    <span class="weather-rain">@if($rain >= 60)🌧 {{ $rain }}%@elseif($rain >= 30){{ $rain }}%@endif</span>
                 </div>
 
                 <div class="weather-row lunch">
+                    @php $rain = 15; @endphp
                     <span class="weather-time">LUNCH</span>
                     <span class="weather-bar">
                         <span class="weather-fill" style="width: 78%"></span>
                     </span>
                     <span class="weather-temp">19°</span>
-                    <span class="weather-rain">🌧 15%</span>
+                    <span class="weather-rain">@if($rain >= 60)🌧 {{ $rain }}%@elseif($rain >= 30){{ $rain }}%@endif</span>
                 </div>
 
                 <div class="weather-row">
+                    @php $rain = 25; @endphp
                     <span class="weather-time">3PM</span>
                     <span class="weather-bar">
                         <span class="weather-fill" style="width: 66%"></span>
                     </span>
                     <span class="weather-temp">17°</span>
-                    <span class="weather-rain">🌧 25%</span>
+                    <span class="weather-rain">@if($rain >= 60)🌧 {{ $rain }}%@elseif($rain >= 30){{ $rain }}%@endif</span>
                 </div>
 
             </div>
