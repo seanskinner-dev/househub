@@ -264,6 +264,9 @@
 <button class="btn star" onclick="openCommendation({{ $student->id }})">⭐</button>
 <button class="btn award" onclick="openAward({{ $student->id }})">🏆</button>
 
+<!-- NEW -->
+<button class="btn" onclick="openOMMModal({{ $student->id }}, '{{ $student->first_name }} {{ $student->last_name }}')">📩</button>
+
 </div>
 </div>
 @endforeach
@@ -281,7 +284,7 @@
 
 <div id="toast"></div>
 
-<!-- 🔥 ADDED MODALS BACK (YOU WERE MISSING THESE) -->
+<!-- EXISTING MODALS -->
 
 <div id="commendationModal" class="modal">
 <div class="modal-box">
@@ -320,6 +323,23 @@
 <button>Save</button>
 <button type="button" onclick="closeModal()">Cancel</button>
 </form>
+</div>
+</div>
+
+<!-- NEW OMM MODAL -->
+<div id="ommModal" class="modal">
+<div class="modal-box">
+<h3>Send Office Message</h3>
+<input type="hidden" id="ommStudentId">
+
+<label>Student</label>
+<input type="text" id="ommStudentName" disabled style="width:100%;padding:10px;border-radius:8px;border:none;">
+
+<label>Message</label>
+<textarea id="ommMessage"></textarea>
+
+<button onclick="sendOMM()">Send</button>
+<button onclick="closeOMM()">Cancel</button>
 </div>
 </div>
 
@@ -410,6 +430,41 @@ closeModal();
 });
 
 });
+
+// NEW OMM FUNCTIONS
+window.openOMMModal = function(id, name){
+    document.getElementById('ommStudentId').value = id;
+    document.getElementById('ommStudentName').value = name;
+    document.getElementById('ommMessage').value = '';
+    document.getElementById('ommModal').style.display = 'flex';
+};
+
+window.closeOMM = function(){
+    document.getElementById('ommModal').style.display = 'none';
+};
+
+window.sendOMM = function(){
+    let studentId = document.getElementById('ommStudentId').value;
+    let message = document.getElementById('ommMessage').value;
+
+    fetch('/office-messages', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+        },
+        body: JSON.stringify({
+            student_id: studentId,
+            message: message
+        })
+    })
+    .then(res => res.json())
+    .then(() => {
+        alert('Message sent');
+        closeOMM();
+    });
+};
 </script>
 
 </body>
