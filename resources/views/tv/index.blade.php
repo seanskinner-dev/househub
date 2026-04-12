@@ -5,12 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HouseHub TV</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&display=swap');
+
         html, body {
             margin: 0;
             height: 100%;
             overflow: hidden;
             box-sizing: border-box;
         }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+        }
+
         *, *::before, *::after { box-sizing: inherit; }
 
         .tv-container {
@@ -108,7 +115,7 @@
             justify-content: center;
             align-items: stretch;
             min-width: 0;
-            opacity: 0.75;
+            opacity: 0.7;
         }
 
         .mini-house > .house-card {
@@ -173,6 +180,8 @@
 
         .house-card .rank {
             font-size: clamp(22px, 3vw, 32px);
+            font-weight: 600;
+            letter-spacing: 0.05em;
             opacity: 0.6;
             margin-bottom: 8px;
         }
@@ -206,6 +215,16 @@
             margin-top: 16px;
         }
 
+        .hero-house .house-name {
+            font-weight: 800;
+            letter-spacing: 0.1em;
+        }
+
+        .hero-house .points {
+            font-weight: 900;
+            letter-spacing: -0.02em;
+        }
+
         .mini-house .house-card .rank {
             font-size: clamp(16px, 2vw, 24px);
             margin-bottom: 6px;
@@ -218,6 +237,14 @@
         .mini-house .house-card .points {
             font-size: clamp(36px, 8vw, 88px);
             margin-top: 8px;
+        }
+
+        .mini-house .house-name {
+            font-weight: 600;
+        }
+
+        .mini-house .points {
+            font-weight: 700;
         }
 
         @keyframes breathe {
