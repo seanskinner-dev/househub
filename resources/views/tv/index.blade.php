@@ -1,3 +1,4 @@
+<!-- CURSOR WRITE TEST -->
 @extends('layouts.app')
 
 @section('content')
