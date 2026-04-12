@@ -1,12 +1,126 @@
-@extends('layouts.app')
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HouseHub TV</title>
+    <style>
+        body {
+            margin: 0;
+        }
 
-@section('content')
-
-<style>
-.page-content {
-    padding: 0 !important;
+/* BASE */
+.tv-container {
+    height: 100vh;
+    width: 100vw;
+    background: #0f172a;
+    color: white;
 }
-</style>
+
+.tv-broadcast-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: #dc2626;
+    color: white;
+    text-align: center;
+    font-size: 40px;
+    font-weight: bold;
+    padding: 20px;
+    display: none;
+    z-index: 9999;
+}
+
+#emergencyScreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    background: #dc2626;
+    color: white;
+
+    align-items: center;
+    justify-content: center;
+
+    font-size: 80px;
+    font-weight: bold;
+    text-align: center;
+
+    z-index: 10000;
+    padding: 40px;
+}
+
+/* FIXED SCREEN HEIGHT */
+.tv-screen {
+    display: none;
+    height: 100vh;
+    width: 100%;
+}
+
+/* GRAPH FIX */
+.graph-wrapper {
+    height: 100%;
+    width: 100%;
+    padding: 40px 60px;
+    display: flex;
+    flex-direction: column;
+}
+
+#trendChart {
+    flex: 1;
+}
+
+/* TITLE */
+.students-title {
+    font-size: 48px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* 2 COLUMN */
+.students-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 14px;
+    padding: 0 40px;
+}
+
+/* BUTTON STYLE */
+.student-row {
+    display: flex !important;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 12px 16px;
+    border-radius: 8px;
+
+    font-size: 20px;
+    font-weight: 600;
+}
+
+/* HOUSE COLOURS */
+.student-row.gryffindor { background: #740001; }
+.student-row.slytherin  { background: #1a472a; }
+.student-row.ravenclaw  { background: #1e40af; }
+.student-row.hufflepuff { background: #ffcc00; color:#111; }
+
+/* POINTS */
+.student-row .points {
+    font-weight: bold;
+}
+
+.next-btn {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+}
+    </style>
+</head>
+
+<body>
 
 <div class="tv-container">
 
@@ -120,11 +234,6 @@
 
 </div>
 
-@endsection
-
-
-@push('scripts')
-
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
 <script>
@@ -225,118 +334,5 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 
-@endpush
-
-
-<style>
-
-/* BASE */
-.tv-container {
-    height: 100vh;
-    width: 100vw;
-    background: #0f172a;
-    color: white;
-}
-
-.tv-broadcast-banner {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    background: #dc2626;
-    color: white;
-    text-align: center;
-    font-size: 40px;
-    font-weight: bold;
-    padding: 20px;
-    display: none;
-    z-index: 9999;
-}
-
-#emergencyScreen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-
-    background: #dc2626;
-    color: white;
-
-    align-items: center;
-    justify-content: center;
-
-    font-size: 80px;
-    font-weight: bold;
-    text-align: center;
-
-    z-index: 10000;
-    padding: 40px;
-}
-
-/* FIXED SCREEN HEIGHT */
-.tv-screen {
-    display: none;
-    height: 100vh;
-    width: 100%;
-}
-
-/* GRAPH FIX */
-.graph-wrapper {
-    height: 100%;
-    width: 100%;
-    padding: 40px 60px;
-    display: flex;
-    flex-direction: column;
-}
-
-#trendChart {
-    flex: 1;
-}
-
-/* TITLE */
-.students-title {
-    font-size: 48px;
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-/* 2 COLUMN */
-.students-grid {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 14px;
-    padding: 0 40px;
-}
-
-/* BUTTON STYLE */
-.student-row {
-    display: flex !important;
-    justify-content: space-between;
-    align-items: center;
-
-    padding: 12px 16px;
-    border-radius: 8px;
-
-    font-size: 20px;
-    font-weight: 600;
-}
-
-/* HOUSE COLOURS */
-.student-row.gryffindor { background: #740001; }
-.student-row.slytherin  { background: #1a472a; }
-.student-row.ravenclaw  { background: #1e40af; }
-.student-row.hufflepuff { background: #ffcc00; color:#111; }
-
-/* POINTS */
-.student-row .points {
-    font-weight: bold;
-}
-
-.next-btn {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-}
-
-</style>
+</body>
+</html>
