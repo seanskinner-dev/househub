@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
 
 class PointController extends Controller
@@ -241,11 +243,65 @@ class PointController extends Controller
             ->limit(10)
             ->get();
 
+        $weather = Cache::remember('tv_weather', 600, function () {
+            $fallback = [
+                ['label' => '8AM', 'temp' => 14, 'rain' => 20, 'code' => 1],
+                ['label' => 'RECESS', 'temp' => 16, 'rain' => 10, 'code' => 1],
+                ['label' => '12PM', 'temp' => 18, 'rain' => 5, 'code' => 0],
+                ['label' => 'LUNCH', 'temp' => 19, 'rain' => 15, 'code' => 1],
+                ['label' => '3PM', 'temp' => 17, 'rain' => 25, 'code' => 2],
+            ];
+
+            try {
+                $response = Http::timeout(12)->get('https://api.open-meteo.com/v1/forecast', [
+                    'latitude' => -42.73,
+                    'longitude' => 147.24,
+                    'hourly' => 'temperature_2m,precipitation_probability,weathercode',
+                    'timezone' => 'Australia/Hobart',
+                ]);
+
+                if (! $response->successful()) {
+                    return $fallback;
+                }
+
+                $data = $response->json();
+                $hourly = $data['hourly'] ?? null;
+                if (! is_array($hourly)) {
+                    return $fallback;
+                }
+
+                $temps = $hourly['temperature_2m'] ?? null;
+                $rains = $hourly['precipitation_probability'] ?? null;
+                $codes = $hourly['weathercode'] ?? null;
+                if (! is_array($temps) || ! is_array($rains) || ! is_array($codes)) {
+                    return $fallback;
+                }
+
+                $indices = [8, 10, 12, 13, 15];
+                foreach ($indices as $i) {
+                    if (! array_key_exists($i, $temps) || ! array_key_exists($i, $rains) || ! array_key_exists($i, $codes)) {
+                        return $fallback;
+                    }
+                }
+
+                return [
+                    ['label' => '8AM', 'temp' => round($temps[8]), 'rain' => (int) $rains[8], 'code' => (int) $codes[8]],
+                    ['label' => 'RECESS', 'temp' => round($temps[10]), 'rain' => (int) $rains[10], 'code' => (int) $codes[10]],
+                    ['label' => '12PM', 'temp' => round($temps[12]), 'rain' => (int) $rains[12], 'code' => (int) $codes[12]],
+                    ['label' => 'LUNCH', 'temp' => round($temps[13]), 'rain' => (int) $rains[13], 'code' => (int) $codes[13]],
+                    ['label' => '3PM', 'temp' => round($temps[15]), 'rain' => (int) $rains[15], 'code' => (int) $codes[15]],
+                ];
+            } catch (\Exception $e) {
+                return $fallback;
+            }
+        });
+
         return view('tv.index', [
             'series' => $apexSeries,
             'dates' => $labels,
             'topStudents' => $topStudents,
             'topTeachers' => $topTeachers,
+            'weather' => $weather,
         ]);
     }
 }
