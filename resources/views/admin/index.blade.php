@@ -99,14 +99,12 @@
 
         <input type="hidden" id="csrf-token" value="{{ csrf_token() }}">
 
-        <section aria-labelledby="omm-heading">
-            <h2 id="omm-heading">Office Message Mode (OMM)</h2>
-            <label for="omm-student-id">Student ID</label>
-            <input type="number" id="omm-student-id" min="1" step="1" placeholder="e.g. 42">
-            <label for="omm-message">Message</label>
-            <textarea id="omm-message" placeholder="Message for the office…"></textarea>
-            <button type="button" class="btn-primary" id="omm-send">Send message</button>
-            <div class="status muted" id="omm-status" aria-live="polite"></div>
+        <section aria-labelledby="bmm-heading">
+            <h2 id="bmm-heading">Broadcast Message Mode</h2>
+            <label for="bmm-message">Message</label>
+            <textarea id="bmm-message" placeholder="Broadcast message for displays…"></textarea>
+            <button type="button" class="btn-primary" id="bmm-send">Send broadcast</button>
+            <div class="status muted" id="bmm-status" aria-live="polite"></div>
         </section>
 
         <section aria-labelledby="em-heading">
@@ -138,17 +136,16 @@
                 el.className = 'status ' + (cls || 'muted');
             }
 
-            document.getElementById('omm-send').addEventListener('click', async function () {
-                const sid = document.getElementById('omm-student-id').value.trim();
-                const message = document.getElementById('omm-message').value.trim();
-                const el = document.getElementById('omm-status');
-                if (!sid || !message) {
-                    setStatus(el, 'Student ID and message are required.', 'err');
+            document.getElementById('bmm-send').addEventListener('click', async function () {
+                const message = document.getElementById('bmm-message').value.trim();
+                const el = document.getElementById('bmm-status');
+                if (!message) {
+                    setStatus(el, 'Message is required.', 'err');
                     return;
                 }
                 setStatus(el, 'Sending…', 'muted');
                 try {
-                    const res = await fetch('/office-messages', {
+                    const res = await fetch('/broadcast-messages', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -157,10 +154,7 @@
                             'X-Requested-With': 'XMLHttpRequest'
                         },
                         credentials: 'same-origin',
-                        body: JSON.stringify({
-                            student_id: parseInt(sid, 10),
-                            message: message
-                        })
+                        body: JSON.stringify({ message: message })
                     });
                     const data = await res.json().catch(function () { return {}; });
                     if (!res.ok) {
@@ -168,7 +162,7 @@
                         setStatus(el, msg, 'err');
                         return;
                     }
-                    setStatus(el, 'Message saved (id ' + (data.id != null ? data.id : '?') + ').', 'ok');
+                    setStatus(el, 'Broadcast saved (id ' + (data.id != null ? data.id : '?') + ').', 'ok');
                 } catch (e) {
                     setStatus(el, 'Network error.', 'err');
                 }

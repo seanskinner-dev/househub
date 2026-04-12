@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\BroadcastMessageController;
 use App\Http\Controllers\OfficeMessageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PointController;
@@ -37,6 +38,12 @@ Route::middleware(['auth'])->group(function () {
     // =============================
     Route::post('/office-messages', [OfficeMessageController::class, 'store'])->name('office-messages.store');
     Route::patch('/office-messages/{id}', [OfficeMessageController::class, 'update'])->name('office-messages.update');
+
+    // =============================
+    // BROADCAST MESSAGE MODE
+    // =============================
+    Route::post('/broadcast-messages', [BroadcastMessageController::class, 'store'])->name('broadcast-messages.store');
+    Route::get('/broadcast-messages/latest', [BroadcastMessageController::class, 'latest'])->name('broadcast-messages.latest');
 
     // =============================
     // STUDENT PROFILE
