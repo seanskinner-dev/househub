@@ -924,10 +924,14 @@
             </div>
 
             <div class="weather-hero
-                @if($maxCode >= 95 || $maxRain >= 60) storm-active
-                @elseif($maxRain >= 40) rain-active
-                @elseif($maxCode >= 2) cloud-active
-                @else sun-active
+                @if($maxCode >= 95 || $maxRain >= 60)
+                    storm-active
+                @elseif($maxRain >= 40)
+                    rain-active
+                @elseif($maxCode >= 2)
+                    cloud-active
+                @else
+                    sun-active
                 @endif
             ">
 
@@ -937,9 +941,12 @@
 
                 <div class="weather-icon rain">
                     <div class="rain-drops
-                        @if($maxRain >= 60) heavy
-                        @elseif($maxRain >= 40) medium
-                        @else light
+                        @if($maxRain >= 60)
+                            heavy
+                        @elseif($maxRain >= 40)
+                            medium
+                        @else
+                            light
                         @endif
                     ">
                         @for($i = 0; $i < 10; $i++)
