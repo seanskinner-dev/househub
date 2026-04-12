@@ -518,223 +518,29 @@
         }
 
         .top-hero {
-            position: relative;
             flex-shrink: 0;
             text-align: center;
             color: #fff;
             margin-bottom: 20px;
         }
 
-        .leader-new-badge {
-            font-size: clamp(18px, 2.5vw, 34px);
-            font-weight: 800;
-            letter-spacing: 0.18em;
-            text-transform: uppercase;
-            color: #fef9c3;
-            text-shadow:
-                0 0 20px rgba(250, 204, 21, 0.9),
-                0 0 40px rgba(234, 179, 8, 0.5);
-            opacity: 0;
-            margin-bottom: 4px;
-        }
-
-        .top-hero.is-celebrating .leader-new-badge {
-            animation: newLeaderFlash 1.35s ease-out forwards;
-        }
-
-        @keyframes newLeaderFlash {
-            0% {
-                opacity: 0;
-                transform: scale(0.88);
-                filter: brightness(2);
-            }
-            12% {
-                opacity: 1;
-                transform: scale(1.06);
-                filter: brightness(1.4);
-            }
-            28% {
-                opacity: 0.35;
-                transform: scale(1);
-                filter: brightness(1);
-            }
-            42% {
-                opacity: 1;
-                transform: scale(1.03);
-            }
-            58%, 100% {
-                opacity: 0;
-                transform: scale(1);
-                filter: brightness(1);
-            }
-        }
-
-        .leader-crown {
-            display: block;
-            font-size: clamp(52px, 9vw, 104px);
+        .top-hero .crown {
+            font-size: 60px;
             line-height: 1;
-            margin: 0 auto 6px;
-            transform: translateY(-140px);
-            opacity: 0;
-            filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.45));
+            margin: 0 auto 10px;
+            display: block;
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.35));
+            animation: crownFloat 3s ease-in-out infinite;
         }
 
-        .top-hero.is-celebrating .leader-crown {
-            animation: crownDrop 0.95s cubic-bezier(0.33, 1.18, 0.52, 1) forwards;
-            animation-delay: 0.12s;
-        }
-
-        @keyframes crownDrop {
-            0% {
-                transform: translateY(-140px) rotate(-12deg) scale(0.85);
-                opacity: 0;
-            }
-            45% {
-                opacity: 1;
-            }
-            72% {
-                transform: translateY(10px) rotate(5deg) scale(1.05);
-            }
-            100% {
-                transform: translateY(0) rotate(0deg) scale(1);
-                opacity: 1;
-            }
-        }
-
-        .leader-confetti {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            overflow: visible;
-        }
-
-        .confetti-piece {
-            position: absolute;
-            left: 50%;
-            top: 32%;
-            width: 9px;
-            height: 5px;
-            margin: -2px 0 0 -4px;
-            border-radius: 1px;
-            opacity: 0;
-        }
-
-        .top-hero.is-celebrating .confetti-piece {
-            animation: confettiBurst 1.05s ease-out forwards;
-        }
-
-        .top-hero.is-celebrating .confetti-piece:nth-child(1) {
-            animation-delay: 0.18s;
-            background: #ef4444;
-            --tx: -72px;
-            --ty: -88px;
-            --rot: 160deg;
-        }
-
-        .top-hero.is-celebrating .confetti-piece:nth-child(2) {
-            animation-delay: 0.2s;
-            background: #22c55e;
-            --tx: 68px;
-            --ty: -76px;
-            --rot: -140deg;
-        }
-
-        .top-hero.is-celebrating .confetti-piece:nth-child(3) {
-            animation-delay: 0.22s;
-            background: #60a5fa;
-            --tx: -48px;
-            --ty: -100px;
-            --rot: 200deg;
-        }
-
-        .top-hero.is-celebrating .confetti-piece:nth-child(4) {
-            animation-delay: 0.19s;
-            background: #facc15;
-            --tx: 52px;
-            --ty: -92px;
-            --rot: -100deg;
-        }
-
-        .top-hero.is-celebrating .confetti-piece:nth-child(5) {
-            animation-delay: 0.21s;
-            background: #f472b6;
-            --tx: -20px;
-            --ty: -110px;
-            --rot: 45deg;
-        }
-
-        .top-hero.is-celebrating .confetti-piece:nth-child(6) {
-            animation-delay: 0.23s;
-            background: #a78bfa;
-            --tx: 28px;
-            --ty: -105px;
-            --rot: -60deg;
-        }
-
-        .top-hero.is-celebrating .confetti-piece:nth-child(7) {
-            animation-delay: 0.2s;
-            background: #fef08a;
-            --tx: -90px;
-            --ty: -48px;
-            --rot: 120deg;
-        }
-
-        .top-hero.is-celebrating .confetti-piece:nth-child(8) {
-            animation-delay: 0.24s;
-            background: #38bdf8;
-            --tx: 84px;
-            --ty: -52px;
-            --rot: -160deg;
-        }
-
-        .top-hero.is-celebrating .confetti-piece:nth-child(9) {
-            animation-delay: 0.17s;
-            background: #fb923c;
-            --tx: 0;
-            --ty: -118px;
-            --rot: 15deg;
-        }
-
-        .top-hero.is-celebrating .confetti-piece:nth-child(10) {
-            animation-delay: 0.25s;
-            background: #4ade80;
-            --tx: -64px;
-            --ty: -64px;
-            --rot: 90deg;
-        }
-
-        .top-hero.is-celebrating .confetti-piece:nth-child(11) {
-            animation-delay: 0.22s;
-            background: #f87171;
-            --tx: 58px;
-            --ty: -58px;
-            --rot: -30deg;
-        }
-
-        .top-hero.is-celebrating .confetti-piece:nth-child(12) {
-            animation-delay: 0.26s;
-            background: #c084fc;
-            --tx: -36px;
-            --ty: -82px;
-            --rot: 220deg;
-        }
-
-        @keyframes confettiBurst {
-            0% {
-                transform: translate(0, 0) rotate(0deg) scale(0.3);
-                opacity: 0;
-            }
-            12% {
-                opacity: 0.9;
-            }
-            100% {
-                transform: translate(var(--tx, 0), var(--ty, -60px)) rotate(var(--rot, 180deg)) scale(1);
-                opacity: 0;
-            }
+        @keyframes crownFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
 
         .top-hero .hero-name {
-            font-size: clamp(80px, 10vw, 160px);
+            font-size: clamp(70px, 8vw, 120px);
+            line-height: 1;
             font-weight: 900;
             text-shadow:
                 0 0 30px rgba(255, 255, 255, 0.2),
@@ -742,20 +548,9 @@
             animation: goldPulse 3s ease-in-out infinite;
         }
 
-        .top-hero .hero-house {
-            font-size: clamp(24px, 3vw, 40px);
+        .top-hero .hero-points {
+            font-size: clamp(30px, 4vw, 60px);
             font-weight: 700;
-            opacity: 0.8;
-            margin-top: 10px;
-        }
-
-        .top-hero .hero-house.gryffindor { color: #ef4444; }
-        .top-hero .hero-house.slytherin { color: #22c55e; }
-        .top-hero .hero-house.ravenclaw { color: #60a5fa; }
-        .top-hero .hero-house.hufflepuff { color: #facc15; }
-
-        .hero-points {
-            font-size: clamp(40px, 5vw, 80px);
             opacity: 0.8;
             margin-top: 5px;
         }
@@ -779,7 +574,7 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
-            gap: 12px;
+            gap: 10px;
             width: 100%;
             max-width: 1100px;
             overflow: hidden;
@@ -1088,31 +883,10 @@
             </div>
 
             @if($topStudents->isNotEmpty())
-                @php
-                    $heroHouseKey = strtolower(str_replace(' ', '', $topStudents[0]->house?->name ?? ''));
-                @endphp
-                <div class="top-hero" id="topStudentsHero">
-                    <div class="leader-confetti" aria-hidden="true">
-                        <span class="confetti-piece"></span>
-                        <span class="confetti-piece"></span>
-                        <span class="confetti-piece"></span>
-                        <span class="confetti-piece"></span>
-                        <span class="confetti-piece"></span>
-                        <span class="confetti-piece"></span>
-                        <span class="confetti-piece"></span>
-                        <span class="confetti-piece"></span>
-                        <span class="confetti-piece"></span>
-                        <span class="confetti-piece"></span>
-                        <span class="confetti-piece"></span>
-                        <span class="confetti-piece"></span>
-                    </div>
-                    <div class="leader-new-badge">New leader</div>
-                    <span class="leader-crown" aria-hidden="true">👑</span>
+                <div class="top-hero">
+                    <div class="crown">👑</div>
                     <div class="hero-name">
                         {{ $topStudents[0]->name }}
-                    </div>
-                    <div class="hero-house {{ $heroHouseKey }}">
-                        {{ $topStudents[0]->house?->name ?? '' }}
                     </div>
                     <div class="hero-points">
                         {{ $topStudents[0]->house_points }} pts
@@ -1240,25 +1014,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const broadcastUrl = @json(route('broadcast-messages.latest'));
     const broadcastBanner = document.getElementById('broadcastBanner');
 
-    const topStudentsHero = document.getElementById('topStudentsHero');
-
     function showScreen(index) {
         screens.forEach((s, i) => {
             s.style.display = (i === index) ? 'flex' : 'none';
         });
-
-        if (topStudentsHero) {
-            topStudentsHero.classList.remove('is-celebrating');
-            const active = screens[index];
-            if (active && active.id === 'screen-4') {
-                void topStudentsHero.offsetWidth;
-                requestAnimationFrame(function () {
-                    requestAnimationFrame(function () {
-                        topStudentsHero.classList.add('is-celebrating');
-                    });
-                });
-            }
-        }
     }
 
     function nextScreen() {
