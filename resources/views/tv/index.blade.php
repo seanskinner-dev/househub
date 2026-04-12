@@ -10,6 +10,10 @@
 
 <div class="tv-container">
 
+    <div id="emergencyScreen" style="display:none;">
+        <div id="emergencyText"></div>
+    </div>
+
     <div id="broadcastBanner" class="tv-broadcast-banner" role="status" aria-live="polite"></div>
 
     <!-- SCREEN 1 -->
@@ -187,9 +191,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     if (emergencyText) {
                         emergencyText.innerText = message.slice('EMERGENCY:'.length).trim();
                     }
-                    document.querySelectorAll('.tv-screen').forEach(function (el) {
-                        el.style.display = 'none';
-                    });
                     if (broadcastBanner) {
                         broadcastBanner.style.display = 'none';
                     }
@@ -197,9 +198,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     if (emergencyScreen) {
                         emergencyScreen.style.display = 'none';
                     }
-                    document.querySelectorAll('.tv-screen').forEach(function (el) {
-                        el.style.display = 'block';
-                    });
                     if (broadcastBanner) {
                         if (message) {
                             broadcastBanner.textContent = message;
@@ -248,6 +246,28 @@ document.addEventListener("DOMContentLoaded", function () {
     padding: 20px;
     display: none;
     z-index: 9999;
+}
+
+#emergencyScreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    background: #dc2626;
+    color: white;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 80px;
+    font-weight: bold;
+    text-align: center;
+
+    z-index: 10000;
+    padding: 40px;
 }
 
 /* FIXED SCREEN HEIGHT */
