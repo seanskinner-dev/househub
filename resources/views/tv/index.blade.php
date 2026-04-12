@@ -524,6 +524,7 @@
             padding: 24px 16px 16px;
             min-height: 0;
             overflow: hidden;
+            animation: weatherFade 1s ease;
         }
 
         .weather-hero {
@@ -546,6 +547,7 @@
             background-position: center;
             transition: all 1s ease;
             filter: blur(4px) brightness(0.9);
+            animation: skyDrift 60s linear infinite;
         }
 
         .weather-hero.sun-active::before {
@@ -562,6 +564,7 @@
 
         .weather-hero.storm-active::before {
             background-image: url('https://images.unsplash.com/photo-1500673922987-e212871fec22');
+            animation: skyDrift 60s linear infinite, stormFlash 6s infinite;
         }
 
         .weather-hero::after {
@@ -574,6 +577,26 @@
                 rgba(0, 0, 0, 0.6)
             );
             z-index: 0;
+        }
+
+        .weather-hero.sun-active::after {
+            background: radial-gradient(
+                circle at 50% 30%,
+                rgba(255, 223, 100, 0.25),
+                rgba(0, 0, 0, 0.6)
+            );
+        }
+
+        .weather-hero.rain-active::after {
+            background: linear-gradient(
+                to bottom,
+                rgba(0, 0, 0, 0.4),
+                rgba(0, 0, 0, 0.7)
+            );
+        }
+
+        .weather-hero.rain-active {
+            filter: contrast(0.9) brightness(0.8);
         }
 
         .weather-hero > * {
@@ -698,6 +721,9 @@
         .weather-main {
             width: 100%;
             max-width: 960px;
+            backdrop-filter: blur(6px);
+            padding: 20px 40px;
+            border-radius: 20px;
         }
 
         .weather-temp-main {
@@ -726,10 +752,13 @@
             align-items: flex-end;
             flex-wrap: wrap;
             gap: 12px 8px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            border-radius: 16px;
+            margin: 0 40px 20px;
             padding: 20px;
             font-size: clamp(22px, 3vw, 36px);
             opacity: 0.6;
-            backdrop-filter: blur(10px);
             flex-shrink: 0;
         }
 
@@ -747,6 +776,23 @@
 
         .weather-mini span:last-child {
             font-weight: 800;
+        }
+
+        @keyframes skyDrift {
+            0% { transform: scale(1.05) translateX(0); }
+            50% { transform: scale(1.05) translateX(-10px); }
+            100% { transform: scale(1.05) translateX(0); }
+        }
+
+        @keyframes stormFlash {
+            0%, 96%, 100% { filter: blur(4px) brightness(0.9); }
+            97% { filter: blur(4px) brightness(2.2); }
+            98% { filter: blur(4px) brightness(0.9); }
+        }
+
+        @keyframes weatherFade {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
