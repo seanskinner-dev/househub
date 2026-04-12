@@ -1,207 +1,123 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HouseHub TV</title>
     <style>
-        body {
+        html, body {
             margin: 0;
+            height: 100%;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+        *, *::before, *::after { box-sizing: inherit; }
+
+        .tv-container {
+            position: relative;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: #0f172a;
+            color: #fff;
         }
 
-        body::after {
-            content: "";
+        .tv-broadcast-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: #dc2626;
+            color: #fff;
+            text-align: center;
+            font-size: clamp(24px, 4vw, 40px);
+            font-weight: bold;
+            padding: 16px;
+            display: none;
+            z-index: 9999;
+        }
+
+        #emergencyScreen {
             position: fixed;
             inset: 0;
-            pointer-events: none;
-            z-index: 1;
-            background: radial-gradient(circle at center, transparent 60%, rgba(0,0,0,0.6));
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: #dc2626;
+            color: #fff;
+            font-size: clamp(36px, 6vw, 80px);
+            font-weight: bold;
+            text-align: center;
+            padding: 40px;
+            z-index: 10000;
         }
 
-/* BASE */
-.tv-container {
-    position: relative;
-    z-index: 2;
-    height: 100vh;
-    width: 100vw;
-    background: #0f172a;
-    color: white;
-    padding: 0;
-    margin: 0;
-    box-sizing: border-box;
-}
+        .tv-screen {
+            display: none;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
 
-.tv-broadcast-banner {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    background: #dc2626;
-    color: white;
-    text-align: center;
-    font-size: 40px;
-    font-weight: bold;
-    padding: 20px;
-    display: none;
-    z-index: 9999;
-}
+        .house-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            height: 100vh;
+            width: 100vw;
+            gap: 0;
+        }
 
-#emergencyScreen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+        .house-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 16px;
+            min-height: 0;
+            min-width: 0;
+            background: #334155;
+            color: #fff;
+        }
 
-    background: #dc2626;
-    color: white;
+        .house-card.gryffindor { background: #740001; color: #fff; }
+        .house-card.slytherin  { background: #1a472a; color: #fff; }
+        .house-card.ravenclaw  { background: #0e1a40; color: #fff; }
+        .house-card.hufflepuff { background: #ffcc00; color: #111; }
 
-    align-items: center;
-    justify-content: center;
+        .house-card.winner {
+            transform: scale(1.05);
+            transform-origin: center center;
+            z-index: 2;
+        }
 
-    font-size: 80px;
-    font-weight: bold;
-    text-align: center;
+        .house-card .rank {
+            font-size: clamp(22px, 3vw, 32px);
+            opacity: 0.85;
+            margin-bottom: 8px;
+        }
 
-    z-index: 10000;
-    padding: 40px;
-}
+        .house-card .house-name {
+            font-size: clamp(28px, 5vw, 56px);
+            font-weight: bold;
+            letter-spacing: 0.05em;
+        }
 
-/* FIXED SCREEN HEIGHT */
-.tv-screen {
-    display: none;
-    height: 100vh;
-    width: 100%;
-}
+        .house-card .points {
+            font-size: clamp(64px, 14vw, 140px);
+            font-weight: bold;
+            margin-top: 12px;
+            line-height: 1;
+        }
 
-.house-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-    padding: 6px;
-    box-sizing: border-box;
-    height: 100vh;
-    width: 100vw;
-}
-
-.house-card {
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: stretch;
-    color: white;
-    min-height: 0;
-
-    transition: box-shadow 0.4s ease;
-    animation: fadeIn 0.8s ease forwards;
-}
-
-.house-card:hover {
-    filter: brightness(1.06);
-}
-
-.house-card.winner {
-    box-shadow: 0 0 80px rgba(255,255,255,0.6);
-    z-index: 2;
-    animation: fadeInWinner 0.8s ease forwards, pulse 2s ease-in-out 0.8s infinite;
-}
-
-.house-card::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.08), transparent);
-    opacity: 0.4;
-    animation: shimmer 6s infinite;
-    pointer-events: none;
-}
-
-.house-card-inner {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-    animation: float 6s ease-in-out infinite;
-}
-
-.house-card .house-name {
-    font-size: 48px;
-    font-weight: bold;
-    letter-spacing: 3px;
-}
-
-.house-card .points {
-    font-size: 140px;
-    font-weight: bold;
-    margin: 20px 0;
-    letter-spacing: 2px;
-    text-shadow: 0 0 20px rgba(255,255,255,0.4);
-}
-
-.house-card .rank {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    font-size: 28px;
-    background: rgba(0,0,0,0.4);
-    padding: 6px 12px;
-    border-radius: 6px;
-    opacity: 0.9;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-@keyframes float {
-    0% { transform: translateY(0px); }
-    50% { transform: translateY(-8px); }
-    100% { transform: translateY(0px); }
-}
-
-@keyframes fadeInWinner {
-    from {
-        opacity: 0;
-        transform: scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1.08);
-    }
-}
-
-@keyframes pulse {
-    0% { transform: scale(1.08); }
-    50% { transform: scale(1.11); }
-    100% { transform: scale(1.08); }
-}
-
-@keyframes shimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
-}
-
-.next-btn {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-}
-
+        .next-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 10001;
+        }
     </style>
 </head>
 
@@ -215,25 +131,19 @@
 
     <div id="broadcastBanner" class="tv-broadcast-banner" role="status" aria-live="polite"></div>
 
-    <!-- SCREEN 1 -->
     <div class="tv-screen" id="screen-1">
         <div class="house-grid">
             @foreach($series as $index => $house)
-                <div class="house-card {{ $index === 0 ? 'winner' : '' }}"
-                     style="background: linear-gradient(135deg, {{ $house['color'] }}, #000000)">
+                <div class="house-card {{ strtolower($house['name'] ?? 'gryffindor') }} {{ $index === 0 ? 'winner' : '' }}">
 
-                    <div class="house-card-inner">
+                    <div class="rank">#{{ $index + 1 }}</div>
 
-                        <div class="rank">#{{ $index + 1 }}</div>
+                    <div class="house-name">
+                        {{ strtoupper($house['name']) }}
+                    </div>
 
-                        <div class="house-name">
-                            {{ strtoupper($house['name']) }}
-                        </div>
-
-                        <div class="points" data-points="{{ array_sum($house['data'] ?? []) }}">
-                            0
-                        </div>
-
+                    <div class="points" data-points="{{ array_sum($house['data'] ?? []) }}">
+                        0
                     </div>
 
                 </div>
@@ -241,7 +151,7 @@
         </div>
     </div>
 
-    <button id="nextBtn" class="next-btn">Next ▶</button>
+    <button type="button" id="nextBtn" class="next-btn">Next ▶</button>
 
 </div>
 
