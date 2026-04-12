@@ -120,6 +120,7 @@
 
         .house-card {
             position: relative;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
             justify-content: center;
