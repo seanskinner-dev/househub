@@ -1,3 +1,7 @@
+@extends('layouts.app')
+
+@section('content')
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -469,3 +473,5 @@ window.sendOMM = function(){
 
 </body>
 </html>
+
+@endsection
