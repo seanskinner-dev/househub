@@ -136,6 +136,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let currentScreen = 0;
     const screens = document.querySelectorAll('.tv-screen');
+    screens.forEach(el => el.style.display = 'block');
+
     let chartRendered = false;
     const broadcastUrl = @json(route('broadcast-messages.latest'));
     const broadcastBanner = document.getElementById('broadcastBanner');
