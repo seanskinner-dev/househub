@@ -1,126 +1,169 @@
-@extends('layouts.app')
+<?php die('THIS IS THE TV FILE'); ?>
 
-@section('content')
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HouseHub TV</title>
+    <style>
+        html, body {
+            margin: 0;
+            height: 100%;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+        *, *::before, *::after { box-sizing: inherit; }
+
+        .tv-container {
+            position: relative;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: #0f172a;
+            color: #fff;
+        }
+
+        .tv-broadcast-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: #dc2626;
+            color: #fff;
+            text-align: center;
+            font-size: clamp(24px, 4vw, 40px);
+            font-weight: bold;
+            padding: 16px;
+            display: none;
+            z-index: 9999;
+        }
+
+        #emergencyScreen {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: #dc2626;
+            color: #fff;
+            font-size: clamp(36px, 6vw, 80px);
+            font-weight: bold;
+            text-align: center;
+            padding: 40px;
+            z-index: 10000;
+        }
+
+        .tv-screen {
+            display: none;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+
+        .house-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            height: 100vh;
+            width: 100vw;
+            gap: 0;
+        }
+
+        .house-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 16px;
+            min-height: 0;
+            min-width: 0;
+            background: #334155;
+            color: #fff;
+        }
+
+        .house-card.gryffindor { background: #740001; color: #fff; }
+        .house-card.slytherin  { background: #1a472a; color: #fff; }
+        .house-card.ravenclaw  { background: #0e1a40; color: #fff; }
+        .house-card.hufflepuff { background: #ffcc00; color: #111; }
+
+        .house-card.winner {
+            transform: scale(1.05);
+            transform-origin: center center;
+            z-index: 2;
+        }
+
+        .house-card .rank {
+            font-size: clamp(22px, 3vw, 32px);
+            opacity: 0.85;
+            margin-bottom: 8px;
+        }
+
+        .house-card .house-name {
+            font-size: clamp(28px, 5vw, 56px);
+            font-weight: bold;
+            letter-spacing: 0.05em;
+        }
+
+        .house-card .points {
+            font-size: clamp(64px, 14vw, 140px);
+            font-weight: bold;
+            margin-top: 12px;
+            line-height: 1;
+        }
+
+        .next-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 10001;
+        }
+    </style>
+</head>
+
+<body>
 
 <div class="tv-container">
 
-    <!-- SCREEN 1 -->
+    <div id="emergencyScreen" style="display:none;">
+        <div id="emergencyText"></div>
+    </div>
+
+    <div id="broadcastBanner" class="tv-broadcast-banner" role="status" aria-live="polite"></div>
+
     <div class="tv-screen" id="screen-1">
-        <div class="row h-100">
+        <div class="house-grid">
             @foreach($series as $index => $house)
-                <div class="col-3 d-flex">
-                    <div class="house-card w-100 text-center"
-                         style="background: {{ $house['color'] }}">
-                        <div class="rank">#{{ $index + 1 }}</div>
-                        <h2 class="house-name">{{ $house['name'] }}</h2>
+                <div class="house-card {{ strtolower($house['name'] ?? 'gryffindor') }} {{ $index === 0 ? 'winner' : '' }}">
+
+                    <div class="rank">#{{ $index + 1 }}</div>
+
+                    <div class="house-name">
+                        {{ strtoupper($house['name']) }}
                     </div>
+
+                    <div class="points" data-points="{{ array_sum($house['data'] ?? []) }}">
+                        0
+                    </div>
+
                 </div>
             @endforeach
         </div>
     </div>
 
-    <!-- SCREEN 2 (GRAPH FIXED) -->
-    <div class="tv-screen" id="screen-2">
-        <div class="graph-wrapper">
-
-            <div class="graph-title">
-                House Points Trend
-            </div>
-
-            <div class="house-legend">
-                <div>🦁 Gryffindor</div>
-                <div>🐍 Slytherin</div>
-                <div>🦅 Ravenclaw</div>
-                <div>🦡 Hufflepuff</div>
-            </div>
-
-            <div id="trendChart"></div>
-
-        </div>
-    </div>
-
-    <!-- SCREEN 3 -->
-    <div class="tv-screen" id="screen-3">
-        <div class="students-wrapper">
-
-            <div class="students-title">
-                Top 30 Students (This Week)
-            </div>
-
-            <div class="students-grid">
-
-                @foreach($topStudents as $index => $student)
-
-                    @php
-                        $house = strtolower($student->house_name ?? 'gryffindor');
-
-                        $icons = [
-                            'gryffindor' => '🦁',
-                            'slytherin'  => '🐍',
-                            'ravenclaw'  => '🦅',
-                            'hufflepuff' => '🦡',
-                        ];
-                    @endphp
-
-                    <div class="student-row {{ $house }}">
-
-                        <div class="name">
-                            <span class="rank">#{{ $index + 1 }}</span>
-                            <span>{{ $icons[$house] ?? '⭐' }}</span>
-                            {{ $student->first_name }} {{ $student->last_name }}
-                        </div>
-
-                        <div class="points">
-                            {{ $student->total }}
-                        </div>
-
-                    </div>
-
-                @endforeach
-
-            </div>
-
-        </div>
-    </div>
-
-    <!-- SCREEN 4 -->
-    <div class="tv-screen" id="screen-4">
-        <div class="teachers-wrapper">
-
-            <div class="teachers-title">
-                Top Teachers (This Week)
-            </div>
-
-            <div class="teachers-list">
-                @foreach($topTeachers as $index => $teacher)
-                    <div class="teacher-row">
-                        <span>#{{ $index + 1 }}</span>
-                        <span>{{ $teacher->name }}</span>
-                        <span>{{ $teacher->total }}</span>
-                    </div>
-                @endforeach
-            </div>
-
-        </div>
-    </div>
-
-    <button id="nextBtn" class="next-btn">Next ▶</button>
+    <button type="button" id="nextBtn" class="next-btn">Next ▶</button>
 
 </div>
-
-@endsection
-
-
-@push('scripts')
-
-<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
     let currentScreen = 0;
     const screens = document.querySelectorAll('.tv-screen');
-    let chartRendered = false;
+    const broadcastUrl = @json(route('broadcast-messages.latest'));
+    const broadcastBanner = document.getElementById('broadcastBanner');
 
     function showScreen(index) {
         screens.forEach((s, i) => {
@@ -131,112 +174,84 @@ document.addEventListener("DOMContentLoaded", function () {
     function nextScreen() {
         currentScreen = (currentScreen + 1) % screens.length;
         showScreen(currentScreen);
-
-        if (currentScreen === 1 && !chartRendered) {
-            renderChart();
-            chartRendered = true;
-        }
     }
 
     document.getElementById('nextBtn').addEventListener('click', nextScreen);
-    setInterval(nextScreen, 10000);
-    showScreen(0);
 
-    function renderChart() {
-        new ApexCharts(document.querySelector("#trendChart"), {
-            chart: {
-                type: 'area',
-                height: '100%',
-                toolbar: { show: false }
-            },
-            series: @json($series),
-            colors: ['#740001','#1a472a','#0e1a40','#ffcc00'],
-            stroke: { curve: 'smooth', width: 5 },
-            xaxis: { categories: @json($dates) },
-            yaxis: { min: 0 },
-            legend: { show: false }
-        }).render();
+    function animatePoints() {
+        document.querySelectorAll('.points').forEach(el => {
+            const target = parseInt(el.dataset.points || 0);
+            let current = 0;
+
+            const increment = Math.max(1, Math.ceil(target / 40));
+
+            const interval = setInterval(() => {
+                current += increment;
+
+                if (current >= target) {
+                    el.innerText = target;
+                    clearInterval(interval);
+                } else {
+                    el.innerText = current;
+                }
+            }, 20);
+        });
     }
 
+    showScreen(0);
+    animatePoints();
+
+    setTimeout(() => {
+        showScreen(0);
+    }, 100);
+
+    function fetchBroadcast() {
+        const emergencyScreen = document.getElementById('emergencyScreen');
+        const emergencyText = document.getElementById('emergencyText');
+
+        fetch(broadcastUrl)
+            .then(function (res) {
+                if (!res.ok) throw new Error('broadcast fetch failed');
+                return res.json();
+            })
+            .then(function (data) {
+                const message = data && data.message ? String(data.message) : '';
+
+                if (message && message.startsWith('EMERGENCY:')) {
+                    if (emergencyScreen) {
+                        emergencyScreen.style.display = 'flex';
+                    }
+                    if (emergencyText) {
+                        emergencyText.innerText = message.slice('EMERGENCY:'.length).trim();
+                    }
+                    if (broadcastBanner) {
+                        broadcastBanner.style.display = 'none';
+                    }
+                } else {
+                    if (emergencyScreen) {
+                        emergencyScreen.style.display = 'none';
+                    }
+                    if (broadcastBanner) {
+                        if (message) {
+                            broadcastBanner.textContent = message;
+                            broadcastBanner.style.display = 'block';
+                        } else {
+                            broadcastBanner.style.display = 'none';
+                        }
+                    }
+                }
+            })
+            .catch(function () {
+                if (broadcastBanner) {
+                    broadcastBanner.style.display = 'none';
+                }
+            });
+    }
+
+    fetchBroadcast();
+    setInterval(fetchBroadcast, 5000);
 });
 </script>
 
-@endpush
-
-
-<style>
-
-/* BASE */
-.tv-container {
-    height: 100vh;
-    width: 100vw;
-    background: #0f172a;
-    color: white;
-}
-
-/* FIXED SCREEN HEIGHT */
-.tv-screen {
-    display: none;
-    height: 100vh;
-    width: 100%;
-}
-
-/* GRAPH FIX */
-.graph-wrapper {
-    height: 100%;
-    width: 100%;
-    padding: 40px 60px;
-    display: flex;
-    flex-direction: column;
-}
-
-#trendChart {
-    flex: 1;
-}
-
-/* TITLE */
-.students-title {
-    font-size: 48px;
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-/* 2 COLUMN */
-.students-grid {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 14px;
-    padding: 0 40px;
-}
-
-/* BUTTON STYLE */
-.student-row {
-    display: flex !important;
-    justify-content: space-between;
-    align-items: center;
-
-    padding: 12px 16px;
-    border-radius: 8px;
-
-    font-size: 20px;
-    font-weight: 600;
-}
-
-/* HOUSE COLOURS */
-.student-row.gryffindor { background: #740001; }
-.student-row.slytherin  { background: #1a472a; }
-.student-row.ravenclaw  { background: #1e40af; }
-.student-row.hufflepuff { background: #ffcc00; color:#111; }
-
-/* POINTS */
-.student-row .points {
-    font-weight: bold;
-}
-
-.next-btn {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-}
-
-</style>
+</body>
+</html>
