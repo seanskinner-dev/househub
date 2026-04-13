@@ -11,9 +11,6 @@ use App\Http\Controllers\ReportController;
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
-|
-| Main application routes for HouseHub
-|
 */
 
 // =============================
@@ -24,9 +21,14 @@ Route::get('/', function () {
 });
 
 // =============================
-// BROADCAST (PUBLIC READ FOR TV)
+// PUBLIC (TV + BROADCAST)
 // =============================
-Route::get('/broadcast-messages/latest', [BroadcastMessageController::class, 'latest'])->name('broadcast-messages.latest');
+Route::get('/broadcast-messages/latest', [BroadcastMessageController::class, 'latest'])
+    ->name('broadcast-messages.latest');
+
+Route::get('/test123', function () {
+    return 'TEST123';
+});
 
 // =============================
 // AUTHENTICATED ROUTES
@@ -61,31 +63,34 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/certificate/{id}', [PointController::class, 'certificate'])->name('certificate.show');
 
     // =============================
-    // TV MODE (DISPLAY SCREENS)
+    // TV MODE
     // =============================
     Route::get('/tv', [PointController::class, 'tv'])->name('tv');
 
     // =============================
     // REPORTS
     // =============================
-    Route::get('/reports/house-performance', [ReportController::class, 'housePerformance'])->name('reports.house');
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/house-performance', [ReportController::class, 'housePerformance'])
+            ->name('house');
+    });
 
     // =============================
-    // DASHBOARD (OPTIONAL / FUTURE)
+    // DASHBOARD
     // =============================
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
 
     // =============================
-    // USER PROFILE (LARAVEL BREEZE)
+    // USER PROFILE
     // =============================
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // =============================
-    // ADMIN CONTROL PANEL
+    // ADMIN
     // =============================
     Route::get('/admin', function () {
         return view('admin.index');
@@ -93,9 +98,7 @@ Route::middleware(['auth'])->group(function () {
 
 });
 
-/*
-|--------------------------------------------------------------------------
-| AUTH ROUTES
-|--------------------------------------------------------------------------
-*/
+// =============================
+// AUTH ROUTES
+// =============================
 require __DIR__.'/auth.php';
