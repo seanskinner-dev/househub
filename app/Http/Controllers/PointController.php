@@ -243,6 +243,39 @@ class PointController extends Controller
             ->limit(10)
             ->get();
 
+        $termCaseSql = 'CASE '
+            . 'WHEN EXTRACT(MONTH FROM point_transactions.created_at)::integer BETWEEN 1 AND 3 THEN 1 '
+            . 'WHEN EXTRACT(MONTH FROM point_transactions.created_at)::integer BETWEEN 4 AND 6 THEN 2 '
+            . 'WHEN EXTRACT(MONTH FROM point_transactions.created_at)::integer BETWEEN 7 AND 9 THEN 3 '
+            . 'ELSE 4 END';
+
+        $termTotals = DB::table('point_transactions')
+            ->join('houses', 'point_transactions.house_id', '=', 'houses.id')
+            ->select(
+                'houses.name as house',
+                DB::raw("({$termCaseSql}) as term"),
+                DB::raw('SUM(point_transactions.amount) as total')
+            )
+            ->groupByRaw("houses.name, {$termCaseSql}")
+            ->get();
+
+        $houseOrder = ['Gryffindor', 'Slytherin', 'Ravenclaw', 'Hufflepuff'];
+        $housePointsByTerm = [];
+        foreach ($houseOrder as $houseName) {
+            $housePointsByTerm[] = [
+                'house' => $houseName,
+                'data' => [0, 0, 0, 0],
+            ];
+        }
+
+        foreach ($termTotals as $row) {
+            $idx = array_search($row->house, $houseOrder, true);
+            $term = (int) $row->term;
+            if ($idx !== false && $term >= 1 && $term <= 4) {
+                $housePointsByTerm[$idx]['data'][$term - 1] = (int) $row->total;
+            }
+        }
+
         $weather = Cache::remember('tv_weather', 600, function () {
             $fallback = [
                 ['label' => '8AM', 'temp' => 14, 'rain' => 20, 'code' => 1],
@@ -302,6 +335,7 @@ class PointController extends Controller
             'topStudents' => $topStudents,
             'topTeachers' => $topTeachers,
             'weather' => $weather,
+            'housePointsByTerm' => $housePointsByTerm,
         ]);
     }
 }
