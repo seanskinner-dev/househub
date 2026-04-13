@@ -297,10 +297,45 @@ class ReportController extends Controller
     {
         $raw = trim((string) ($data['value'] ?? ''));
         if (preg_match('/^Year\s+(\d+)$/', $raw, $m)) {
-            return $this->pcDrilldownYearLevelBar((int) $m[1], $house, $start, $end, $yearFilter);
+            return $this->drilldownYearLevelStudents((int) $m[1], $house, $start, $end, $yearFilter);
+        }
+        if (preg_match('/^\d+$/', $raw)) {
+            return $this->drilldownYearLevelStudents((int) $raw, $house, $start, $end, $yearFilter);
         }
 
         return ['title' => 'Drill-down', 'rows' => []];
+    }
+
+    /**
+     * @return array{title: string, rows: \Illuminate\Support\Collection<int, object>}
+     */
+    private function drilldownYearLevelStudents(int $year, string $house, Carbon $start, Carbon $end, string $yearFilter): array
+    {
+        $rows = DB::table('students as s')
+            ->leftJoin('houses as h', 's.house_id', '=', 'h.id')
+            ->leftJoin('point_transactions as pt', function ($join) use ($start, $end) {
+                $join->on('pt.student_id', '=', 's.id')
+                    ->whereBetween('pt.created_at', [$start, $end]);
+            })
+            ->where('s.year_level', $year)
+            ->when($house !== 'All', fn ($q) => $q->where('h.name', $house))
+            ->when($yearFilter !== 'All', fn ($q) => $q->where('s.year_level', (int) $yearFilter))
+            ->groupBy('s.id', 's.first_name', 's.last_name', 's.year_level', 'h.name')
+            ->select(
+                's.first_name',
+                's.last_name',
+                's.year_level',
+                DB::raw('COALESCE(h.name, \'Unknown\') as house_name'),
+                DB::raw('COALESCE(SUM(pt.amount), 0) as house_points')
+            )
+            ->orderBy('s.last_name')
+            ->orderBy('s.first_name')
+            ->get();
+
+        return [
+            'title' => "Students in Year {$year}",
+            'rows' => $rows,
+        ];
     }
 
     private function drilldownPayloadRiskSegment(array $data, string $house, Carbon $start, Carbon $end, string $yearFilter): array

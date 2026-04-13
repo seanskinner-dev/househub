@@ -336,7 +336,20 @@ document.addEventListener("DOMContentLoaded", function () {
         destroyChart('year-level-distribution');
         if (yearSeries.length > 0) {
             instances['year-level-distribution'] = new ApexCharts(document.querySelector("#year-level-distribution"), {
-                chart: { type: 'bar', height: 320 },
+                chart: {
+                    type: 'bar',
+                    height: 320,
+                    events: {
+                        dataPointSelection: function(event, chartContext, config) {
+                            const year = yearCategories[config.dataPointIndex];
+                            if (!year) return;
+                            drillDown({
+                                type: 'year_level',
+                                value: year
+                            });
+                        }
+                    }
+                },
                 series: [{ data: yearSeries }],
                 xaxis: { categories: yearCategories },
                 tooltip: { theme: 'dark' }
