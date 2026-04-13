@@ -5,7 +5,6 @@ use App\Http\Controllers\BroadcastMessageController;
 use App\Http\Controllers\OfficeMessageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PointController;
-use App\Http\Controllers\ReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -70,10 +69,8 @@ Route::middleware(['auth'])->group(function () {
     // =============================
     // REPORTS
     // =============================
-    Route::prefix('reports')->name('reports.')->group(function () {
-        Route::get('/house-performance', [ReportController::class, 'housePerformance'])
-            ->name('house');
-    });
+    Route::get('/reports/house-performance', [App\Http\Controllers\ReportController::class, 'housePerformance'])
+        ->name('reports.house');
 
     // =============================
     // DASHBOARD
