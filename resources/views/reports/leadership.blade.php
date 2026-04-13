@@ -156,26 +156,24 @@
                 return p.toString();
             }
 
-            function drillQueryString(label) {
-                var p = new URLSearchParams();
-                p.set('label', label);
-                p.set('house', filters.house);
-                if (filters.start_date) {
-                    p.set('start_date', filters.start_date);
-                }
-                if (filters.end_date) {
-                    p.set('end_date', filters.end_date);
-                }
-                p.set('year', filters.year || 'All');
-                return p.toString();
-            }
-
-            function drillDown(label) {
-                if (label == null || label === '') {
+            function drillDown(payload) {
+                if (!payload || typeof payload !== 'object') {
                     return;
                 }
-                fetch(drillUrl + '?' + drillQueryString(String(label)), {
-                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                var meta = document.querySelector('meta[name="csrf-token"]');
+                var token = meta ? meta.getAttribute('content') : '';
+                var qs = chartsQueryString();
+                var url = drillUrl + (qs ? '?' + qs : '');
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': token
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify(payload)
                 })
                     .then(function (res) { return res.json(); })
                     .then(function (data) {
@@ -324,7 +322,7 @@
                         events: {
                             click: function (event) {
                                 stopEvent(event);
-                                drillDown('Active');
+                                drillDown({ type: 'engagement_active' });
                             }
                         }
                     },
@@ -374,7 +372,7 @@
                                 var row = chartContext.w.config.series[si].data[di];
                                 var label = row && row.x != null ? row.x : null;
                                 if (label) {
-                                    drillDown(label);
+                                    drillDown({ type: 'date', value: String(label) });
                                 }
                             }
                         }
@@ -412,7 +410,7 @@
                                 var catsInner = config.w.config.xaxis.categories;
                                 var label = catsInner[config.dataPointIndex];
                                 if (label) {
-                                    drillDown(label);
+                                    drillDown({ type: 'year_level', value: String(label) });
                                 }
                             },
                             markerClick: function (event, chartContext, config) {
@@ -420,7 +418,7 @@
                                 var catsInner = config.w.config.xaxis.categories;
                                 var label = catsInner[config.dataPointIndex];
                                 if (label) {
-                                    drillDown(label);
+                                    drillDown({ type: 'year_level', value: String(label) });
                                 }
                             }
                         }
@@ -460,7 +458,7 @@
                                 var idx = config.dataPointIndex;
                                 var lbl = labels[idx];
                                 if (lbl) {
-                                    drillDown(lbl);
+                                    drillDown({ type: 'risk_segment', value: String(lbl) });
                                 }
                             }
                         }
@@ -492,7 +490,7 @@
                         events: {
                             dataPointSelection: function (event) {
                                 stopEvent(event);
-                                drillDown('Low');
+                                drillDown({ type: 'engagement_low' });
                             }
                         }
                     },

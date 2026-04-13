@@ -102,57 +102,13 @@ class ReportController extends Controller
     {
         [$start, $end, $house, $yearFilter] = $this->pcParseFilters($request);
 
+        if ($request->isMethod('post')) {
+            return $this->reportDrilldownStructured($request->all(), $house, $start, $end, $yearFilter);
+        }
+
         $teacher = trim((string) $request->query('teacher', ''));
         if ($teacher !== '') {
-            $query = DB::table('point_transactions')
-                ->join('students', 'students.id', '=', 'point_transactions.student_id');
-
-            if ($house !== 'All') {
-                $query->join('houses', 'houses.id', '=', 'students.house_id')
-                    ->where('houses.name', $house);
-            }
-
-            if ($start && $end) {
-                $query->whereBetween('point_transactions.created_at', [$start, $end]);
-            }
-
-            if ($yearFilter !== 'All') {
-                $query->where('students.year_level', (int) $yearFilter);
-            }
-
-            if ($teacher === 'Unknown') {
-                $query->leftJoin('users', 'users.id', '=', 'point_transactions.awarded_by')
-                    ->where(function ($q) {
-                        $q->whereNull('point_transactions.awarded_by')
-                            ->orWhereNull('users.id')
-                            ->orWhereRaw("NULLIF(TRIM(users.name), '') IS NULL");
-                    });
-            } else {
-                $query->join('users', 'users.id', '=', 'point_transactions.awarded_by')
-                    ->where('users.name', $teacher);
-            }
-
-            $rows = $query
-                ->select(
-                    'students.first_name',
-                    'students.last_name',
-                    DB::raw('SUM(point_transactions.amount) as total_points')
-                )
-                ->groupBy('students.id', 'students.first_name', 'students.last_name')
-                ->orderByDesc('total_points')
-                ->limit(15)
-                ->get();
-
-            $payload = [
-                'title' => 'Students receiving points from '.$teacher.' (top 15)',
-                'student_breakdown' => $rows->values()->all(),
-            ];
-
-            if (config('app.debug')) {
-                $payload['debug'] = $payload['student_breakdown'];
-            }
-
-            return response()->json($payload);
+            return response()->json($this->drilldownTeacherStudents($teacher, $house, $start, $end, $yearFilter));
         }
 
         $label = trim((string) $request->query('label', ''));
@@ -195,44 +151,8 @@ class ReportController extends Controller
             return response()->json($this->pcDrilldownEngagementActivity($activityBucket, $house, $start, $end, $yearFilter));
         }
 
-        // ===== YEAR LEVEL DRILLDOWN (FIX) — matches chart categories "Year N"; before house matching
         if (preg_match('/^Year\s+(\d+)$/', $label, $matches)) {
-            $year = (int) $matches[1];
-
-            $query = DB::table('point_transactions')
-                ->join('students', 'students.id', '=', 'point_transactions.student_id');
-
-            if ($house !== 'All') {
-                $query->join('houses', 'houses.id', '=', 'students.house_id')
-                    ->where('houses.name', $house);
-            }
-
-            if ($start && $end) {
-                $query->whereBetween('point_transactions.created_at', [$start, $end]);
-            }
-
-            $query->whereRaw('EXTRACT(DOW FROM point_transactions.created_at::timestamp) BETWEEN 1 AND 5')
-                ->where('students.year_level', $year);
-
-            if ($yearFilter !== 'All') {
-                $query->where('students.year_level', (int) $yearFilter);
-            }
-
-            $rows = $query
-                ->select(
-                    'students.first_name',
-                    'students.last_name',
-                    'students.year_level',
-                    'point_transactions.amount',
-                    'point_transactions.created_at'
-                )
-                ->orderByDesc('point_transactions.created_at')
-                ->limit(100)
-                ->get();
-
-            return response()->json([
-                'rows' => $rows,
-            ]);
+            return response()->json($this->pcDrilldownYearLevelBar((int) $matches[1], $house, $start, $end, $yearFilter));
         }
 
         if (DB::table('houses')->where('name', $label)->exists()) {
@@ -240,6 +160,207 @@ class ReportController extends Controller
         }
 
         return response()->json(['title' => $label, 'rows' => []]);
+    }
+
+    private function reportDrilldownStructured(array $data, string $house, Carbon $start, Carbon $end, string $yearFilter)
+    {
+        $type = $data['type'] ?? null;
+        if ($type === null || $type === '') {
+            return response()->json(['rows' => []]);
+        }
+
+        return match ($type) {
+            'date' => response()->json($this->drilldownPayloadDate($data, $house, $start, $end, $yearFilter)),
+            'engagement_low' => response()->json($this->pcDrilldownLowAtRisk($house, $start, $end, $yearFilter)),
+            'engagement_active' => response()->json($this->pcDrilldownRiskActive($house, $start, $end, $yearFilter)),
+            'house_low' => response()->json($this->drilldownHouseLow((string) ($data['value'] ?? ''), $house, $start, $end, $yearFilter)),
+            'teacher' => response()->json($this->drilldownTeacherStudents((string) ($data['value'] ?? ''), $house, $start, $end, $yearFilter)),
+            'teacher_bucket' => response()->json($this->tuDrilldownTeacherBucketList(
+                is_array($data['value'] ?? null) ? $data['value'] : [],
+                $house,
+                $start,
+                $end,
+                $yearFilter
+            )),
+            'year_level' => response()->json($this->drilldownPayloadYearLevel($data, $house, $start, $end, $yearFilter)),
+            'risk_segment' => response()->json($this->drilldownPayloadRiskSegment($data, $house, $start, $end, $yearFilter)),
+            default => response()->json(['rows' => []]),
+        };
+    }
+
+    private function drilldownPayloadDate(array $data, string $house, Carbon $start, Carbon $end, string $yearFilter): array
+    {
+        $value = (string) ($data['value'] ?? '');
+        if (! preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+            return ['title' => 'Drill-down', 'rows' => []];
+        }
+        if (($data['scope'] ?? '') === 'staff') {
+            return $this->tuDrilldownDateStaff($value, $house, $start, $end, $yearFilter);
+        }
+
+        return $this->pcDrilldownDate($value, $house, $start, $end, $yearFilter);
+    }
+
+    private function drilldownPayloadYearLevel(array $data, string $house, Carbon $start, Carbon $end, string $yearFilter): array
+    {
+        $raw = trim((string) ($data['value'] ?? ''));
+        if (preg_match('/^Year\s+(\d+)$/', $raw, $m)) {
+            return $this->pcDrilldownYearLevelBar((int) $m[1], $house, $start, $end, $yearFilter);
+        }
+
+        return ['title' => 'Drill-down', 'rows' => []];
+    }
+
+    private function drilldownPayloadRiskSegment(array $data, string $house, Carbon $start, Carbon $end, string $yearFilter): array
+    {
+        $v = trim((string) ($data['value'] ?? ''));
+        if ($v === 'High Risk' || $v === 'High') {
+            return $this->pcDrilldownEngagementActivity('High', $house, $start, $end, $yearFilter);
+        }
+        if ($v === 'Medium Risk' || $v === 'Medium') {
+            return $this->pcDrilldownEngagementActivity('Medium', $house, $start, $end, $yearFilter);
+        }
+        if ($v === 'Active') {
+            return $this->pcDrilldownRiskActive($house, $start, $end, $yearFilter);
+        }
+        if ($v === 'Low' || $v === 'Low Risk') {
+            return $this->pcDrilldownLowAtRisk($house, $start, $end, $yearFilter);
+        }
+
+        return ['title' => $v !== '' ? $v : 'Drill-down', 'rows' => []];
+    }
+
+    /**
+     * @return array{title: string, student_breakdown: list<object>, debug?: list<object>}
+     */
+    private function drilldownTeacherStudents(string $teacher, string $house, Carbon $start, Carbon $end, string $yearFilter): array
+    {
+        $query = DB::table('point_transactions')
+            ->join('students', 'students.id', '=', 'point_transactions.student_id');
+
+        if ($house !== 'All') {
+            $query->join('houses', 'houses.id', '=', 'students.house_id')
+                ->where('houses.name', $house);
+        }
+
+        if ($start && $end) {
+            $query->whereBetween('point_transactions.created_at', [$start, $end]);
+        }
+
+        if ($yearFilter !== 'All') {
+            $query->where('students.year_level', (int) $yearFilter);
+        }
+
+        if ($teacher === 'Unknown') {
+            $query->leftJoin('users', 'users.id', '=', 'point_transactions.awarded_by')
+                ->where(function ($q) {
+                    $q->whereNull('point_transactions.awarded_by')
+                        ->orWhereNull('users.id')
+                        ->orWhereRaw("NULLIF(TRIM(users.name), '') IS NULL");
+                });
+        } else {
+            $query->join('users', 'users.id', '=', 'point_transactions.awarded_by')
+                ->where('users.name', $teacher);
+        }
+
+        $rows = $query
+            ->select(
+                'students.first_name',
+                'students.last_name',
+                DB::raw('SUM(point_transactions.amount) as total_points')
+            )
+            ->groupBy('students.id', 'students.first_name', 'students.last_name')
+            ->orderByRaw('SUM(point_transactions.amount) ASC')
+            ->limit(15)
+            ->get();
+
+        $payload = [
+            'title' => 'Students receiving points from '.$teacher.' (lowest totals first, up to 15)',
+            'student_breakdown' => $rows->values()->all(),
+        ];
+
+        if (config('app.debug')) {
+            $payload['debug'] = $payload['student_breakdown'];
+        }
+
+        return $payload;
+    }
+
+    /**
+     * @return array{title: string, rows: \Illuminate\Support\Collection<int, object>|array}
+     */
+    private function drilldownHouseLow(string $houseName, string $filterHouse, Carbon $start, Carbon $end, string $yearFilter): array
+    {
+        if ($houseName === '' || ! DB::table('houses')->where('name', $houseName)->exists()) {
+            return ['title' => 'Low activity by house', 'rows' => []];
+        }
+
+        if ($filterHouse !== 'All' && $filterHouse !== $houseName) {
+            return ['title' => 'Low activity by house', 'rows' => []];
+        }
+
+        $rows = DB::table('students as s')
+            ->join('houses as h', 's.house_id', '=', 'h.id')
+            ->leftJoin('point_transactions as pt', function ($join) use ($start, $end) {
+                $join->on('pt.student_id', '=', 's.id')
+                    ->whereBetween('pt.created_at', [$start, $end])
+                    ->whereRaw('EXTRACT(DOW FROM pt.created_at::timestamp) BETWEEN 1 AND 5');
+            })
+            ->where('h.name', $houseName)
+            ->when($yearFilter !== 'All', fn ($q) => $q->where('s.year_level', (int) $yearFilter))
+            ->select('s.first_name', 's.last_name', 's.year_level', DB::raw('COUNT(pt.id) as weekday_awards'))
+            ->groupBy('s.id', 's.first_name', 's.last_name', 's.year_level')
+            ->havingRaw('COUNT(pt.id) <= 5')
+            ->orderByRaw('COUNT(pt.id) ASC')
+            ->get();
+
+        return [
+            'title' => 'Lowest weekday award counts in '.$houseName.' (≤5 in range)',
+            'rows' => $rows,
+        ];
+    }
+
+    /**
+     * @return array{title: string, rows: \Illuminate\Support\Collection<int, mixed>}
+     */
+    private function pcDrilldownYearLevelBar(int $year, string $house, Carbon $start, Carbon $end, string $yearFilter): array
+    {
+        $query = DB::table('point_transactions')
+            ->join('students', 'students.id', '=', 'point_transactions.student_id');
+
+        if ($house !== 'All') {
+            $query->join('houses', 'houses.id', '=', 'students.house_id')
+                ->where('houses.name', $house);
+        }
+
+        if ($start && $end) {
+            $query->whereBetween('point_transactions.created_at', [$start, $end]);
+        }
+
+        $query->whereRaw('EXTRACT(DOW FROM point_transactions.created_at::timestamp) BETWEEN 1 AND 5')
+            ->where('students.year_level', $year);
+
+        if ($yearFilter !== 'All') {
+            $query->where('students.year_level', (int) $yearFilter);
+        }
+
+        $rows = $query
+            ->select(
+                'students.first_name',
+                'students.last_name',
+                'students.year_level',
+                'point_transactions.amount',
+                'point_transactions.created_at'
+            )
+            ->orderBy('point_transactions.amount', 'asc')
+            ->orderByDesc('point_transactions.created_at')
+            ->limit(100)
+            ->get();
+
+        return [
+            'title' => 'Year '.$year.' transactions (lowest point amounts first)',
+            'rows' => $rows,
+        ];
     }
 
     /**
@@ -683,6 +804,81 @@ class ReportController extends Controller
         }
 
         return $q;
+    }
+
+    /**
+     * Teachers in a frequency bucket (names from the client chart), with award counts in the filtered range.
+     * One row per bucket name (same display label as /reports/data recent), merged so none are omitted.
+     *
+     * @param  list<mixed>  $teacherNames
+     * @return array{title: string, rows: list<array<string, mixed>>}
+     */
+    private function tuDrilldownTeacherBucketList(array $teacherNames, string $house, Carbon $start, Carbon $end, string $yearFilter): array
+    {
+        $teacherNames = array_values(array_unique(array_filter(array_map('strval', $teacherNames), fn ($t) => $t !== '')));
+        if (count($teacherNames) > 500) {
+            $teacherNames = array_slice($teacherNames, 0, 500);
+        }
+
+        if ($teacherNames === []) {
+            return [
+                'title' => 'Teachers in selected range',
+                'rows' => [],
+            ];
+        }
+
+        $knownTeachers = array_values(array_filter($teacherNames, fn ($t) => $t !== 'Unknown'));
+        $includeUnknown = in_array('Unknown', $teacherNames, true);
+
+        $teacherExpr = "COALESCE(NULLIF(TRIM(u.name), ''), 'Unknown')";
+
+        $q = $this->tuPointTransactionsBase($house, $start, $end, $yearFilter);
+
+        $q->where(function ($w) use ($knownTeachers, $includeUnknown) {
+            if ($knownTeachers !== [] && $includeUnknown) {
+                $w->whereIn('u.name', $knownTeachers)
+                    ->orWhere(function ($q2) {
+                        $q2->whereNull('pt.awarded_by')
+                            ->orWhereNull('u.id')
+                            ->orWhereRaw("NULLIF(TRIM(u.name), '') IS NULL");
+                    });
+            } elseif ($knownTeachers !== []) {
+                $w->whereIn('u.name', $knownTeachers);
+            } elseif ($includeUnknown) {
+                $w->where(function ($q2) {
+                    $q2->whereNull('pt.awarded_by')
+                        ->orWhereNull('u.id')
+                        ->orWhereRaw("NULLIF(TRIM(u.name), '') IS NULL");
+                });
+            } else {
+                $w->whereRaw('1 = 0');
+            }
+        });
+
+        $aggregated = $q
+            ->selectRaw("{$teacherExpr} as teacher")
+            ->selectRaw('COUNT(pt.id) as total_actions')
+            ->groupBy(DB::raw($teacherExpr))
+            ->orderBy('teacher')
+            ->get();
+
+        $counts = [];
+        foreach ($aggregated as $r) {
+            $counts[$r->teacher] = (int) $r->total_actions;
+        }
+
+        $rows = [];
+        foreach ($teacherNames as $name) {
+            $rows[] = [
+                'teacher' => $name,
+                'total_actions' => $counts[$name] ?? 0,
+            ];
+        }
+
+        return [
+            'title' => 'Teachers in selected range',
+            'rows' => $rows,
+        ];
     }
 
     /**

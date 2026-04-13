@@ -218,20 +218,6 @@
                 return p.toString();
             }
 
-            function drillQueryString(label) {
-                var p = new URLSearchParams();
-                p.set('label', label);
-                p.set('house', filters.house);
-                if (filters.start_date) {
-                    p.set('start_date', filters.start_date);
-                }
-                if (filters.end_date) {
-                    p.set('end_date', filters.end_date);
-                }
-                p.set('year', filters.year || 'All');
-                return p.toString();
-            }
-
             function fetchCharts() {
                 fetch(dataUrl + '?' + chartsQueryString(), {
                     headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
@@ -243,9 +229,24 @@
                     .catch(function () {});
             }
 
-            function drillDown(label) {
-                fetch(drillUrl + '?' + drillQueryString(label), {
-                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+            function drillDown(payload) {
+                if (!payload || typeof payload !== 'object') {
+                    return;
+                }
+                var meta = document.querySelector('meta[name="csrf-token"]');
+                var token = meta ? meta.getAttribute('content') : '';
+                var qs = chartsQueryString();
+                var url = drillUrl + (qs ? '?' + qs : '');
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': token
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify(payload)
                 })
                     .then(function (res) { return res.json(); })
                     .then(function (data) {
@@ -465,7 +466,7 @@
                                         event.stopPropagation();
                                     }
                                 }
-                                drillDown('Low');
+                                drillDown({ type: 'engagement_low' });
                             }
                         }
                     },
@@ -509,7 +510,7 @@
                                 }
                                 const rawDate = pcTrendRawCategories[config.dataPointIndex];
                                 if (rawDate) {
-                                    drillDown(rawDate);
+                                    drillDown({ type: 'date', value: rawDate });
                                 }
                             },
                             markerClick: function (event, chartContext, config) {
@@ -523,7 +524,7 @@
                                 }
                                 const rawDate = pcTrendRawCategories[config.dataPointIndex];
                                 if (rawDate) {
-                                    drillDown(rawDate);
+                                    drillDown({ type: 'date', value: rawDate });
                                 }
                             }
                         }
@@ -547,7 +548,7 @@
                 });
                 charts.trend.render();
 
-                var barChartFactory = function (el, name) {
+                var barChartFactory = function (el, name, barKind) {
                     return new ApexCharts(document.querySelector(el), {
                         series: [{ name: name, data: [] }],
                         chart: {
@@ -573,7 +574,11 @@
                                         label = config.w.config.xaxis.categories[index];
                                     }
                                     if (label) {
-                                        drillDown(label);
+                                        if (barKind === 'house') {
+                                            drillDown({ type: 'house_low', value: String(label) });
+                                        } else {
+                                            drillDown({ type: 'year_level', value: String(label) });
+                                        }
                                     }
                                 }
                             }
@@ -588,8 +593,8 @@
                     });
                 };
 
-                charts.house = barChartFactory('#pc-house-chart', 'Points');
-                charts.year = barChartFactory('#pc-year-chart', 'Points');
+                charts.house = barChartFactory('#pc-house-chart', 'Points', 'house');
+                charts.year = barChartFactory('#pc-year-chart', 'Points', 'year');
                 charts.house.render();
                 charts.year.render();
             }

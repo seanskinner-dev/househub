@@ -45,7 +45,7 @@
 
     <section style="margin-bottom: 2.5rem;">
         <h2 style="font-size: 1.2rem; margin-bottom: 0.75rem; font-weight: 600;">Staff usage frequency (by teacher)</h2>
-        <p style="font-size: 0.9rem; opacity: 0.85; margin-bottom: 0.5rem;">Click the <strong>0–5</strong> bucket for a low-usage staff list.</p>
+        <p style="font-size: 0.9rem; opacity: 0.85; margin-bottom: 0.5rem;">Click a bucket to list <strong>teachers</strong> in that usage band (same date/house/year filters).</p>
         <div id="tu-frequency" style="min-height: 340px;"></div>
     </section>
 
@@ -127,18 +127,30 @@
                 return p.toString();
             }
 
-            function drillQueryString(label) {
-                var p = new URLSearchParams();
-                p.set('label', label);
-                p.set('house', filters.house);
-                if (filters.start_date) {
-                    p.set('start_date', filters.start_date);
+            function drillDown(payload) {
+                if (!payload || typeof payload !== 'object') {
+                    return;
                 }
-                if (filters.end_date) {
-                    p.set('end_date', filters.end_date);
-                }
-                p.set('year', filters.year || 'All');
-                return p.toString();
+                var meta = document.querySelector('meta[name="csrf-token"]');
+                var token = meta ? meta.getAttribute('content') : '';
+                var qs = chartsQueryString();
+                var url = drillUrl + (qs ? '?' + qs : '');
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': token
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify(payload)
+                })
+                    .then(function (r) {
+                        return r.json();
+                    })
+                    .then(renderTuModal)
+                    .catch(function () {});
             }
 
             function destroyTuModalChart() {
@@ -254,22 +266,48 @@
                 } else {
                     emptyEl.style.display = 'none';
                     wrap.style.display = 'block';
-                    var keys = Object.keys(rows[0]);
-                    thead.innerHTML = keys.map(function (k) {
-                        return '<th style="text-align:left;padding:8px 10px;border-bottom:2px solid #334155;">' + escapeHtml(k) + '</th>';
-                    }).join('');
-                    tbody.innerHTML = rows.map(function (row) {
-                        return (
-                            '<tr style="border-bottom:1px solid #334155;">' +
-                            keys
-                                .map(function (k) {
-                                    var v = row[k];
-                                    return '<td style="padding:8px 10px;">' + escapeHtml(v == null ? '' : String(v)) + '</td>';
-                                })
-                                .join('') +
-                            '</tr>'
-                        );
-                    }).join('');
+                    var th = ' style="text-align:left;padding:8px 10px;border-bottom:2px solid #334155;"';
+                    var thR = ' style="text-align:right;padding:8px 10px;border-bottom:2px solid #334155;"';
+                    var isTeacherBucket =
+                        rows.length &&
+                        Object.prototype.hasOwnProperty.call(rows[0], 'teacher') &&
+                        Object.prototype.hasOwnProperty.call(rows[0], 'total_actions');
+                    if (isTeacherBucket) {
+                        thead.innerHTML =
+                            '<th' + th + '>Teacher</th>' +
+                            '<th' + thR + '>Awards in range</th>';
+                        tbody.innerHTML = rows
+                            .map(function (row) {
+                                return (
+                                    '<tr style="border-bottom:1px solid #334155;">' +
+                                    '<td style="padding:8px 10px;">' +
+                                    escapeHtml(row.teacher == null ? '' : String(row.teacher)) +
+                                    '</td>' +
+                                    '<td style="padding:8px 10px;text-align:right;">' +
+                                    escapeHtml(String(parseInt(row.total_actions, 10) || 0)) +
+                                    '</td>' +
+                                    '</tr>'
+                                );
+                            })
+                            .join('');
+                    } else {
+                        var keys = Object.keys(rows[0]);
+                        thead.innerHTML = keys.map(function (k) {
+                            return '<th' + th + '>' + escapeHtml(k) + '</th>';
+                        }).join('');
+                        tbody.innerHTML = rows.map(function (row) {
+                            return (
+                                '<tr style="border-bottom:1px solid #334155;">' +
+                                keys
+                                    .map(function (k) {
+                                        var v = row[k];
+                                        return '<td style="padding:8px 10px;">' + escapeHtml(v == null ? '' : String(v)) + '</td>';
+                                    })
+                                    .join('') +
+                                '</tr>'
+                            );
+                        }).join('');
+                    }
                 }
                 document.getElementById('tu-modal-backdrop').style.display = 'flex';
             }
@@ -323,7 +361,7 @@
                                 if (!row || row.name === 'No data') {
                                     return;
                                 }
-                                drillDownTeacher(row.name);
+                                drillDown({ type: 'teacher', value: row.name });
                             }
                         }
                     },
@@ -354,25 +392,31 @@
                     var teacher = row.teacher || 'Unknown';
                     teacherCounts[teacher] = (teacherCounts[teacher] || 0) + 1;
                 });
-                var values = Object.values(teacherCounts);
                 var buckets = {
-                    '0-5': 0,
-                    '6-10': 0,
-                    '11-20': 0,
-                    '20+': 0
+                    '0-5': [],
+                    '6-10': [],
+                    '11-20': [],
+                    '20+': []
                 };
-                values.forEach(function (v) {
-                    if (v <= 5) {
-                        buckets['0-5']++;
-                    } else if (v <= 10) {
-                        buckets['6-10']++;
-                    } else if (v <= 20) {
-                        buckets['11-20']++;
+                Object.keys(teacherCounts).forEach(function (t) {
+                    var count = teacherCounts[t];
+                    if (count <= 5) {
+                        buckets['0-5'].push(t);
+                    } else if (count <= 10) {
+                        buckets['6-10'].push(t);
+                    } else if (count <= 20) {
+                        buckets['11-20'].push(t);
                     } else {
-                        buckets['20+']++;
+                        buckets['20+'].push(t);
                     }
                 });
+                Object.keys(buckets).forEach(function (k) {
+                    buckets[k].sort();
+                });
                 var bucketKeys = Object.keys(buckets);
+                var bucketCounts = bucketKeys.map(function (k) {
+                    return buckets[k].length;
+                });
                 var common = { fontFamily: 'Arial, sans-serif', foreColor: '#e2e8f0' };
                 tuCharts.freq = new ApexCharts(document.querySelector('#tu-frequency'), {
                     chart: {
@@ -391,19 +435,13 @@
                                         event.stopPropagation();
                                     }
                                 }
-                                var bucket = bucketKeys[config.dataPointIndex];
-                                if (bucket === '0-5') {
-                                    fetch(drillUrl + '?' + drillQueryString('LOW_USAGE'), {
-                                        headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
-                                    })
-                                        .then(function (r) { return r.json(); })
-                                        .then(renderTuModal)
-                                        .catch(function () {});
-                                }
+                                var selectedBucket = bucketKeys[config.dataPointIndex];
+                                var teachersInBucket = buckets[selectedBucket] || [];
+                                drillDown({ type: 'teacher_bucket', value: teachersInBucket });
                             }
                         }
                     },
-                    series: [{ name: 'Teachers', data: bucketKeys.map(function (k) { return buckets[k]; }) }],
+                    series: [{ name: 'Teachers', data: bucketCounts }],
                     xaxis: { categories: bucketKeys, labels: { style: { fontSize: '13px' } } },
                     yaxis: { min: 0, labels: { style: { fontSize: '13px' } } },
                     colors: ['#64748b'],
@@ -477,12 +515,7 @@
                                 }
                                 var rawDate = tuTrendRawDates[config.dataPointIndex];
                                 if (rawDate) {
-                                    fetch(drillUrl + '?' + drillQueryString('__TU_DATE__' + rawDate), {
-                                        headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
-                                    })
-                                        .then(function (r) { return r.json(); })
-                                        .then(renderTuModal)
-                                        .catch(function () {});
+                                    drillDown({ type: 'date', value: rawDate, scope: 'staff' });
                                 }
                             }
                         }
@@ -501,23 +534,6 @@
                     tooltip: { theme: 'dark' }
                 });
                 tuCharts.trend.render();
-            }
-
-            function drillDownTeacher(teacher) {
-                var qs = chartsQueryString();
-                var sep = qs.length ? '&' : '';
-                var url =
-                    drillUrl +
-                    '?teacher=' +
-                    encodeURIComponent(teacher) +
-                    sep +
-                    qs;
-                fetch(url, {
-                    headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
-                })
-                    .then(function (r) { return r.json(); })
-                    .then(renderTuModal)
-                    .catch(function () {});
             }
 
             function renderTeacherCharts(data) {

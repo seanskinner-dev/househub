@@ -85,7 +85,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reports/data', [App\Http\Controllers\ReportController::class, 'reportChartData'])
         ->name('reports.data');
 
-    Route::get('/reports/drilldown', [App\Http\Controllers\ReportController::class, 'reportDrilldown'])
+    Route::match(['get', 'post'], '/reports/drilldown', [App\Http\Controllers\ReportController::class, 'reportDrilldown'])
         ->name('reports.drilldown');
 
     // =============================
