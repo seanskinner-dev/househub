@@ -129,6 +129,13 @@
 @push('scripts')
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+    console.log('SCRIPT RUNNING');
+    console.log('ApexCharts:', typeof ApexCharts);
+    if (typeof ApexCharts === 'undefined') {
+        console.error('ApexCharts NOT loaded');
+        return;
+    }
+
     const drillUrl = @json(route('reports.drilldown'));
     const modalBackdrop = document.getElementById('pc-modal-backdrop');
     const modalClose = document.getElementById('pc-modal-close');
@@ -200,6 +207,14 @@ document.addEventListener("DOMContentLoaded", function () {
     const data = @json($data ?? null);
 
     console.log('PC DATA:', data);
+    console.log(document.querySelector("#engagement-trend"));
+    console.log(document.querySelector("#points-by-house"));
+
+    new ApexCharts(document.querySelector("#engagement-trend"), {
+        chart: { type: 'bar', height: 300 },
+        series: [{ data: [10,20,30] }],
+        xaxis: { categories: ['A','B','C'] }
+    }).render();
 
     function renderCharts(payload) {
         if (!payload || !payload.donut || !payload.trend || !payload.house_breakdown) {
