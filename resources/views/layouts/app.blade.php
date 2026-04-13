@@ -119,7 +119,7 @@
             <a href="/points">Points</a>
 
             <div class="dropdown">
-                <a class="dropdown-toggle {{ request()->routeIs('reports.pc', 'reports.leadership', 'reports.teachers', 'reports.house') ? 'active' : '' }}"
+                <a class="dropdown-toggle {{ request()->routeIs('reports.pc', 'reports.leadership', 'reports.teachers', 'reports.house', 'reports.houses') ? 'active' : '' }}"
                    href="#" id="reportsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     Reports
                 </a>
@@ -139,6 +139,10 @@
                     <li>
                         <a class="dropdown-item {{ request()->routeIs('reports.teachers') ? 'active' : '' }}"
                            href="{{ route('reports.teachers') }}">Teacher Usage</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item {{ request()->routeIs('reports.houses') ? 'active' : '' }}"
+                           href="{{ route('reports.houses') }}">House Insights</a>
                     </li>
                 </ul>
             </div>

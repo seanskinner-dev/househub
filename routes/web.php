@@ -82,6 +82,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reports/teachers', [ReportController::class, 'teachers'])
         ->name('reports.teachers');
 
+    Route::get('/reports/houses', [ReportController::class, 'houses'])
+        ->name('reports.houses');
+
     Route::get('/reports/data', [App\Http\Controllers\ReportController::class, 'reportChartData'])
         ->name('reports.data');
 

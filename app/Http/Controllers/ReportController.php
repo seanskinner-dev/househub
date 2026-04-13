@@ -85,6 +85,11 @@ class ReportController extends Controller
         return view('reports.teachers', compact('houses'));
     }
 
+    public function houses()
+    {
+        return view('reports.houses');
+    }
+
     public function reportChartData(Request $request)
     {
         [$start, $end, $house, $yearFilter] = $this->pcParseFilters($request);
