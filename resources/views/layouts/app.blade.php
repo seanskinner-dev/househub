@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HouseHub</title>
 
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <style>
         body {
             margin: 0;
@@ -13,8 +15,8 @@
             color: white;
         }
 
-        /* NAVBAR */
-        .navbar {
+        /* NAVBAR (hh- prefix avoids clashing with Bootstrap .navbar) */
+        .hh-navbar {
             width: 100%;
             background: #1e293b;
             padding: 15px 30px;
@@ -31,22 +33,72 @@
 
         .nav-right {
             display: flex;
+            align-items: center;
             gap: 20px;
         }
 
-        .nav-right a {
+        .nav-right > a {
             color: white;
             text-decoration: none;
         }
 
-        .nav-right a:hover {
+        .nav-right > a:hover {
             text-decoration: underline;
         }
 
-        .nav-right a.active {
+        .nav-right > a.active {
             text-decoration: underline;
             border-bottom: 2px solid #fff;
             padding-bottom: 2px;
+        }
+
+        .nav-right .dropdown-toggle {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            padding: 0;
+        }
+
+        .nav-right .dropdown-toggle:hover,
+        .nav-right .dropdown-toggle:focus {
+            color: #fff;
+            text-decoration: underline;
+        }
+
+        .nav-right .dropdown-toggle.active {
+            text-decoration: underline;
+            border-bottom: 2px solid #fff;
+            padding-bottom: 2px;
+        }
+
+        .nav-right .dropdown-toggle::after {
+            margin-left: 0.35em;
+            vertical-align: 0.15em;
+        }
+
+        .nav-right .dropdown-menu {
+            background: #1e293b;
+            border: 1px solid #334155;
+            margin-top: 0.5rem;
+            padding: 0.35rem 0;
+        }
+
+        .nav-right .dropdown-item {
+            color: #f1f5f9;
+            font-weight: normal;
+            padding: 0.45rem 1rem;
+        }
+
+        .nav-right .dropdown-item:hover,
+        .nav-right .dropdown-item:focus {
+            background: #334155;
+            color: #fff;
+        }
+
+        .nav-right .dropdown-item.active,
+        .nav-right .dropdown-item:active {
+            background: #475569;
+            color: #fff;
         }
 
         /* PAGE CONTENT */
@@ -59,12 +111,37 @@
 <body>
 
     <!-- NAVBAR -->
-    <div class="navbar">
+    <div class="hh-navbar">
         <div class="nav-left">🏫 HouseHub</div>
 
         <div class="nav-right">
             <a href="/points">Points</a>
-            <a href="{{ route('reports.house') }}" class="{{ request()->routeIs('reports.house') ? 'active' : '' }}">Reports</a>
+
+            <div class="dropdown">
+                <a class="dropdown-toggle {{ request()->routeIs('reports.pc', 'reports.leadership', 'reports.teachers', 'reports.house') ? 'active' : '' }}"
+                   href="#" id="reportsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Reports
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="reportsDropdown">
+                    <li>
+                        <a class="dropdown-item {{ request()->routeIs('reports.house') ? 'active' : '' }}"
+                           href="{{ route('reports.house') }}">House performance</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item {{ request()->routeIs('reports.pc') ? 'active' : '' }}"
+                           href="{{ route('reports.pc') }}">PC Report</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item {{ request()->routeIs('reports.leadership') ? 'active' : '' }}"
+                           href="{{ route('reports.leadership') }}">Leadership Report</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item {{ request()->routeIs('reports.teachers') ? 'active' : '' }}"
+                           href="{{ route('reports.teachers') }}">Teacher Usage</a>
+                    </li>
+                </ul>
+            </div>
+
             <a href="/tv">TV</a>
             <a href="/admin">Admin</a>
         </div>
@@ -77,6 +154,8 @@
     </div>
 
     @stack('scripts')
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>
