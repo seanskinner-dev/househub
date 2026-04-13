@@ -298,9 +298,7 @@
                     charts.house.updateSeries([{ name: 'Points', data: data.house_breakdown.series }]);
                 }
                 if (charts.year && data.year_level) {
-                    var ycats = (data.year_level.categories || []).map(function (y) {
-                        return 'Year ' + y;
-                    });
+                    var ycats = (data.year_level.categories || []).map((y) => `Year ${y}`);
                     charts.year.updateOptions({ xaxis: { categories: ycats } });
                     charts.year.updateSeries([{ name: 'Points', data: data.year_level.series }]);
                 }

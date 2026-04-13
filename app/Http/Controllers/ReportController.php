@@ -112,19 +112,44 @@ class ReportController extends Controller
             return response()->json($this->pcDrilldownLowEngagement($house, $start, $end));
         }
 
-        if (preg_match('/^Year\s+(\d+)$/', $label, $m)) {
-            return response()->json($this->pcDrilldownYearLevel((int) $m[1], $house, $start, $end));
+        // ===== YEAR LEVEL DRILLDOWN (FIX) — matches chart categories "Year N"; before house matching
+        if (preg_match('/^Year\s+(\d+)$/', $label, $matches)) {
+            $year = (int) $matches[1];
+
+            $query = DB::table('point_transactions')
+                ->join('students', 'students.id', '=', 'point_transactions.student_id');
+
+            if ($house !== 'All') {
+                $query->join('houses', 'houses.id', '=', 'students.house_id')
+                    ->where('houses.name', $house);
+            }
+
+            if ($start && $end) {
+                $query->whereBetween('point_transactions.created_at', [$start, $end]);
+            }
+
+            $query->whereRaw('EXTRACT(DOW FROM point_transactions.created_at::timestamp) BETWEEN 1 AND 5')
+                ->where('students.year_level', $year);
+
+            $rows = $query
+                ->select(
+                    'students.first_name',
+                    'students.last_name',
+                    'students.year_level',
+                    'point_transactions.amount',
+                    'point_transactions.created_at'
+                )
+                ->orderByDesc('point_transactions.created_at')
+                ->limit(100)
+                ->get();
+
+            return response()->json([
+                'rows' => $rows,
+            ]);
         }
 
         if (DB::table('houses')->where('name', $label)->exists()) {
             return response()->json($this->pcDrilldownHouseBar($label, $start, $end));
-        }
-
-        // First integer in label → year-level drilldown (pcDrilldownYearLevel filters students.year_level)
-        if (preg_match('/(\d+)/', $label, $matches)) {
-            $year = (int) $matches[1];
-
-            return response()->json($this->pcDrilldownYearLevel($year, $house, $start, $end));
         }
 
         return response()->json(['title' => $label, 'rows' => []]);
@@ -470,37 +495,6 @@ class ReportController extends Controller
         ])->all();
 
         return ['title' => 'Students in '.$houseName.' (weekday points)', 'rows' => $rows];
-    }
-
-    /**
-     * @return array{title: string, rows: list<array<string, mixed>>}
-     */
-    private function pcDrilldownYearLevel(int $yearLevel, string $house, Carbon $start, Carbon $end): array
-    {
-        $q = DB::table('point_transactions')
-            ->join('students', 'students.id', '=', 'point_transactions.student_id')
-            ->leftJoin('houses', 'students.house_id', '=', 'houses.id')
-            ->where('students.year_level', $yearLevel)
-            ->whereBetween('point_transactions.created_at', [$start, $end])
-            ->whereRaw('EXTRACT(DOW FROM point_transactions.created_at::timestamp) BETWEEN 1 AND 5')
-            ->selectRaw('TRIM(CONCAT(students.first_name, \' \', students.last_name)) as name')
-            ->selectRaw('houses.name as house')
-            ->select('point_transactions.category', 'point_transactions.amount', 'point_transactions.created_at')
-            ->orderBy('point_transactions.created_at', 'desc');
-
-        if ($house !== 'All') {
-            $q->where('houses.name', $house);
-        }
-
-        $rows = $q->limit(200)->get()->map(fn ($r) => [
-            'student' => $r->name,
-            'house' => $r->house ?? '—',
-            'category' => $r->category,
-            'amount' => (int) $r->amount,
-            'when' => Carbon::parse($r->created_at)->format('Y-m-d H:i'),
-        ])->all();
-
-        return ['title' => 'Year '.$yearLevel.' — recent transactions', 'rows' => $rows];
     }
 
     private function termNumberFromMonth(int $month): int
