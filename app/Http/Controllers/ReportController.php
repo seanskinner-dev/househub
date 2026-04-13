@@ -80,6 +80,7 @@ class ReportController extends Controller
             'trend' => $this->pcChartTrend($house, $start, $end),
             'house_breakdown' => $this->pcChartHousePoints($house, $start, $end),
             'year_level' => $this->pcChartYearLevel($house, $start, $end),
+            'kpis' => $this->pcKpis($house, $start, $end),
         ]);
     }
 
@@ -108,7 +109,15 @@ class ReportController extends Controller
             return response()->json($this->pcDrilldownRiskActive($house, $start, $end));
         }
 
+        if ($label === 'Low') {
+            return response()->json($this->pcDrilldownLowEngagement($house, $start, $end));
+        }
+
         if (preg_match('/^Year\s+(\d+)$/', $label, $m)) {
+            return response()->json($this->pcDrilldownYearLevel((int) $m[1], $house, $start, $end));
+        }
+
+        if (preg_match('/^(\d+)$/', $label, $m) && (int) $m[1] >= 1 && (int) $m[1] <= 13) {
             return response()->json($this->pcDrilldownYearLevel((int) $m[1], $house, $start, $end));
         }
 
@@ -142,6 +151,49 @@ class ReportController extends Controller
         }
 
         return [$start, $end, $house];
+    }
+
+    /**
+     * @return array{total_points: int, active_students: int, total_students: int, low_engagement: int}
+     */
+    private function pcKpis(string $house, Carbon $start, Carbon $end): array
+    {
+        $totalPoints = (int) DB::table('point_transactions')
+            ->join('students', 'students.id', '=', 'point_transactions.student_id')
+            ->when($house !== 'All', function ($q) use ($house) {
+                $q->join('houses', 'houses.id', '=', 'students.house_id')
+                    ->where('houses.name', $house);
+            })
+            ->whereBetween('point_transactions.created_at', [$start, $end])
+            ->whereRaw('EXTRACT(DOW FROM point_transactions.created_at::timestamp) BETWEEN 1 AND 5')
+            ->sum('point_transactions.amount');
+
+        $activeStudents = (int) DB::table('point_transactions')
+            ->join('students', 'students.id', '=', 'point_transactions.student_id')
+            ->when($house !== 'All', function ($q) use ($house) {
+                $q->join('houses', 'houses.id', '=', 'students.house_id')
+                    ->where('houses.name', $house);
+            })
+            ->whereBetween('point_transactions.created_at', [$start, $end])
+            ->whereRaw('EXTRACT(DOW FROM point_transactions.created_at::timestamp) BETWEEN 1 AND 5')
+            ->selectRaw('COUNT(DISTINCT students.id) as c')
+            ->value('c');
+
+        $totalStudents = (int) DB::table('students')
+            ->when($house !== 'All', function ($q) use ($house) {
+                $q->join('houses', 'houses.id', '=', 'students.house_id')
+                    ->where('houses.name', $house);
+            })
+            ->count();
+
+        $lowEngagement = max(0, $totalStudents - $activeStudents);
+
+        return [
+            'total_points' => $totalPoints,
+            'active_students' => $activeStudents,
+            'total_students' => $totalStudents,
+            'low_engagement' => $lowEngagement,
+        ];
     }
 
     private function pcParseDateParam(mixed $value): ?Carbon
@@ -299,9 +351,33 @@ class ReportController extends Controller
         $rows = $q->get();
 
         return [
-            'categories' => $rows->map(fn ($r) => 'Year '.$r->year_level)->all(),
+            'categories' => $rows->pluck('year_level')->map(fn ($yl) => (string) (int) $yl)->values()->all(),
             'series' => $rows->pluck('total')->map(fn ($v) => (int) $v)->all(),
         ];
+    }
+
+    /**
+     * @return array{title: string, rows: list<array<string, mixed>>}
+     */
+    private function pcDrilldownLowEngagement(string $house, Carbon $start, Carbon $end): array
+    {
+        $q = $this->pcStudentWithHouseQuery($house)
+            ->leftJoin('point_transactions as pw', function ($join) use ($start, $end) {
+                $join->on('students.id', '=', 'pw.student_id');
+                $this->pcTransactionsInRangeWeekday($join, $start, $end, 'pw');
+            })
+            ->selectRaw('TRIM(CONCAT(students.first_name, \' \', students.last_name)) as name')
+            ->selectRaw('h.name as house_name')
+            ->groupBy('students.id', 'students.first_name', 'students.last_name', 'h.name')
+            ->havingRaw('COUNT(pw.id) = 0')
+            ->orderBy('name');
+
+        $rows = $q->get()->map(fn ($r) => [
+            'name' => $r->name,
+            'house' => $r->house_name ?? '—',
+        ])->all();
+
+        return ['title' => 'Low engagement (no weekday points in range)', 'rows' => $rows];
     }
 
     /**

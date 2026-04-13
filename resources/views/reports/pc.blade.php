@@ -2,9 +2,26 @@
 
 @section('content')
     <h1 style="font-size: 2rem; margin-bottom: 0.75rem; font-weight: 700;">At-Risk Students</h1>
-    <p style="font-size: 1.125rem; opacity: 0.9; margin-bottom: 1.5rem; max-width: 52rem;">
+    <p style="font-size: 1.125rem; opacity: 0.9; margin-bottom: 1.25rem; max-width: 52rem;">
         Pastoral care overview — weekday data only (Mon–Fri). Use filters and click charts for details (no page reload).
     </p>
+
+    <div id="insight-banner" style="background: #1e293b; color: #fff; padding: 16px 20px; border-radius: 10px; margin-bottom: 20px; font-weight: 600; line-height: 1.5;"></div>
+
+    <div id="kpi-cards" style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px;">
+        <div class="kpi-card" data-label="total" style="flex: 1; min-width: 140px; cursor: default; background: #0f172a; color: #fff; padding: 16px; border-radius: 10px; border: 1px solid #334155;">
+            <div style="font-size: 0.9rem; opacity: 0.9;">Total points</div>
+            <div id="kpi-total" style="font-size: 24px; font-weight: bold; margin-top: 6px;"></div>
+        </div>
+        <div class="kpi-card" data-label="active" style="flex: 1; min-width: 140px; cursor: pointer; background: #0f172a; color: #fff; padding: 16px; border-radius: 10px; border: 1px solid #334155;">
+            <div style="font-size: 0.9rem; opacity: 0.9;">Active students</div>
+            <div id="kpi-active" style="font-size: 24px; font-weight: bold; margin-top: 6px;"></div>
+        </div>
+        <div class="kpi-card" data-label="low" style="flex: 1; min-width: 140px; cursor: pointer; background: #0f172a; color: #fff; padding: 16px; border-radius: 10px; border: 1px solid #334155;">
+            <div style="font-size: 0.9rem; opacity: 0.9;">Low engagement</div>
+            <div id="kpi-low" style="font-size: 24px; font-weight: bold; margin-top: 6px;"></div>
+        </div>
+    </div>
 
     <div id="pc-filter-bar" style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; margin-bottom: 2.5rem; padding: 18px; background: #1e293b; border-radius: 8px;">
         <div>
@@ -278,6 +295,23 @@
             }
 
             function updateAllCharts(data) {
+                if (data.kpis) {
+                    var k = data.kpis;
+                    var banner = document.getElementById('insight-banner');
+                    var activePercent = k.total_students > 0
+                        ? Math.round((k.active_students / k.total_students) * 100)
+                        : 0;
+                    var pts = Number(k.total_points || 0).toLocaleString();
+                    banner.innerHTML =
+                        '📊 ' + pts + ' points awarded<br/>' +
+                        '👥 ' + activePercent + '% of students active<br/>' +
+                        '⚠️ ' + Number(k.low_engagement || 0).toLocaleString() + ' low engagement students';
+
+                    document.getElementById('kpi-total').innerText = Number(k.total_points || 0).toLocaleString();
+                    document.getElementById('kpi-active').innerText = Number(k.active_students || 0).toLocaleString();
+                    document.getElementById('kpi-low').innerText = Number(k.low_engagement || 0).toLocaleString();
+                }
+
                 if (charts.donut && data.donut) {
                     charts.donut.updateOptions({ labels: data.donut.labels });
                     charts.donut.updateSeries(data.donut.series);
@@ -298,7 +332,10 @@
                     charts.house.updateSeries([{ name: 'Points', data: data.house_breakdown.series }]);
                 }
                 if (charts.year && data.year_level) {
-                    charts.year.updateOptions({ xaxis: { categories: data.year_level.categories } });
+                    var ycats = (data.year_level.categories || []).map(function (y) {
+                        return 'Year ' + y;
+                    });
+                    charts.year.updateOptions({ xaxis: { categories: ycats } });
                     charts.year.updateSeries([{ name: 'Points', data: data.year_level.series }]);
                 }
             }
@@ -459,6 +496,21 @@
             document.getElementById('pc-apply').addEventListener('click', function () {
                 syncFiltersFromDom();
                 fetchCharts();
+            });
+
+            document.querySelectorAll('.kpi-card').forEach(function (card) {
+                card.addEventListener('click', function () {
+                    var type = this.getAttribute('data-label');
+                    if (type === 'total') {
+                        return;
+                    }
+                    if (type === 'low') {
+                        drillDown('Low');
+                    }
+                    if (type === 'active') {
+                        drillDown('Active');
+                    }
+                });
             });
 
             document.getElementById('pc-modal-close').addEventListener('click', closeModal);
