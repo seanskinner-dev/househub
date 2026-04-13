@@ -207,6 +207,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const data = @json($data ?? null);
 
     console.log('PC DATA:', data);
+    console.log('FULL DATA:', data);
     console.log(document.querySelector("#engagement-trend"));
     console.log(document.querySelector("#points-by-house"));
 
@@ -223,6 +224,16 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         console.log('Risk labels:', payload.donut.labels);
         const data = payload;
+        const donutSeries = data?.donut?.series || [];
+        const donutLabels = data?.donut?.labels || [];
+        if (donutSeries.length === 0) {
+            console.error('Donut data missing or empty', data.donut);
+        }
+        const houseSeries = data?.house_breakdown?.series || [];
+        const houseCategories = data?.house_breakdown?.categories || [];
+        if (houseSeries.length === 0) {
+            console.error('House breakdown missing', data.house_breakdown);
+        }
 
         ['engagement-health', 'risk-distribution', 'engagement-trend', 'points-by-house'].forEach(id => {
             const el = document.getElementById(id);
@@ -233,7 +244,7 @@ document.addEventListener("DOMContentLoaded", function () {
             console.error('Donut data invalid:', data.donut);
         } else {
             try {
-                const riskColors = data.donut.labels.map(label => {
+                const riskColors = donutLabels.map(label => {
                     const l = label.toLowerCase();
                     if (l.includes('high')) return '#ef4444';
                     if (l.includes('medium')) return '#eab308';
@@ -254,8 +265,8 @@ document.addEventListener("DOMContentLoaded", function () {
                             }
                         }
                     },
-                    series: data.donut.series,
-                    labels: data.donut.labels,
+                    series: donutSeries,
+                    labels: donutLabels,
                     colors: riskColors,
                     plotOptions: {
                         pie: {
@@ -263,6 +274,9 @@ document.addEventListener("DOMContentLoaded", function () {
                                 size: '65%'
                             }
                         }
+                    },
+                    tooltip: {
+                        theme: 'dark'
                     }
                 }).render();
             } catch (e) {
@@ -270,7 +284,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             try {
-                const riskColors = data.donut.labels.map(label => {
+                const riskColors = donutLabels.map(label => {
                     const l = label.toLowerCase();
                     if (l.includes('high')) return '#ef4444';
                     if (l.includes('medium')) return '#eab308';
@@ -291,20 +305,20 @@ document.addEventListener("DOMContentLoaded", function () {
                             }
                         }
                     },
-                    series: data.donut.series,
-                    labels: data.donut.labels,
-                    colors: riskColors
+                    series: donutSeries,
+                    labels: donutLabels,
+                    colors: riskColors,
+                    tooltip: {
+                        theme: 'dark'
+                    }
                 }).render();
             } catch (e) {
                 console.error('risk-distribution failed', e);
             }
         }
 
-        if (!data || !data.trend || !data.house_breakdown) {
-            console.error('Missing required data', data);
-            return;
-        }
-        if (data.trend && data.trend.series && data.trend.categories) {
+        try {
+            if (data.trend && data.trend.series && data.trend.categories) {
             new ApexCharts(document.querySelector("#engagement-trend"), {
                 chart: {
                     type: 'line',
@@ -325,24 +339,27 @@ document.addEventListener("DOMContentLoaded", function () {
                         const date = new Date(d + 'T00:00:00');
                         return `${date.getDate()}/${date.getMonth()+1}`;
                     })
+                },
+                tooltip: {
+                    theme: 'dark'
                 }
             }).render();
-        } else {
-            console.error('Trend missing', data.trend);
+            } else {
+                console.error('Trend missing', data.trend);
+            }
+        } catch (e) {
+            console.error('engagement-trend failed', e);
         }
 
-        if (!data || !data.trend || !data.house_breakdown) {
-            console.error('Missing required data', data);
-            return;
-        }
-        if (data.house_breakdown && data.house_breakdown.series && data.house_breakdown.categories) {
+        try {
+            if (data.house_breakdown && data.house_breakdown.series && data.house_breakdown.categories) {
             new ApexCharts(document.querySelector("#points-by-house"), {
                 chart: {
                     type: 'bar',
                     height: 320,
                     events: {
                         dataPointSelection: function(event, chartContext, config) {
-                            const house = data.house_breakdown.categories[config.dataPointIndex];
+                            const house = houseCategories[config.dataPointIndex];
                             drillDown({
                                 type: 'house_low',
                                 value: house
@@ -350,13 +367,19 @@ document.addEventListener("DOMContentLoaded", function () {
                         }
                     }
                 },
-                series: data.house_breakdown.series,
+                series: houseSeries,
                 xaxis: {
-                    categories: data.house_breakdown.categories
+                    categories: houseCategories
+                },
+                tooltip: {
+                    theme: 'dark'
                 }
             }).render();
-        } else {
-            console.error('House breakdown missing', data.house_breakdown);
+            } else {
+                console.error('House breakdown missing', data.house_breakdown);
+            }
+        } catch (e) {
+            console.error('points-by-house failed', e);
         }
     }
     try {
