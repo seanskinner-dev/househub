@@ -60,7 +60,7 @@
                     <div class="card-body">
                         <h5>Engagement Health</h5>
                         <p class="small text-white-50">
-                            Shows how many students are actively receiving points. Red indicates high-risk students.
+                            Shows the proportion of students actively receiving points versus those at risk. Focus on reducing the high-risk group to improve overall engagement.
                         </p>
                         <div id="engagement-health"></div>
                     </div>
@@ -72,7 +72,7 @@
                     <div class="card-body">
                         <h5>Risk Distribution</h5>
                         <p class="small text-white-50">
-                            Shows student risk levels. Click a segment to view affected students.
+                            Breaks students into high, medium, and low engagement categories. Click a segment to identify exactly which students need attention.
                         </p>
                         <div id="risk-distribution"></div>
                     </div>
@@ -86,7 +86,7 @@
                     <div class="card-body">
                         <h5>Engagement Trend</h5>
                         <p class="small text-white-50">
-                            Tracks engagement over time. Click a day to see activity.
+                            Displays how many points are awarded each day over the selected period. Sudden drops highlight days where student engagement is low.
                         </p>
                         <div id="engagement-trend"></div>
                     </div>
@@ -98,7 +98,7 @@
                     <div class="card-body">
                         <h5>Points by House</h5>
                         <p class="small text-white-50">
-                            Shows which houses are most active. Click to drill into students.
+                            Compares total points earned by each house to identify engagement differences. Lower-performing houses may need targeted support.
                         </p>
                         <div id="points-by-house"></div>
                     </div>
