@@ -3,11 +3,6 @@
 @section('content')
     <h1 style="font-size: 1.5rem; margin-bottom: 1rem;">House Performance Report</h1>
 
-    <details style="margin-bottom: 1rem; opacity: 0.85;">
-        <summary style="cursor: pointer;">Raw <code>$housePerformance</code> (debug)</summary>
-        <pre style="background: #1e293b; padding: 12px; overflow: auto; max-height: 240px; font-size: 12px;">{{ print_r($housePerformance, true) }}</pre>
-    </details>
-
     <div style="overflow-x: auto;">
         <table style="width: 100%; border-collapse: collapse; background: #1e293b; border-radius: 8px;">
             <thead>
