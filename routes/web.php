@@ -5,6 +5,7 @@ use App\Http\Controllers\BroadcastMessageController;
 use App\Http\Controllers\OfficeMessageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PointController;
+use App\Http\Controllers\ReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -75,7 +76,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reports/pc', [App\Http\Controllers\ReportController::class, 'atRiskStudents'])
         ->name('reports.pc');
 
-    Route::get('/reports/leadership', [App\Http\Controllers\ReportController::class, 'leadership'])
+    Route::get('/reports/leadership', [ReportController::class, 'leadership'])
         ->name('reports.leadership');
 
     Route::get('/reports/data', [App\Http\Controllers\ReportController::class, 'reportChartData'])
