@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
-use Illuminate\Support\Collection;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
@@ -64,207 +64,487 @@ class ReportController extends Controller
 
     public function atRiskStudents()
     {
-        $since = Carbon::now()->subDays(30);
-
-        $filter = request('filter');
-        $filter = in_array($filter, ['high', 'medium', 'active'], true) ? $filter : null;
-
-        $selectedDate = $this->pcValidatedDate(request('date'));
-        $selectedHouse = $this->pcValidatedHouseName(request('house'));
-
-        $counts = $this->pcRiskDistributionCounts($since);
-        $trendData = $this->pcEngagementTrend($filter, $selectedHouse);
-        $houseRiskCounts = $this->pcHouseRiskBreakdown($since, $filter);
+        $houses = DB::table('houses')->orderBy('name')->pluck('name')->values()->all();
 
         return view('reports.pc', [
-            'counts' => $counts,
-            'trendData' => $trendData,
-            'houseRiskCounts' => $houseRiskCounts,
-            'filter' => $filter,
-            'selectedDate' => $selectedDate,
-            'selectedHouse' => $selectedHouse,
+            'houses' => $houses,
         ]);
     }
 
-    /**
-     * @return array{high: int, medium: int, active: int}
-     */
-    private function pcRiskDistributionCounts(Carbon $since): array
+    public function reportChartData(Request $request)
     {
-        $perStudent = DB::table('students')
-            ->leftJoin('point_transactions', 'students.id', '=', 'point_transactions.student_id')
-            ->select('students.id')
-            ->selectRaw('COUNT(point_transactions.id) as txn_count')
-            ->selectRaw('BOOL_OR(point_transactions.created_at >= ?) as has_recent', [$since])
-            ->groupBy('students.id');
+        [$start, $end, $house] = $this->pcParseFilters($request);
 
-        $countRow = DB::query()->fromSub($perStudent, 'per_student')
-            ->selectRaw('SUM(CASE WHEN txn_count = 0 THEN 1 ELSE 0 END) as high')
-            ->selectRaw('SUM(CASE WHEN txn_count > 0 AND NOT COALESCE(has_recent, FALSE) THEN 1 ELSE 0 END) as medium')
-            ->selectRaw('SUM(CASE WHEN COALESCE(has_recent, FALSE) THEN 1 ELSE 0 END) as active')
-            ->first();
-
-        return [
-            'high' => (int) ($countRow->high ?? 0),
-            'medium' => (int) ($countRow->medium ?? 0),
-            'active' => (int) ($countRow->active ?? 0),
-        ];
+        return response()->json([
+            'donut' => $this->pcChartDonut($house, $start, $end),
+            'trend' => $this->pcChartTrend($house, $start, $end),
+            'house_breakdown' => $this->pcChartHousePoints($house, $start, $end),
+            'year_level' => $this->pcChartYearLevel($house, $start, $end),
+            'category' => $this->pcChartCategory($house, $start, $end),
+        ]);
     }
 
-    private function pcValidatedDate(?string $value): ?string
+    public function reportDrilldown(Request $request)
+    {
+        $label = trim((string) $request->query('label', ''));
+        [$start, $end, $house] = $this->pcParseFilters($request);
+
+        if ($label === '') {
+            return response()->json(['title' => 'Drill-down', 'rows' => []]);
+        }
+
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $label)) {
+            return response()->json($this->pcDrilldownDate($label, $house, $start, $end));
+        }
+
+        if ($label === 'High Risk') {
+            return response()->json($this->pcDrilldownRiskHigh($house));
+        }
+
+        if ($label === 'Medium Risk') {
+            return response()->json($this->pcDrilldownRiskMedium($house, $start, $end));
+        }
+
+        if ($label === 'Active') {
+            return response()->json($this->pcDrilldownRiskActive($house, $start, $end));
+        }
+
+        if (preg_match('/^Year\s+(\d+)$/', $label, $m)) {
+            return response()->json($this->pcDrilldownYearLevel((int) $m[1], $house, $start, $end));
+        }
+
+        if (DB::table('houses')->where('name', $label)->exists()) {
+            return response()->json($this->pcDrilldownHouseBar($label, $start, $end));
+        }
+
+        if ($this->pcCategoryExistsInRange($label, $house, $start, $end)) {
+            return response()->json($this->pcDrilldownCategory($label, $house, $start, $end));
+        }
+
+        return response()->json(['title' => $label, 'rows' => []]);
+    }
+
+    /**
+     * @return array{0: Carbon, 1: Carbon, 2: string}
+     */
+    private function pcParseFilters(Request $request): array
+    {
+        $house = (string) $request->query('house', 'All');
+        if ($house !== 'All' && ! DB::table('houses')->where('name', $house)->exists()) {
+            $house = 'All';
+        }
+
+        $endIn = $this->pcParseDateParam($request->query('end_date'));
+        $startIn = $this->pcParseDateParam($request->query('start_date'));
+
+        $end = $endIn ? $endIn->copy()->endOfDay() : Carbon::today()->endOfDay();
+        $start = $startIn ?? $end->copy()->subDays(29)->startOfDay();
+
+        if ($start->gt($end)) {
+            $tmp = $start->copy();
+            $start = $end->copy()->startOfDay();
+            $end = $tmp->copy()->endOfDay();
+        }
+
+        return [$start, $end, $house];
+    }
+
+    private function pcParseDateParam(mixed $value): ?Carbon
     {
         if ($value === null || $value === '') {
             return null;
         }
-        if (! preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+        if (! is_string($value) || ! preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
             return null;
         }
         try {
-            return Carbon::createFromFormat('Y-m-d', $value)->format('Y-m-d');
+            return Carbon::createFromFormat('Y-m-d', $value)->startOfDay();
         } catch (\Throwable) {
             return null;
         }
     }
 
-    private function pcValidatedHouseName(?string $value): ?string
+    private function pcStudentBaseForHouse(string $house)
     {
-        if ($value === null || $value === '') {
-            return null;
+        if ($house === 'All') {
+            return DB::table('students');
         }
-        $exists = DB::table('houses')->where('name', $value)->exists();
 
-        return $exists ? $value : null;
+        return DB::table('students')
+            ->join('houses', 'students.house_id', '=', 'houses.id')
+            ->where('houses.name', $house);
+    }
+
+    private function pcStudentWithHouseQuery(string $house)
+    {
+        $q = DB::table('students')
+            ->leftJoin('houses as h', 'students.house_id', '=', 'h.id');
+        if ($house !== 'All') {
+            $q->where('h.name', $house);
+        }
+
+        return $q;
+    }
+
+    private function pcTransactionsInRangeWeekday($query, Carbon $start, Carbon $end, string $ptAlias = 'pt'): void
+    {
+        $query->whereBetween($ptAlias.'.created_at', [$start, $end])
+            ->whereRaw('EXTRACT(DOW FROM '.$ptAlias.'.created_at::timestamp) BETWEEN 1 AND 5');
     }
 
     /**
-     * Student IDs matching a risk segment (high / medium / active).
+     * @return array{labels: list<string>, series: list<int>}
      */
-    private function pcStudentIdsForRiskFilter(Carbon $since, string $filter): Collection
+    private function pcChartDonut(string $house, Carbon $start, Carbon $end): array
     {
-        $query = DB::table('students')
-            ->leftJoin('point_transactions', 'students.id', '=', 'point_transactions.student_id')
+        $rows = $this->pcStudentBaseForHouse($house)
+            ->leftJoin('point_transactions as pw', function ($join) use ($start, $end) {
+                $join->on('students.id', '=', 'pw.student_id');
+                $this->pcTransactionsInRangeWeekday($join, $start, $end, 'pw');
+            })
             ->select('students.id')
-            ->groupBy('students.id');
+            ->selectRaw('COUNT(pw.id) as window_n')
+            ->selectRaw('(SELECT COUNT(*) FROM point_transactions t WHERE t.student_id = students.id) as life_n')
+            ->groupBy('students.id')
+            ->get();
 
-        match ($filter) {
-            'high' => $query->havingRaw('COUNT(point_transactions.id) = 0'),
-            'medium' => $query->havingRaw(
-                'COUNT(point_transactions.id) > 0 AND NOT COALESCE(BOOL_OR(point_transactions.created_at >= ?), FALSE)',
-                [$since]
-            ),
-            'active' => $query->havingRaw('COALESCE(BOOL_OR(point_transactions.created_at >= ?), FALSE)', [$since]),
-            default => $query->whereRaw('1 = 0'),
-        };
+        $high = $rows->where('life_n', 0)->count();
+        $active = $rows->where('window_n', '>', 0)->count();
+        $medium = $rows->where('life_n', '>', 0)->where('window_n', 0)->count();
 
-        return $query->pluck('id');
+        return [
+            'labels' => ['High Risk', 'Medium Risk', 'Active'],
+            'series' => [(int) $high, (int) $medium, (int) $active],
+        ];
     }
 
     /**
-     * Daily total points for the last 30 calendar days (inclusive of today).
-     * Optional risk filter and/or house narrow the transaction set.
-     *
-     * @return list<array{date: string, points: int}>
+     * @return array{categories: list<string>, series: list<int>}
      */
-    private function pcEngagementTrend(?string $filter, ?string $house): array
+    private function pcChartTrend(string $house, Carbon $start, Carbon $end): array
     {
-        $endDay = Carbon::today();
-        $startDay = $endDay->copy()->subDays(29);
+        $categories = [];
+        $series = [];
 
-        $since = Carbon::now()->subDays(30);
-        $query = DB::table('point_transactions as pt')
-            ->where('pt.created_at', '>=', $startDay->copy()->startOfDay())
-            ->where('pt.created_at', '<=', Carbon::now());
+        for ($d = $start->copy()->startOfDay(); $d->lte($end->copy()->startOfDay()); $d->addDay()) {
+            if ($d->dayOfWeekIso < 1 || $d->dayOfWeekIso > 5) {
+                continue;
+            }
+            $dayStr = $d->format('Y-m-d');
 
-        if ($house !== null) {
-            $query->join('students as s', 'pt.student_id', '=', 's.id')
+            $q = DB::table('point_transactions as pt')
+                ->whereDate('pt.created_at', $dayStr)
+                ->whereBetween('pt.created_at', [$start, $end])
+                ->whereRaw('EXTRACT(DOW FROM pt.created_at::timestamp) BETWEEN 1 AND 5');
+
+            if ($house !== 'All') {
+                $q->join('students as s', 'pt.student_id', '=', 's.id')
+                    ->join('houses as h', 's.house_id', '=', 'h.id')
+                    ->where('h.name', $house);
+            }
+
+            $categories[] = $dayStr;
+            $series[] = (int) $q->sum('pt.amount');
+        }
+
+        return [
+            'categories' => $categories,
+            'series' => $series,
+        ];
+    }
+
+    /**
+     * @return array{categories: list<string>, series: list<int>}
+     */
+    private function pcChartHousePoints(string $house, Carbon $start, Carbon $end): array
+    {
+        $q = DB::table('houses')
+            ->leftJoin('students as s', 's.house_id', '=', 'houses.id')
+            ->leftJoin('point_transactions as pt', function ($join) use ($start, $end) {
+                $join->on('pt.student_id', '=', 's.id')
+                    ->whereBetween('pt.created_at', [$start, $end])
+                    ->whereRaw('EXTRACT(DOW FROM pt.created_at::timestamp) BETWEEN 1 AND 5');
+            })
+            ->select('houses.name as house')
+            ->selectRaw('COALESCE(SUM(pt.amount), 0) as total')
+            ->groupBy('houses.id', 'houses.name')
+            ->orderBy('houses.name');
+
+        if ($house !== 'All') {
+            $q->where('houses.name', $house);
+        }
+
+        $rows = $q->get();
+
+        return [
+            'categories' => $rows->pluck('house')->all(),
+            'series' => $rows->pluck('total')->map(fn ($v) => (int) $v)->all(),
+        ];
+    }
+
+    /**
+     * @return array{categories: list<string>, series: list<int>}
+     */
+    private function pcChartYearLevel(string $house, Carbon $start, Carbon $end): array
+    {
+        $q = DB::table('point_transactions as pt')
+            ->join('students as s', 'pt.student_id', '=', 's.id')
+            ->whereBetween('pt.created_at', [$start, $end])
+            ->whereRaw('EXTRACT(DOW FROM pt.created_at::timestamp) BETWEEN 1 AND 5')
+            ->select('s.year_level')
+            ->selectRaw('SUM(pt.amount) as total')
+            ->groupBy('s.year_level')
+            ->orderBy('s.year_level');
+
+        if ($house !== 'All') {
+            $q->join('houses as h', 's.house_id', '=', 'h.id')
+                ->where('h.name', $house);
+        }
+
+        $rows = $q->get();
+
+        return [
+            'categories' => $rows->map(fn ($r) => 'Year '.$r->year_level)->all(),
+            'series' => $rows->pluck('total')->map(fn ($v) => (int) $v)->all(),
+        ];
+    }
+
+    /**
+     * @return array{categories: list<string>, series: list<int>}
+     */
+    private function pcChartCategory(string $house, Carbon $start, Carbon $end): array
+    {
+        $q = DB::table('point_transactions as pt')
+            ->whereBetween('pt.created_at', [$start, $end])
+            ->whereRaw('EXTRACT(DOW FROM pt.created_at::timestamp) BETWEEN 1 AND 5')
+            ->select('pt.category')
+            ->selectRaw('SUM(pt.amount) as total')
+            ->groupBy('pt.category')
+            ->orderBy('pt.category');
+
+        if ($house !== 'All') {
+            $q->join('students as s', 'pt.student_id', '=', 's.id')
                 ->join('houses as h', 's.house_id', '=', 'h.id')
                 ->where('h.name', $house);
         }
 
-        if ($filter !== null) {
-            $ids = $this->pcStudentIdsForRiskFilter($since, $filter);
-            if ($ids->isEmpty()) {
-                return $this->pcEmptyTrendSeries($startDay, $endDay);
-            }
-            $query->whereIn('pt.student_id', $ids);
+        $rows = $q->get();
+
+        return [
+            'categories' => $rows->pluck('category')->all(),
+            'series' => $rows->pluck('total')->map(fn ($v) => (int) $v)->all(),
+        ];
+    }
+
+    private function pcCategoryExistsInRange(string $label, string $house, Carbon $start, Carbon $end): bool
+    {
+        $q = DB::table('point_transactions as pt')
+            ->where('pt.category', $label)
+            ->whereBetween('pt.created_at', [$start, $end])
+            ->whereRaw('EXTRACT(DOW FROM pt.created_at::timestamp) BETWEEN 1 AND 5');
+
+        if ($house !== 'All') {
+            $q->join('students as s', 'pt.student_id', '=', 's.id')
+                ->join('houses as h', 's.house_id', '=', 'h.id')
+                ->where('h.name', $house);
         }
 
-        $daily = $query
-            ->selectRaw('(pt.created_at::date) as day')
-            ->selectRaw('SUM(pt.amount) as total')
-            ->groupBy('day')
-            ->orderBy('day')
-            ->get()
-            ->keyBy(function ($row) {
-                return Carbon::parse($row->day)->format('Y-m-d');
-            });
-
-        $out = [];
-        for ($d = $startDay->copy(); $d->lte($endDay); $d->addDay()) {
-            $key = $d->format('Y-m-d');
-            $out[] = [
-                'date' => $key,
-                'points' => (int) ($daily->get($key)->total ?? 0),
-            ];
-        }
-
-        return $out;
+        return $q->exists();
     }
 
     /**
-     * @return list<array{date: string, points: int}>
+     * @return array{title: string, rows: list<array<string, mixed>>}
      */
-    private function pcEmptyTrendSeries(Carbon $startDay, Carbon $endDay): array
+    private function pcDrilldownRiskHigh(string $house): array
     {
-        $out = [];
-        for ($d = $startDay->copy(); $d->lte($endDay); $d->addDay()) {
-            $out[] = ['date' => $d->format('Y-m-d'), 'points' => 0];
-        }
+        $q = $this->pcStudentWithHouseQuery($house)
+            ->selectRaw('TRIM(CONCAT(students.first_name, \' \', students.last_name)) as name')
+            ->selectRaw('h.name as house_name')
+            ->whereRaw('(SELECT COUNT(*) FROM point_transactions t WHERE t.student_id = students.id) = 0')
+            ->orderBy('name');
 
-        return $out;
+        $rows = $q->get()->map(fn ($r) => [
+            'name' => $r->name,
+            'house' => $r->house_name ?? '—',
+        ])->all();
+
+        return ['title' => 'High risk (no transactions ever)', 'rows' => $rows];
     }
 
     /**
-     * Count students per house for the current risk lens.
-     * No filter: at-risk only (high + medium — no activity in last 30 days).
-     * With filter: students in that segment per house.
-     *
-     * @return list<array{house: string, count: int}>
+     * @return array{title: string, rows: list<array<string, mixed>>}
      */
-    private function pcHouseRiskBreakdown(Carbon $since, ?string $filter): array
+    private function pcDrilldownRiskMedium(string $house, Carbon $start, Carbon $end): array
     {
-        $query = DB::table('students')
-            ->join('houses', 'students.house_id', '=', 'houses.id')
-            ->leftJoin('point_transactions', 'students.id', '=', 'point_transactions.student_id')
-            ->select('houses.name as house')
-            ->groupBy('houses.id', 'houses.name', 'students.id');
-
-        if ($filter === 'high') {
-            $query->havingRaw('COUNT(point_transactions.id) = 0');
-        } elseif ($filter === 'medium') {
-            $query->havingRaw(
-                'COUNT(point_transactions.id) > 0 AND NOT COALESCE(BOOL_OR(point_transactions.created_at >= ?), FALSE)',
-                [$since]
-            );
-        } elseif ($filter === 'active') {
-            $query->havingRaw('COALESCE(BOOL_OR(point_transactions.created_at >= ?), FALSE)', [$since]);
-        } else {
-            $query->havingRaw('NOT COALESCE(BOOL_OR(point_transactions.created_at >= ?), FALSE)', [$since]);
-        }
-
-        $counts = $query->get()->countBy('house');
-
-        return DB::table('houses')
-            ->orderBy('name')
-            ->get()
-            ->map(function ($row) use ($counts) {
-                return [
-                    'house' => $row->name,
-                    'count' => (int) ($counts[$row->name] ?? 0),
-                ];
+        $q = $this->pcStudentWithHouseQuery($house)
+            ->leftJoin('point_transactions as pw', function ($join) use ($start, $end) {
+                $join->on('students.id', '=', 'pw.student_id');
+                $this->pcTransactionsInRangeWeekday($join, $start, $end, 'pw');
             })
-            ->values()
-            ->all();
+            ->selectRaw('TRIM(CONCAT(students.first_name, \' \', students.last_name)) as name')
+            ->selectRaw('h.name as house_name')
+            ->groupBy('students.id', 'students.first_name', 'students.last_name', 'h.name')
+            ->havingRaw('(SELECT COUNT(*) FROM point_transactions t WHERE t.student_id = students.id) > 0 AND COUNT(pw.id) = 0')
+            ->orderBy('name');
+
+        $rows = $q->get()->map(fn ($r) => [
+            'name' => $r->name,
+            'house' => $r->house_name ?? '—',
+        ])->all();
+
+        return ['title' => 'Medium risk (no weekday activity in range)', 'rows' => $rows];
+    }
+
+    /**
+     * @return array{title: string, rows: list<array<string, mixed>>}
+     */
+    private function pcDrilldownRiskActive(string $house, Carbon $start, Carbon $end): array
+    {
+        $q = $this->pcStudentWithHouseQuery($house)
+            ->join('point_transactions as pw', function ($join) use ($start, $end) {
+                $join->on('students.id', '=', 'pw.student_id');
+                $this->pcTransactionsInRangeWeekday($join, $start, $end, 'pw');
+            })
+            ->selectRaw('TRIM(CONCAT(students.first_name, \' \', students.last_name)) as name')
+            ->selectRaw('h.name as house_name')
+            ->selectRaw('SUM(pw.amount) as points_in_range')
+            ->groupBy('students.id', 'students.first_name', 'students.last_name', 'h.name')
+            ->orderBy('name');
+
+        $rows = $q->get()->map(fn ($r) => [
+            'name' => $r->name,
+            'house' => $r->house_name ?? '—',
+            'points (range)' => (int) $r->points_in_range,
+        ])->all();
+
+        return ['title' => 'Active (weekday points in range)', 'rows' => $rows];
+    }
+
+    /**
+     * @return array{title: string, rows: list<array<string, mixed>>}
+     */
+    private function pcDrilldownDate(string $dateStr, string $house, Carbon $start, Carbon $end): array
+    {
+        $day = Carbon::createFromFormat('Y-m-d', $dateStr)->startOfDay();
+
+        if ($day->lt($start->copy()->startOfDay()) || $day->gt($end->copy()->endOfDay())) {
+            return ['title' => 'Transactions on '.$dateStr, 'rows' => []];
+        }
+
+        if ($day->dayOfWeekIso < 1 || $day->dayOfWeekIso > 5) {
+            return ['title' => 'Transactions on '.$dateStr.' (not a weekday in range)', 'rows' => []];
+        }
+
+        $q = DB::table('point_transactions as pt')
+            ->join('students as s', 'pt.student_id', '=', 's.id')
+            ->leftJoin('houses as h', 's.house_id', '=', 'h.id')
+            ->whereDate('pt.created_at', $dateStr)
+            ->whereBetween('pt.created_at', [$start, $end])
+            ->whereRaw('EXTRACT(DOW FROM pt.created_at::timestamp) BETWEEN 1 AND 5')
+            ->selectRaw('TRIM(CONCAT(s.first_name, \' \', s.last_name)) as student')
+            ->selectRaw('h.name as house')
+            ->select('pt.category', 'pt.amount', 'pt.description')
+            ->orderBy('pt.created_at');
+
+        if ($house !== 'All') {
+            $q->where('h.name', $house);
+        }
+
+        $rows = $q->get()->map(fn ($r) => [
+            'student' => $r->student,
+            'house' => $r->house ?? '—',
+            'category' => $r->category,
+            'amount' => (int) $r->amount,
+            'description' => $r->description ?? '',
+        ])->all();
+
+        return ['title' => 'Transactions on '.$dateStr, 'rows' => $rows];
+    }
+
+    /**
+     * @return array{title: string, rows: list<array<string, mixed>>}
+     */
+    private function pcDrilldownHouseBar(string $houseName, Carbon $start, Carbon $end): array
+    {
+        $q = DB::table('point_transactions as pt')
+            ->join('students as s', 'pt.student_id', '=', 's.id')
+            ->join('houses as h', 's.house_id', '=', 'h.id')
+            ->where('h.name', $houseName)
+            ->whereBetween('pt.created_at', [$start, $end])
+            ->whereRaw('EXTRACT(DOW FROM pt.created_at::timestamp) BETWEEN 1 AND 5')
+            ->selectRaw('TRIM(CONCAT(s.first_name, \' \', s.last_name)) as name')
+            ->selectRaw('SUM(pt.amount) as total')
+            ->groupBy('s.id', 's.first_name', 's.last_name')
+            ->orderByDesc('total');
+
+        $rows = $q->get()->map(fn ($r) => [
+            'name' => $r->name,
+            'points (weekdays)' => (int) $r->total,
+        ])->all();
+
+        return ['title' => 'Students in '.$houseName.' (weekday points)', 'rows' => $rows];
+    }
+
+    /**
+     * @return array{title: string, rows: list<array<string, mixed>>}
+     */
+    private function pcDrilldownYearLevel(int $yearLevel, string $house, Carbon $start, Carbon $end): array
+    {
+        $q = DB::table('point_transactions as pt')
+            ->join('students as s', 'pt.student_id', '=', 's.id')
+            ->leftJoin('houses as h', 's.house_id', '=', 'h.id')
+            ->where('s.year_level', $yearLevel)
+            ->whereBetween('pt.created_at', [$start, $end])
+            ->whereRaw('EXTRACT(DOW FROM pt.created_at::timestamp) BETWEEN 1 AND 5')
+            ->selectRaw('TRIM(CONCAT(s.first_name, \' \', s.last_name)) as name')
+            ->selectRaw('h.name as house')
+            ->select('pt.category', 'pt.amount', 'pt.created_at')
+            ->orderBy('pt.created_at', 'desc');
+
+        if ($house !== 'All') {
+            $q->where('h.name', $house);
+        }
+
+        $rows = $q->limit(200)->get()->map(fn ($r) => [
+            'student' => $r->name,
+            'house' => $r->house ?? '—',
+            'category' => $r->category,
+            'amount' => (int) $r->amount,
+            'when' => Carbon::parse($r->created_at)->format('Y-m-d H:i'),
+        ])->all();
+
+        return ['title' => 'Year '.$yearLevel.' — recent transactions', 'rows' => $rows];
+    }
+
+    /**
+     * @return array{title: string, rows: list<array<string, mixed>>}
+     */
+    private function pcDrilldownCategory(string $category, string $house, Carbon $start, Carbon $end): array
+    {
+        $q = DB::table('point_transactions as pt')
+            ->join('students as s', 'pt.student_id', '=', 's.id')
+            ->leftJoin('houses as h', 's.house_id', '=', 'h.id')
+            ->where('pt.category', $category)
+            ->whereBetween('pt.created_at', [$start, $end])
+            ->whereRaw('EXTRACT(DOW FROM pt.created_at::timestamp) BETWEEN 1 AND 5')
+            ->selectRaw('TRIM(CONCAT(s.first_name, \' \', s.last_name)) as student')
+            ->selectRaw('h.name as house')
+            ->select('pt.amount', 'pt.description', 'pt.created_at')
+            ->orderBy('pt.created_at', 'desc');
+
+        if ($house !== 'All') {
+            $q->where('h.name', $house);
+        }
+
+        $rows = $q->limit(200)->get()->map(fn ($r) => [
+            'student' => $r->student,
+            'house' => $r->house ?? '—',
+            'amount' => (int) $r->amount,
+            'description' => $r->description ?? '',
+            'when' => Carbon::parse($r->created_at)->format('Y-m-d H:i'),
+        ])->all();
+
+        return ['title' => 'Category: '.$category, 'rows' => $rows];
     }
 
     private function termNumberFromMonth(int $month): int
