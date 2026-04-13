@@ -65,7 +65,29 @@ class ReportController extends Controller
     {
         $since = Carbon::now()->subDays(30);
 
-        $rows = DB::table('students')
+        $filter = request('filter');
+        $filter = in_array($filter, ['high', 'medium', 'active'], true) ? $filter : null;
+
+        $perStudent = DB::table('students')
+            ->leftJoin('point_transactions', 'students.id', '=', 'point_transactions.student_id')
+            ->select('students.id')
+            ->selectRaw('COUNT(point_transactions.id) as txn_count')
+            ->selectRaw('BOOL_OR(point_transactions.created_at >= ?) as has_recent', [$since])
+            ->groupBy('students.id');
+
+        $countRow = DB::query()->fromSub($perStudent, 'per_student')
+            ->selectRaw('SUM(CASE WHEN txn_count = 0 THEN 1 ELSE 0 END) as high')
+            ->selectRaw('SUM(CASE WHEN txn_count > 0 AND NOT COALESCE(has_recent, FALSE) THEN 1 ELSE 0 END) as medium')
+            ->selectRaw('SUM(CASE WHEN COALESCE(has_recent, FALSE) THEN 1 ELSE 0 END) as active')
+            ->first();
+
+        $counts = [
+            'high' => (int) ($countRow->high ?? 0),
+            'medium' => (int) ($countRow->medium ?? 0),
+            'active' => (int) ($countRow->active ?? 0),
+        ];
+
+        $query = DB::table('students')
             ->leftJoin('houses', 'students.house_id', '=', 'houses.id')
             ->leftJoin('point_transactions', 'students.id', '=', 'point_transactions.student_id')
             ->selectRaw(
@@ -75,11 +97,22 @@ class ReportController extends Controller
                 'MAX(point_transactions.created_at) as last_activity',
                 [$since]
             )
-            ->groupBy('students.id', 'students.first_name', 'students.last_name', 'houses.name')
-            ->havingRaw(
-                'COALESCE(SUM(CASE WHEN point_transactions.created_at >= ? THEN point_transactions.amount ELSE 0 END), 0) = 0',
+            ->groupBy('students.id', 'students.first_name', 'students.last_name', 'houses.name');
+
+        if ($filter === 'high') {
+            $query->havingRaw('COUNT(point_transactions.id) = 0');
+        } elseif ($filter === 'medium') {
+            $query->havingRaw(
+                'COUNT(point_transactions.id) > 0 AND NOT COALESCE(BOOL_OR(point_transactions.created_at >= ?), FALSE)',
                 [$since]
-            )
+            );
+        } elseif ($filter === 'active') {
+            $query->havingRaw('COALESCE(BOOL_OR(point_transactions.created_at >= ?), FALSE)', [$since]);
+        } else {
+            $query->havingRaw('NOT COALESCE(BOOL_OR(point_transactions.created_at >= ?), FALSE)', [$since]);
+        }
+
+        $rows = $query
             ->orderByRaw('MAX(point_transactions.created_at) ASC NULLS FIRST')
             ->orderBy('name')
             ->get();
@@ -97,6 +130,8 @@ class ReportController extends Controller
 
         return view('reports.pc', [
             'students' => $students,
+            'counts' => $counts,
+            'filter' => $filter,
         ]);
     }
 
