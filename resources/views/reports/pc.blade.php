@@ -280,11 +280,22 @@ document.addEventListener("DOMContentLoaded", function () {
             headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
         });
         const payload = await res.json();
+        const data = payload;
+        console.log('FULL DATA OBJECT:', data);
 
         const risk = payload.risk_distribution || { type: 'breakdown', categories: [], series: [] };
-        const house = payload.points_by_house || { type: 'breakdown', categories: [], series: [] };
         const trend = payload.engagement_trend || { type: 'trend', categories: [], series: [] };
-        const year = payload.year_level_distribution || { type: 'breakdown', categories: [], series: [] };
+        const yearSeries = data?.year_level?.series?.[0]?.data || data?.year_level_distribution?.series?.[0]?.data || [];
+        const yearCategories = data?.year_level?.categories || data?.year_level_distribution?.categories || [];
+        const houseSeries = data?.house_breakdown?.series?.[0]?.data || data?.points_by_house?.series?.[0]?.data || [];
+        const houseCategories = data?.house_breakdown?.categories || data?.points_by_house?.categories || [];
+
+        if (yearSeries.length === 0) {
+            console.error('Year level data missing or empty', data.year_level || data.year_level_distribution);
+        }
+        if (houseSeries.length === 0) {
+            console.error('House data missing or empty', data.house_breakdown || data.points_by_house);
+        }
 
         const riskColors = risk.categories.map(label => {
             const l = String(label).toLowerCase();
@@ -294,9 +305,46 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         renderChart('engagement-health', risk, { type: 'donut', colors: riskColors });
-        renderChart('points-by-house', house, { type: 'bar' });
         renderChart('engagement-trend', trend, { type: 'line' });
-        renderChart('year-level-distribution', year, { type: 'bar' });
+
+        destroyChart('points-by-house');
+        if (houseSeries.length > 0) {
+            instances['points-by-house'] = new ApexCharts(document.querySelector("#points-by-house"), {
+                chart: {
+                    type: 'bar',
+                    height: 320,
+                    events: {
+                        dataPointSelection: function(event, chartContext, config) {
+                            const house = houseCategories[config.dataPointIndex];
+                            if (!house) return;
+                            drillDown({
+                                type: 'house_low',
+                                value: house
+                            });
+                        }
+                    }
+                },
+                series: [{ data: houseSeries }],
+                xaxis: { categories: houseCategories },
+                tooltip: { theme: 'dark' }
+            });
+            instances['points-by-house'].render();
+        } else {
+            showEmpty('points-by-house');
+        }
+
+        destroyChart('year-level-distribution');
+        if (yearSeries.length > 0) {
+            instances['year-level-distribution'] = new ApexCharts(document.querySelector("#year-level-distribution"), {
+                chart: { type: 'bar', height: 320 },
+                series: [{ data: yearSeries }],
+                xaxis: { categories: yearCategories },
+                tooltip: { theme: 'dark' }
+            });
+            instances['year-level-distribution'].render();
+        } else {
+            showEmpty('year-level-distribution');
+        }
     }
 
     modalClose.addEventListener('click', function () {
