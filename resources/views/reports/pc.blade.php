@@ -6,20 +6,22 @@
         Pastoral care overview — weekday data only (Mon–Fri). Use filters and click charts for details (no page reload).
     </p>
 
-    <div id="insight-banner" style="background: #1e293b; color: #fff; padding: 16px 20px; border-radius: 10px; margin-bottom: 20px; font-weight: 600; line-height: 1.5;"></div>
+    <div id="insight-banner" style="background:#1e293b; color:#fff; padding:14px 18px; border-radius:10px; margin-bottom:15px; font-weight:600;"></div>
 
-    <div id="kpi-cards" style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px;">
-        <div class="kpi-card" data-label="total" style="flex: 1; min-width: 140px; cursor: default; background: #0f172a; color: #fff; padding: 16px; border-radius: 10px; border: 1px solid #334155;">
-            <div style="font-size: 0.9rem; opacity: 0.9;">Total points</div>
-            <div id="kpi-total" style="font-size: 24px; font-weight: bold; margin-top: 6px;"></div>
+    <div style="display:flex; gap:12px; margin-bottom:20px;">
+        <div class="kpi-card" data-type="total" style="flex:1; background:#0f172a; color:#fff; padding:14px; border-radius:10px;">
+            <div>Total Points</div>
+            <div id="kpi-total" style="font-size:22px; font-weight:bold;"></div>
         </div>
-        <div class="kpi-card" data-label="active" style="flex: 1; min-width: 140px; cursor: pointer; background: #0f172a; color: #fff; padding: 16px; border-radius: 10px; border: 1px solid #334155;">
-            <div style="font-size: 0.9rem; opacity: 0.9;">Active students</div>
-            <div id="kpi-active" style="font-size: 24px; font-weight: bold; margin-top: 6px;"></div>
+
+        <div class="kpi-card" data-type="active" style="flex:1; background:#0f172a; color:#fff; padding:14px; border-radius:10px; cursor:pointer;">
+            <div>Active Students</div>
+            <div id="kpi-active" style="font-size:22px; font-weight:bold;"></div>
         </div>
-        <div class="kpi-card" data-label="low" style="flex: 1; min-width: 140px; cursor: pointer; background: #0f172a; color: #fff; padding: 16px; border-radius: 10px; border: 1px solid #334155;">
-            <div style="font-size: 0.9rem; opacity: 0.9;">Low engagement</div>
-            <div id="kpi-low" style="font-size: 24px; font-weight: bold; margin-top: 6px;"></div>
+
+        <div class="kpi-card" data-type="low" style="flex:1; background:#0f172a; color:#fff; padding:14px; border-radius:10px; cursor:pointer;">
+            <div>Low Engagement</div>
+            <div id="kpi-low" style="font-size:22px; font-weight:bold;"></div>
         </div>
     </div>
 
@@ -295,21 +297,24 @@
             }
 
             function updateAllCharts(data) {
+                // ===== KPI RENDER =====
                 if (data.kpis) {
-                    var k = data.kpis;
-                    var banner = document.getElementById('insight-banner');
-                    var activePercent = k.total_students > 0
-                        ? Math.round((k.active_students / k.total_students) * 100)
-                        : 0;
-                    var pts = Number(k.total_points || 0).toLocaleString();
-                    banner.innerHTML =
-                        '📊 ' + pts + ' points awarded<br/>' +
-                        '👥 ' + activePercent + '% of students active<br/>' +
-                        '⚠️ ' + Number(k.low_engagement || 0).toLocaleString() + ' low engagement students';
+                    document.getElementById('kpi-total').innerText = data.kpis.total_points ?? 0;
+                    document.getElementById('kpi-active').innerText = data.kpis.active_students ?? 0;
+                    document.getElementById('kpi-low').innerText = data.kpis.low_engagement ?? 0;
 
-                    document.getElementById('kpi-total').innerText = Number(k.total_points || 0).toLocaleString();
-                    document.getElementById('kpi-active').innerText = Number(k.active_students || 0).toLocaleString();
-                    document.getElementById('kpi-low').innerText = Number(k.low_engagement || 0).toLocaleString();
+                    var banner = document.getElementById('insight-banner');
+
+                    if (banner) {
+                        var percent = data.kpis.total_students > 0
+                            ? Math.round((data.kpis.active_students / data.kpis.total_students) * 100)
+                            : 0;
+
+                        banner.innerHTML =
+                            '📊 ' + data.kpis.total_points + ' points awarded | ' +
+                            '👥 ' + percent + '% active | ' +
+                            '⚠️ ' + data.kpis.low_engagement + ' low engagement';
+                    }
                 }
 
                 if (charts.donut && data.donut) {
@@ -500,10 +505,8 @@
 
             document.querySelectorAll('.kpi-card').forEach(function (card) {
                 card.addEventListener('click', function () {
-                    var type = this.getAttribute('data-label');
-                    if (type === 'total') {
-                        return;
-                    }
+                    var type = this.dataset.type;
+
                     if (type === 'low') {
                         drillDown('Low');
                     }

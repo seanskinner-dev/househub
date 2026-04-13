@@ -75,12 +75,48 @@ class ReportController extends Controller
     {
         [$start, $end, $house] = $this->pcParseFilters($request);
 
+        // ===== KPI CALCULATIONS =====
+        $totalPoints = (int) DB::table('point_transactions')
+            ->join('students', 'students.id', '=', 'point_transactions.student_id')
+            ->when($house !== 'All', function ($q) use ($house) {
+                $q->join('houses', 'houses.id', '=', 'students.house_id')
+                    ->where('houses.name', $house);
+            })
+            ->whereBetween('point_transactions.created_at', [$start, $end])
+            ->whereRaw('EXTRACT(DOW FROM point_transactions.created_at) BETWEEN 1 AND 5')
+            ->sum('point_transactions.amount');
+
+        $activeStudents = (int) DB::table('point_transactions')
+            ->join('students', 'students.id', '=', 'point_transactions.student_id')
+            ->when($house !== 'All', function ($q) use ($house) {
+                $q->join('houses', 'houses.id', '=', 'students.house_id')
+                    ->where('houses.name', $house);
+            })
+            ->whereBetween('point_transactions.created_at', [$start, $end])
+            ->whereRaw('EXTRACT(DOW FROM point_transactions.created_at) BETWEEN 1 AND 5')
+            ->distinct()
+            ->count('students.id');
+
+        $totalStudents = (int) DB::table('students')
+            ->when($house !== 'All', function ($q) use ($house) {
+                $q->join('houses', 'houses.id', '=', 'students.house_id')
+                    ->where('houses.name', $house);
+            })
+            ->count();
+
+        $lowEngagement = $totalStudents - $activeStudents;
+
         return response()->json([
             'donut' => $this->pcChartDonut($house, $start, $end),
             'trend' => $this->pcChartTrend($house, $start, $end),
             'house_breakdown' => $this->pcChartHousePoints($house, $start, $end),
             'year_level' => $this->pcChartYearLevel($house, $start, $end),
-            'kpis' => $this->pcKpis($house, $start, $end),
+            'kpis' => [
+                'total_points' => $totalPoints,
+                'active_students' => $activeStudents,
+                'total_students' => $totalStudents,
+                'low_engagement' => $lowEngagement,
+            ],
         ]);
     }
 
@@ -117,12 +153,15 @@ class ReportController extends Controller
             return response()->json($this->pcDrilldownYearLevel((int) $m[1], $house, $start, $end));
         }
 
-        if (preg_match('/^(\d+)$/', $label, $m) && (int) $m[1] >= 1 && (int) $m[1] <= 13) {
-            return response()->json($this->pcDrilldownYearLevel((int) $m[1], $house, $start, $end));
-        }
-
         if (DB::table('houses')->where('name', $label)->exists()) {
             return response()->json($this->pcDrilldownHouseBar($label, $start, $end));
+        }
+
+        // First integer in label → year-level drilldown (pcDrilldownYearLevel filters students.year_level)
+        if (preg_match('/(\d+)/', $label, $matches)) {
+            $year = (int) $matches[1];
+
+            return response()->json($this->pcDrilldownYearLevel($year, $house, $start, $end));
         }
 
         return response()->json(['title' => $label, 'rows' => []]);
@@ -151,49 +190,6 @@ class ReportController extends Controller
         }
 
         return [$start, $end, $house];
-    }
-
-    /**
-     * @return array{total_points: int, active_students: int, total_students: int, low_engagement: int}
-     */
-    private function pcKpis(string $house, Carbon $start, Carbon $end): array
-    {
-        $totalPoints = (int) DB::table('point_transactions')
-            ->join('students', 'students.id', '=', 'point_transactions.student_id')
-            ->when($house !== 'All', function ($q) use ($house) {
-                $q->join('houses', 'houses.id', '=', 'students.house_id')
-                    ->where('houses.name', $house);
-            })
-            ->whereBetween('point_transactions.created_at', [$start, $end])
-            ->whereRaw('EXTRACT(DOW FROM point_transactions.created_at::timestamp) BETWEEN 1 AND 5')
-            ->sum('point_transactions.amount');
-
-        $activeStudents = (int) DB::table('point_transactions')
-            ->join('students', 'students.id', '=', 'point_transactions.student_id')
-            ->when($house !== 'All', function ($q) use ($house) {
-                $q->join('houses', 'houses.id', '=', 'students.house_id')
-                    ->where('houses.name', $house);
-            })
-            ->whereBetween('point_transactions.created_at', [$start, $end])
-            ->whereRaw('EXTRACT(DOW FROM point_transactions.created_at::timestamp) BETWEEN 1 AND 5')
-            ->selectRaw('COUNT(DISTINCT students.id) as c')
-            ->value('c');
-
-        $totalStudents = (int) DB::table('students')
-            ->when($house !== 'All', function ($q) use ($house) {
-                $q->join('houses', 'houses.id', '=', 'students.house_id')
-                    ->where('houses.name', $house);
-            })
-            ->count();
-
-        $lowEngagement = max(0, $totalStudents - $activeStudents);
-
-        return [
-            'total_points' => $totalPoints,
-            'active_students' => $activeStudents,
-            'total_students' => $totalStudents,
-            'low_engagement' => $lowEngagement,
-        ];
     }
 
     private function pcParseDateParam(mixed $value): ?Carbon
