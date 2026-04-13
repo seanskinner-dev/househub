@@ -66,15 +66,16 @@ class ReportController extends Controller
         $since = Carbon::now()->subDays(30);
 
         $rows = DB::table('students')
+            ->leftJoin('houses', 'students.house_id', '=', 'houses.id')
             ->leftJoin('point_transactions', 'students.id', '=', 'point_transactions.student_id')
             ->selectRaw(
                 'TRIM(CONCAT(students.first_name, \' \', students.last_name)) as name, '.
-                'students.house_name as house, '.
+                'houses.name as house, '.
                 'COALESCE(SUM(CASE WHEN point_transactions.created_at >= ? THEN point_transactions.amount ELSE 0 END), 0) as points_last_30_days, '.
                 'MAX(point_transactions.created_at) as last_activity',
                 [$since]
             )
-            ->groupBy('students.id', 'students.first_name', 'students.last_name', 'students.house_name')
+            ->groupBy('students.id', 'students.first_name', 'students.last_name', 'houses.name')
             ->havingRaw(
                 'COALESCE(SUM(CASE WHEN point_transactions.created_at >= ? THEN point_transactions.amount ELSE 0 END), 0) = 0',
                 [$since]
