@@ -99,14 +99,56 @@ class ReportController extends Controller
 
     private function getReportData(Request $request): array
     {
-        [$start, $end, $house, $yearFilter] = $this->pcParseFilters($request);
+        // Temporary debug mode: use all-time ranges and unfiltered chart queries.
+        $start = Carbon::create(2000, 1, 1)->startOfDay();
+        $end = Carbon::now()->endOfDay();
+        $house = 'All';
+        $yearFilter = 'All';
+
+        $donut = $this->pcChartDonut($house, $start, $end, $yearFilter);
+        $year_level = $this->pcChartYearLevel($house, $start, $end, $yearFilter);
+        $recent = $this->pcTeacherRecentRows($house, $start, $end, $yearFilter);
+
+        $trend = DB::table('point_transactions')
+            ->selectRaw('DATE(created_at) as date, SUM(amount) as total')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
+        $trendData = [
+            'series' => [
+                [
+                    'name' => 'Points',
+                    'data' => $trend->pluck('total')->map(fn ($v) => (int) $v)->toArray(),
+                ],
+            ],
+            'categories' => $trend->pluck('date')->toArray(),
+        ];
+
+        $houses = DB::table('point_transactions')
+            ->selectRaw('house_name, SUM(amount) as total')
+            ->whereNotNull('house_name')
+            ->groupBy('house_name')
+            ->get();
+
+        $houseData = [
+            'series' => [
+                [
+                    'name' => 'Points',
+                    'data' => $houses->pluck('total')->map(fn ($v) => (int) $v)->toArray(),
+                ],
+            ],
+            'categories' => $houses->pluck('house_name')->toArray(),
+        ];
+
+        dd($trendData, $houseData);
 
         return [
-            'donut' => $this->pcChartDonut($house, $start, $end, $yearFilter),
-            'trend' => $this->pcChartTrend($house, $start, $end, $yearFilter),
-            'house_breakdown' => $this->pcChartHousePoints($house, $start, $end, $yearFilter),
-            'year_level' => $this->pcChartYearLevel($house, $start, $end, $yearFilter),
-            'recent' => $this->pcTeacherRecentRows($house, $start, $end, $yearFilter),
+            'donut' => $donut,
+            'trend' => $trendData,
+            'house_breakdown' => $houseData,
+            'year_level' => $year_level,
+            'recent' => $recent,
         ];
     }
 
