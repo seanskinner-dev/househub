@@ -741,40 +741,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .tv-term-screen {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            min-height: 0;
-            width: 100%;
-            padding: 24px 32px 32px;
-            box-sizing: border-box;
-        }
-
-        .tv-term-title {
-            flex-shrink: 0;
-            font-size: clamp(36px, 5vw, 72px);
-            font-weight: 800;
-            text-align: center;
-            margin-bottom: 16px;
-            letter-spacing: 0.02em;
-        }
-
-        .tv-term-chart-wrap {
-            flex: 1;
-            min-height: 0;
-            width: 100%;
-            max-width: 1400px;
-        }
-
-        #housePointsByTermChart {
-            width: 100%;
-            height: 100%;
-            min-height: 320px;
-        }
-
         .tv-this-term-screen {
             flex: 1;
             display: flex;
@@ -834,7 +800,6 @@
             line-height: 1;
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.45.2"></script>
 </head>
 
 <body>
@@ -1006,22 +971,6 @@
 
     </div>
 
-    <div class="tv-screen" id="screen-house-points-term">
-
-        <div class="tv-term-screen">
-
-            <div class="tv-term-title">
-                House Points by Term
-            </div>
-
-            <div class="tv-term-chart-wrap">
-                <div id="housePointsByTermChart" role="img" aria-label="Line chart of house points per term"></div>
-            </div>
-
-        </div>
-
-    </div>
-
     <div class="tv-screen" id="screen-house-points-this-term">
 
         <div class="tv-this-term-screen">
@@ -1146,16 +1095,6 @@ document.addEventListener("DOMContentLoaded", function () {
         screens.forEach((s, i) => {
             s.style.display = (i === index) ? 'flex' : 'none';
         });
-        if (window.__housePointsByTermChart && typeof window.__housePointsByTermChart.resize === 'function') {
-            const termScreenIndex = Array.from(screens).findIndex(function (el) {
-                return el.id === 'screen-house-points-term';
-            });
-            if (termScreenIndex === index) {
-                setTimeout(function () {
-                    window.__housePointsByTermChart.resize();
-                }, 100);
-            }
-        }
     }
 
     function nextScreen() {
@@ -1191,76 +1130,6 @@ document.addEventListener("DOMContentLoaded", function () {
     setTimeout(() => {
         showScreen(0);
     }, 100);
-
-    (function initHousePointsByTermChart() {
-        const termChartEl = document.querySelector('#housePointsByTermChart');
-        if (!termChartEl || typeof ApexCharts === 'undefined') {
-            return;
-        }
-        const hpbt = @json($housePointsByTerm);
-        const houseColors = {
-            Gryffindor: '#740001',
-            Slytherin: '#1a472a',
-            Ravenclaw: '#0e1a40',
-            Hufflepuff: '#ffcc00',
-        };
-        const series = hpbt.map(function (h) {
-            return { name: h.house, data: h.data };
-        });
-        const colors = hpbt.map(function (h) {
-            return houseColors[h.house] || '#94a3b8';
-        });
-        window.__housePointsByTermChart = new ApexCharts(termChartEl, {
-            chart: {
-                type: 'line',
-                height: '100%',
-                width: '100%',
-                foreColor: '#e2e8f0',
-                toolbar: { show: false },
-                background: 'transparent',
-                zoom: { enabled: false },
-                fontFamily: 'Montserrat, sans-serif',
-                animations: { enabled: true },
-            },
-            series: series,
-            colors: colors,
-            stroke: { curve: 'smooth', width: 4 },
-            markers: { size: 0, hover: { size: 0 } },
-            dataLabels: { enabled: false },
-            legend: {
-                position: 'bottom',
-                fontSize: 'clamp(16px, 2.2vw, 26px)',
-                fontWeight: 600,
-                labels: { colors: '#f1f5f9' },
-                itemMargin: { horizontal: 20, vertical: 10 },
-            },
-            xaxis: {
-                categories: ['Term 1', 'Term 2', 'Term 3', 'Term 4'],
-                labels: {
-                    style: {
-                        fontSize: 'clamp(18px, 2.5vw, 30px)',
-                        fontWeight: 600,
-                    },
-                },
-                axisBorder: { color: 'rgba(148,163,184,0.35)' },
-                axisTicks: { color: 'rgba(148,163,184,0.35)' },
-            },
-            yaxis: {
-                labels: {
-                    style: {
-                        fontSize: 'clamp(15px, 2vw, 24px)',
-                        fontWeight: 600,
-                    },
-                },
-            },
-            grid: {
-                borderColor: 'rgba(148,163,184,0.18)',
-                strokeDashArray: 4,
-            },
-            theme: { mode: 'dark' },
-        });
-        window.__housePointsByTermChart.render();
-    })();
 
     function fetchBroadcast() {
         const emergencyScreen = document.getElementById('emergencyScreen');
