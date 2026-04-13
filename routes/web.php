@@ -72,6 +72,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reports/house-performance', [App\Http\Controllers\ReportController::class, 'housePerformance'])
         ->name('reports.house');
 
+    Route::get('/reports/pc', [App\Http\Controllers\ReportController::class, 'atRiskStudents'])
+        ->name('reports.pc');
+
     // =============================
     // DASHBOARD
     // =============================
