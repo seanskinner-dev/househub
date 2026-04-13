@@ -48,14 +48,9 @@
         <div id="pc-house-chart" style="min-height: 420px;"></div>
     </section>
 
-    <section style="margin-bottom: 3rem;">
+    <section style="margin-bottom: 2rem;">
         <h2 style="font-size: 1.35rem; margin-bottom: 1rem; font-weight: 600;">Points by year level</h2>
         <div id="pc-year-chart" style="min-height: 420px;"></div>
-    </section>
-
-    <section style="margin-bottom: 2rem;">
-        <h2 style="font-size: 1.35rem; margin-bottom: 1rem; font-weight: 600;">Points by category</h2>
-        <div id="pc-category-chart" style="min-height: 420px;"></div>
     </section>
 
     <div id="pc-modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 1000; align-items: center; justify-content: center; padding: 20px;">
@@ -97,11 +92,35 @@
                 donut: null,
                 trend: null,
                 house: null,
-                year: null,
-                category: null
+                year: null
             };
 
             var commonFont = { fontFamily: 'Arial, sans-serif', foreColor: '#e2e8f0' };
+
+            function trendAxisLabelFormatter(value) {
+                if (value == null || value === '') {
+                    return '';
+                }
+                var str = String(value);
+                var date = new Date(str.indexOf('T') === -1 ? str + 'T12:00:00' : str);
+                if (isNaN(date.getTime())) {
+                    return str;
+                }
+                var day = date.getDate();
+                var month = date.toLocaleString('en-AU', { month: 'short' });
+                return day + ' ' + month;
+            }
+
+            function trendDrillLabelFromConfig(config) {
+                if (!config || config.dataPointIndex == null) {
+                    return null;
+                }
+                var cats = config.w && config.w.config && config.w.config.xaxis && config.w.config.xaxis.categories;
+                if (!cats || !cats.length) {
+                    return null;
+                }
+                return cats[config.dataPointIndex];
+            }
 
             function syncFiltersFromDom() {
                 filters.house = document.getElementById('pc-house').value || 'All';
@@ -206,7 +225,14 @@
                     charts.donut.updateSeries(data.donut.series);
                 }
                 if (charts.trend && data.trend) {
-                    charts.trend.updateOptions({ xaxis: { categories: data.trend.categories } });
+                    charts.trend.updateOptions({
+                        xaxis: {
+                            categories: data.trend.categories,
+                            labels: {
+                                formatter: trendAxisLabelFormatter
+                            }
+                        }
+                    });
                     charts.trend.updateSeries([{ name: 'Points', data: data.trend.series }]);
                 }
                 if (charts.house && data.house_breakdown) {
@@ -216,10 +242,6 @@
                 if (charts.year && data.year_level) {
                     charts.year.updateOptions({ xaxis: { categories: data.year_level.categories } });
                     charts.year.updateSeries([{ name: 'Points', data: data.year_level.series }]);
-                }
-                if (charts.category && data.category) {
-                    charts.category.updateOptions({ xaxis: { categories: data.category.categories } });
-                    charts.category.updateSeries([{ name: 'Points', data: data.category.series }]);
                 }
             }
 
@@ -236,8 +258,13 @@
                         selection: { enabled: true },
                         events: {
                             dataPointSelection: function (event, chartContext, config) {
-                                if (event && event.preventDefault) {
-                                    event.preventDefault();
+                                if (event) {
+                                    if (event.preventDefault) {
+                                        event.preventDefault();
+                                    }
+                                    if (event.stopPropagation) {
+                                        event.stopPropagation();
+                                    }
                                 }
                                 var index = config.dataPointIndex;
                                 var label;
@@ -280,14 +307,30 @@
                         selection: { enabled: true },
                         events: {
                             dataPointSelection: function (event, chartContext, config) {
-                                if (event && event.preventDefault) {
-                                    event.preventDefault();
+                                if (event) {
+                                    if (event.preventDefault) {
+                                        event.preventDefault();
+                                    }
+                                    if (event.stopPropagation) {
+                                        event.stopPropagation();
+                                    }
                                 }
-                                var index = config.dataPointIndex;
-                                var label;
-                                if (config.w && config.w.config && config.w.config.xaxis && config.w.config.xaxis.categories) {
-                                    label = config.w.config.xaxis.categories[index];
+                                var cats = config.w && config.w.config && config.w.config.xaxis && config.w.config.xaxis.categories;
+                                var label = cats ? cats[config.dataPointIndex] : null;
+                                if (label) {
+                                    drillDown(label);
                                 }
+                            },
+                            markerClick: function (event, chartContext, config) {
+                                if (event) {
+                                    if (event.preventDefault) {
+                                        event.preventDefault();
+                                    }
+                                    if (event.stopPropagation) {
+                                        event.stopPropagation();
+                                    }
+                                }
+                                var label = trendDrillLabelFromConfig(config);
                                 if (label) {
                                     drillDown(label);
                                 }
@@ -295,11 +338,21 @@
                         }
                     },
                     stroke: { curve: 'smooth', width: 3 },
-                    markers: { size: 5, hover: { size: 8 } },
-                    xaxis: { categories: [] },
+                    markers: { size: 6, hover: { size: 9 } },
+                    xaxis: {
+                        categories: [],
+                        labels: {
+                            formatter: trendAxisLabelFormatter
+                        }
+                    },
                     yaxis: { labels: { style: { fontSize: '13px' } } },
                     grid: { borderColor: '#334155' },
                     tooltip: {
+                        x: {
+                            formatter: function (val) {
+                                return trendAxisLabelFormatter(val);
+                            }
+                        },
                         y: { formatter: function (val) { return val + ' pts'; } }
                     }
                 });
@@ -317,8 +370,13 @@
                             selection: { enabled: true },
                             events: {
                                 dataPointSelection: function (event, chartContext, config) {
-                                    if (event && event.preventDefault) {
-                                        event.preventDefault();
+                                    if (event) {
+                                        if (event.preventDefault) {
+                                            event.preventDefault();
+                                        }
+                                        if (event.stopPropagation) {
+                                            event.stopPropagation();
+                                        }
                                     }
                                     var index = config.dataPointIndex;
                                     var label;
@@ -343,10 +401,8 @@
 
                 charts.house = barChartFactory('#pc-house-chart', 'Points');
                 charts.year = barChartFactory('#pc-year-chart', 'Points');
-                charts.category = barChartFactory('#pc-category-chart', 'Points');
                 charts.house.render();
                 charts.year.render();
-                charts.category.render();
             }
 
             document.getElementById('pc-apply').addEventListener('click', function () {

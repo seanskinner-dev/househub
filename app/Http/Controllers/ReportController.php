@@ -80,7 +80,6 @@ class ReportController extends Controller
             'trend' => $this->pcChartTrend($house, $start, $end),
             'house_breakdown' => $this->pcChartHousePoints($house, $start, $end),
             'year_level' => $this->pcChartYearLevel($house, $start, $end),
-            'category' => $this->pcChartCategory($house, $start, $end),
         ]);
     }
 
@@ -115,10 +114,6 @@ class ReportController extends Controller
 
         if (DB::table('houses')->where('name', $label)->exists()) {
             return response()->json($this->pcDrilldownHouseBar($label, $start, $end));
-        }
-
-        if ($this->pcCategoryExistsInRange($label, $house, $start, $end)) {
-            return response()->json($this->pcDrilldownCategory($label, $house, $start, $end));
         }
 
         return response()->json(['title' => $label, 'rows' => []]);
@@ -310,49 +305,6 @@ class ReportController extends Controller
     }
 
     /**
-     * @return array{categories: list<string>, series: list<int>}
-     */
-    private function pcChartCategory(string $house, Carbon $start, Carbon $end): array
-    {
-        $q = DB::table('point_transactions as pt')
-            ->whereBetween('pt.created_at', [$start, $end])
-            ->whereRaw('EXTRACT(DOW FROM pt.created_at::timestamp) BETWEEN 1 AND 5')
-            ->select('pt.category')
-            ->selectRaw('SUM(pt.amount) as total')
-            ->groupBy('pt.category')
-            ->orderBy('pt.category');
-
-        if ($house !== 'All') {
-            $q->join('students as s', 'pt.student_id', '=', 's.id')
-                ->join('houses as h', 's.house_id', '=', 'h.id')
-                ->where('h.name', $house);
-        }
-
-        $rows = $q->get();
-
-        return [
-            'categories' => $rows->pluck('category')->all(),
-            'series' => $rows->pluck('total')->map(fn ($v) => (int) $v)->all(),
-        ];
-    }
-
-    private function pcCategoryExistsInRange(string $label, string $house, Carbon $start, Carbon $end): bool
-    {
-        $q = DB::table('point_transactions as pt')
-            ->where('pt.category', $label)
-            ->whereBetween('pt.created_at', [$start, $end])
-            ->whereRaw('EXTRACT(DOW FROM pt.created_at::timestamp) BETWEEN 1 AND 5');
-
-        if ($house !== 'All') {
-            $q->join('students as s', 'pt.student_id', '=', 's.id')
-                ->join('houses as h', 's.house_id', '=', 'h.id')
-                ->where('h.name', $house);
-        }
-
-        return $q->exists();
-    }
-
-    /**
      * @return array{title: string, rows: list<array<string, mixed>>}
      */
     private function pcDrilldownRiskHigh(string $house): array
@@ -514,37 +466,6 @@ class ReportController extends Controller
         ])->all();
 
         return ['title' => 'Year '.$yearLevel.' — recent transactions', 'rows' => $rows];
-    }
-
-    /**
-     * @return array{title: string, rows: list<array<string, mixed>>}
-     */
-    private function pcDrilldownCategory(string $category, string $house, Carbon $start, Carbon $end): array
-    {
-        $q = DB::table('point_transactions as pt')
-            ->join('students as s', 'pt.student_id', '=', 's.id')
-            ->leftJoin('houses as h', 's.house_id', '=', 'h.id')
-            ->where('pt.category', $category)
-            ->whereBetween('pt.created_at', [$start, $end])
-            ->whereRaw('EXTRACT(DOW FROM pt.created_at::timestamp) BETWEEN 1 AND 5')
-            ->selectRaw('TRIM(CONCAT(s.first_name, \' \', s.last_name)) as student')
-            ->selectRaw('h.name as house')
-            ->select('pt.amount', 'pt.description', 'pt.created_at')
-            ->orderBy('pt.created_at', 'desc');
-
-        if ($house !== 'All') {
-            $q->where('h.name', $house);
-        }
-
-        $rows = $q->limit(200)->get()->map(fn ($r) => [
-            'student' => $r->student,
-            'house' => $r->house ?? '—',
-            'amount' => (int) $r->amount,
-            'description' => $r->description ?? '',
-            'when' => Carbon::parse($r->created_at)->format('Y-m-d H:i'),
-        ])->all();
-
-        return ['title' => 'Category: '.$category, 'rows' => $rows];
     }
 
     private function termNumberFromMonth(int $month): int
