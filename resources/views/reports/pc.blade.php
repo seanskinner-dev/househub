@@ -128,7 +128,7 @@
 
 @push('scripts')
 <script>
-document.addEventListener("DOMContentLoaded", async function () {
+document.addEventListener("DOMContentLoaded", function () {
     const drillUrl = @json(route('reports.drilldown'));
     const modalBackdrop = document.getElementById('pc-modal-backdrop');
     const modalClose = document.getElementById('pc-modal-close');
@@ -197,17 +197,15 @@ document.addEventListener("DOMContentLoaded", async function () {
             .catch(() => {});
     }
 
-    //-----------------------------------
-    // FETCH DATA
-    //-----------------------------------
-    const res = await fetch('/reports/data?' + queryStringFromFilters(), {
-        headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
-    });
-    const data = await res.json();
+    const data = @json($data ?? null);
 
     console.log('PC DATA:', data);
 
     function renderCharts(payload) {
+        if (!payload || !payload.donut || !payload.trend || !payload.house_breakdown) {
+            console.error('Missing required data', payload);
+            return;
+        }
         console.log('Risk labels:', payload.donut.labels);
         const riskColors = payload.donut.labels.map(label => {
             const l = String(label).toLowerCase();
@@ -221,6 +219,10 @@ document.addEventListener("DOMContentLoaded", async function () {
             if (el) el.innerHTML = '';
         });
 
+        if (!data || !data.trend || !data.house_breakdown) {
+            console.error('Missing required data', data);
+            return;
+        }
         new ApexCharts(document.querySelector("#engagement-health"), {
             chart: {
                 type: 'donut',
@@ -247,6 +249,10 @@ document.addEventListener("DOMContentLoaded", async function () {
             }
         }).render();
 
+        if (!data || !data.trend || !data.house_breakdown) {
+            console.error('Missing required data', data);
+            return;
+        }
         new ApexCharts(document.querySelector("#risk-distribution"), {
             chart: {
                 type: 'polarArea',
@@ -266,51 +272,70 @@ document.addEventListener("DOMContentLoaded", async function () {
             colors: riskColors
         }).render();
 
-        new ApexCharts(document.querySelector("#engagement-trend"), {
-            chart: {
-                type: 'line',
-                height: 320,
-                events: {
-                    dataPointSelection: (e, ctx, config) => {
-                        const rawDate = payload.trend.categories[config.dataPointIndex];
-                        drillDown({
-                            type: 'date',
-                            value: rawDate
-                        });
+        if (!data || !data.trend || !data.house_breakdown) {
+            console.error('Missing required data', data);
+            return;
+        }
+        if (data.trend && data.trend.series && data.trend.categories) {
+            new ApexCharts(document.querySelector("#engagement-trend"), {
+                chart: {
+                    type: 'line',
+                    height: 320,
+                    events: {
+                        dataPointSelection: function(event, chartContext, config) {
+                            const rawDate = data.trend.categories[config.dataPointIndex];
+                            drillDown({
+                                type: 'date',
+                                value: rawDate
+                            });
+                        }
                     }
+                },
+                series: data.trend.series,
+                xaxis: {
+                    categories: data.trend.categories.map(d => {
+                        const date = new Date(d + 'T00:00:00');
+                        return `${date.getDate()}/${date.getMonth()+1}`;
+                    })
                 }
-            },
-            series: payload.trend.series,
-            xaxis: {
-                categories: payload.trend.categories.map(d => {
-                    const date = new Date(d + 'T00:00:00');
-                    return `${date.getDate()}/${date.getMonth()+1}`;
-                })
-            }
-        }).render();
+            }).render();
+        } else {
+            console.error('Trend missing', data.trend);
+        }
 
-        new ApexCharts(document.querySelector("#points-by-house"), {
-            chart: {
-                type: 'bar',
-                height: 320,
-                events: {
-                    dataPointSelection: (e, ctx, config) => {
-                        const house = payload.house_breakdown.categories[config.dataPointIndex];
-                        drillDown({
-                            type: 'house_low',
-                            value: house
-                        });
+        if (!data || !data.trend || !data.house_breakdown) {
+            console.error('Missing required data', data);
+            return;
+        }
+        if (data.house_breakdown && data.house_breakdown.series && data.house_breakdown.categories) {
+            new ApexCharts(document.querySelector("#points-by-house"), {
+                chart: {
+                    type: 'bar',
+                    height: 320,
+                    events: {
+                        dataPointSelection: function(event, chartContext, config) {
+                            const house = data.house_breakdown.categories[config.dataPointIndex];
+                            drillDown({
+                                type: 'house_low',
+                                value: house
+                            });
+                        }
                     }
+                },
+                series: data.house_breakdown.series,
+                xaxis: {
+                    categories: data.house_breakdown.categories
                 }
-            },
-            series: payload.house_breakdown.series,
-            xaxis: {
-                categories: payload.house_breakdown.categories
-            }
-        }).render();
+            }).render();
+        } else {
+            console.error('House breakdown missing', data.house_breakdown);
+        }
     }
-
-    renderCharts(data);
+    try {
+        renderCharts(data);
+    } catch (e) {
+        console.error('PC CHART ERROR:', e);
+    }
 
     modalClose.addEventListener('click', function () {
         modalBackdrop.style.display = 'none';
@@ -320,13 +345,12 @@ document.addEventListener("DOMContentLoaded", async function () {
             modalBackdrop.style.display = 'none';
         }
     });
-    document.getElementById('pc-apply').addEventListener('click', async function () {
-        const refreshed = await fetch('/reports/data?' + queryStringFromFilters(), {
-            headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
-        });
-        const refreshedData = await refreshed.json();
-        console.log('PC DATA:', refreshedData);
-        renderCharts(refreshedData);
+    document.getElementById('pc-apply').addEventListener('click', function () {
+        try {
+            renderCharts(data);
+        } catch (e) {
+            console.error('PC CHART ERROR:', e);
+        }
     });
 });
 </script>
