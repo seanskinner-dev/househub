@@ -78,6 +78,13 @@ class ReportController extends Controller
         return view('reports.leadership', compact('houses'));
     }
 
+    public function teachers()
+    {
+        $houses = DB::table('houses')->orderBy('name')->pluck('name')->values()->all();
+
+        return view('reports.teachers', compact('houses'));
+    }
+
     public function reportChartData(Request $request)
     {
         [$start, $end, $house, $yearFilter] = $this->pcParseFilters($request);
@@ -87,6 +94,7 @@ class ReportController extends Controller
             'trend' => $this->pcChartTrend($house, $start, $end, $yearFilter),
             'house_breakdown' => $this->pcChartHousePoints($house, $start, $end, $yearFilter),
             'year_level' => $this->pcChartYearLevel($house, $start, $end, $yearFilter),
+            'recent' => $this->pcTeacherRecentRows($house, $start, $end, $yearFilter),
         ]);
     }
 
@@ -97,6 +105,18 @@ class ReportController extends Controller
 
         if ($label === '') {
             return response()->json(['title' => 'Drill-down', 'rows' => []]);
+        }
+
+        if ($label === 'LOW_USAGE') {
+            return response()->json($this->tuDrilldownLowUsageTeachers($house, $start, $end, $yearFilter));
+        }
+
+        if (preg_match('/^__TU_DATE__(\d{4}-\d{2}-\d{2})$/', $label, $m)) {
+            return response()->json($this->tuDrilldownDateStaff($m[1], $house, $start, $end, $yearFilter));
+        }
+
+        if (preg_match('/^__TU_T__(.+)$/s', $label, $m)) {
+            return response()->json($this->tuDrilldownTeacherTransactions($m[1], $house, $start, $end, $yearFilter));
         }
 
         if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $label)) {
@@ -567,6 +587,109 @@ class ReportController extends Controller
         ])->all();
 
         return ['title' => 'Students in '.$houseName.' (weekday points)', 'rows' => $rows];
+    }
+
+    /**
+     * @return list<array{teacher: string}>
+     */
+    private function pcTeacherRecentRows(string $house, Carbon $start, Carbon $end, string $yearFilter): array
+    {
+        $q = $this->tuPointTransactionsBase($house, $start, $end, $yearFilter);
+
+        return $q
+            ->selectRaw("COALESCE(NULLIF(TRIM(u.name), ''), 'Unknown') as teacher")
+            ->select('pt.id')
+            ->orderByDesc('pt.created_at')
+            ->limit(10000)
+            ->get()
+            ->map(fn ($r) => ['teacher' => $r->teacher])
+            ->all();
+    }
+
+    private function tuPointTransactionsBase(string $house, Carbon $start, Carbon $end, string $yearFilter)
+    {
+        $q = DB::table('point_transactions as pt')
+            ->leftJoin('users as u', 'pt.awarded_by', '=', 'u.id')
+            ->leftJoin('students as s', 'pt.student_id', '=', 's.id')
+            ->whereBetween('pt.created_at', [$start, $end]);
+
+        if ($house !== 'All') {
+            $q->join('houses as h', 's.house_id', '=', 'h.id')
+                ->where('h.name', $house);
+        }
+
+        if ($yearFilter !== 'All') {
+            $q->where('s.year_level', (int) $yearFilter);
+        }
+
+        return $q;
+    }
+
+    /**
+     * @return array{title: string, rows: \Illuminate\Support\Collection<int, object>}
+     */
+    private function tuDrilldownLowUsageTeachers(string $house, Carbon $start, Carbon $end, string $yearFilter): array
+    {
+        $rows = $this->tuPointTransactionsBase($house, $start, $end, $yearFilter)
+            ->selectRaw("COALESCE(NULLIF(TRIM(u.name), ''), 'Unknown') as teacher")
+            ->selectRaw('COUNT(pt.id) as usage_count')
+            ->groupBy('pt.awarded_by', 'u.id', 'u.name')
+            ->havingRaw('COUNT(pt.id) <= 5')
+            ->orderBy('usage_count')
+            ->orderBy('teacher')
+            ->get();
+
+        return [
+            'title' => 'Low-usage staff (≤5 awards in range)',
+            'rows' => $rows,
+        ];
+    }
+
+    /**
+     * @return array{title: string, rows: \Illuminate\Support\Collection<int, object>}
+     */
+    private function tuDrilldownTeacherTransactions(string $teacher, string $house, Carbon $start, Carbon $end, string $yearFilter): array
+    {
+        $rows = $this->tuPointTransactionsBase($house, $start, $end, $yearFilter)
+            ->whereRaw("COALESCE(NULLIF(TRIM(u.name), ''), 'Unknown') = ?", [$teacher])
+            ->select(
+                'pt.amount',
+                'pt.category',
+                'pt.created_at'
+            )
+            ->orderByDesc('pt.created_at')
+            ->limit(500)
+            ->get();
+
+        return [
+            'title' => 'Staff awards: '.$teacher,
+            'rows' => $rows,
+        ];
+    }
+
+    /**
+     * @return array{title: string, rows: \Illuminate\Support\Collection<int, object>}
+     */
+    private function tuDrilldownDateStaff(string $dateStr, string $house, Carbon $start, Carbon $end, string $yearFilter): array
+    {
+        $day = Carbon::createFromFormat('Y-m-d', $dateStr)->startOfDay();
+
+        if ($day->lt($start->copy()->startOfDay()) || $day->gt($end->copy()->endOfDay())) {
+            return ['title' => 'Staff activity on '.$dateStr, 'rows' => []];
+        }
+
+        $rows = $this->tuPointTransactionsBase($house, $start, $end, $yearFilter)
+            ->whereDate('pt.created_at', $dateStr)
+            ->selectRaw("COALESCE(NULLIF(TRIM(u.name), ''), 'Unknown') as teacher")
+            ->select('pt.amount', 'pt.category', 'pt.created_at')
+            ->orderByDesc('pt.created_at')
+            ->limit(500)
+            ->get();
+
+        return [
+            'title' => 'Staff activity on '.$dateStr,
+            'rows' => $rows,
+        ];
     }
 
     private function termNumberFromMonth(int $month): int

@@ -1,0 +1,457 @@
+@extends('layouts.app')
+
+@section('content')
+    <h1 style="font-size: 2rem; margin-bottom: 0.75rem; font-weight: 700;">Teacher Usage Report</h1>
+    <p style="font-size: 1.05rem; opacity: 0.9; margin-bottom: 1.25rem; max-width: 52rem;">
+        Staff-focused view: charts emphasise low usage. Drill-downs use the same filters as other reports (no full page reload).
+    </p>
+
+    <div id="tu-filter-bar" style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; margin-bottom: 1.75rem; padding: 16px; background: #1e293b; border-radius: 8px;">
+        <div>
+            <label for="tu-house" style="display: block; font-size: 0.85rem; opacity: 0.85; margin-bottom: 6px;">House</label>
+            <select id="tu-house" style="min-width: 160px; padding: 8px 10px; font-size: 1rem; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff;">
+                <option value="All">All</option>
+                @foreach ($houses as $h)
+                    <option value="{{ $h }}">{{ $h }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div>
+            <label for="tu-start" style="display: block; font-size: 0.85rem; opacity: 0.85; margin-bottom: 6px;">Start</label>
+            <input type="date" id="tu-start" style="padding: 8px 10px; font-size: 1rem; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff;">
+        </div>
+        <div>
+            <label for="tu-end" style="display: block; font-size: 0.85rem; opacity: 0.85; margin-bottom: 6px;">End</label>
+            <input type="date" id="tu-end" style="padding: 8px 10px; font-size: 1rem; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff;">
+        </div>
+        <div>
+            <label for="tu-year" style="display: block; font-size: 0.85rem; opacity: 0.85; margin-bottom: 6px;">Year</label>
+            <select id="tu-year" style="min-width: 120px; padding: 8px 10px; font-size: 1rem; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff;">
+                <option value="All">All</option>
+                @foreach (['7', '8', '9', '10', '11', '12'] as $y)
+                    <option value="{{ $y }}">Year {{ $y }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div>
+            <button type="button" id="tu-apply" style="padding: 10px 20px; font-size: 1rem; font-weight: 600; border: none; border-radius: 6px; background: #3b82f6; color: #fff; cursor: pointer;">Apply</button>
+        </div>
+    </div>
+
+    <section style="margin-bottom: 2.5rem;">
+        <h2 style="font-size: 1.2rem; margin-bottom: 0.75rem; font-weight: 600;">Lowest-usage staff (bottom 10)</h2>
+        <div id="tu-low-usage" style="min-height: 380px;"></div>
+    </section>
+
+    <section style="margin-bottom: 2.5rem;">
+        <h2 style="font-size: 1.2rem; margin-bottom: 0.75rem; font-weight: 600;">Staff usage frequency (by teacher)</h2>
+        <p style="font-size: 0.9rem; opacity: 0.85; margin-bottom: 0.5rem;">Click the <strong>0–5</strong> bucket for a low-usage staff list.</p>
+        <div id="tu-frequency" style="min-height: 340px;"></div>
+    </section>
+
+    <section style="margin-bottom: 2rem;">
+        <h2 style="font-size: 1.2rem; margin-bottom: 0.75rem; font-weight: 600;">Weekday points trend (same as PC filters)</h2>
+        <p style="font-size: 0.9rem; opacity: 0.85; margin-bottom: 0.5rem;">Click a day for staff activity on that date (not student drilldown).</p>
+        <div id="tu-trend" style="min-height: 400px;"></div>
+    </section>
+
+    <div id="tu-modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 1000; align-items: center; justify-content: center; padding: 20px;">
+        <div id="tu-modal" role="dialog" aria-modal="true" style="background: #1e293b; color: #f1f5f9; max-width: 900px; width: 100%; max-height: 85vh; overflow: auto; border-radius: 10px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 1px solid #334155;">
+                <h3 id="tu-modal-title" style="margin: 0; font-size: 1.15rem;">Details</h3>
+                <button type="button" id="tu-modal-close" style="background: transparent; border: none; color: #fff; font-size: 1.5rem; line-height: 1; cursor: pointer;" aria-label="Close">&times;</button>
+            </div>
+            <div id="tu-modal-body" style="padding: 16px 18px;">
+                <p id="tu-empty" style="opacity:0.9;margin:0;display:none;">No rows.</p>
+                <div id="tu-table-wrap" style="display:none; overflow-x: auto;">
+                    <table id="tu-table" style="width:100%;border-collapse:collapse;font-size:0.95rem;">
+                        <thead><tr id="tu-thead"></tr></thead>
+                        <tbody id="tu-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection
+
+@push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.54.1/dist/apexcharts.min.js"></script>
+    <script>
+        (function () {
+            var dataUrl = @json(route('reports.data'));
+            var drillUrl = @json(route('reports.drilldown'));
+
+            var tuCharts = { low: null, freq: null, trend: null };
+            var tuTrendRawDates = [];
+
+            var filters = {
+                house: 'All',
+                start_date: null,
+                end_date: null,
+                year: 'All'
+            };
+
+            function ymd(d) {
+                var y = d.getFullYear();
+                var m = String(d.getMonth() + 1).padStart(2, '0');
+                var day = String(d.getDate()).padStart(2, '0');
+                return y + '-' + m + '-' + day;
+            }
+
+            var end = new Date();
+            var start = new Date();
+            start.setDate(start.getDate() - 29);
+            filters.start_date = ymd(start);
+            filters.end_date = ymd(end);
+
+            function escapeHtml(s) {
+                var d = document.createElement('div');
+                d.textContent = s;
+                return d.innerHTML;
+            }
+
+            function chartsQueryString() {
+                var p = new URLSearchParams();
+                p.set('house', filters.house);
+                if (filters.start_date) {
+                    p.set('start_date', filters.start_date);
+                }
+                if (filters.end_date) {
+                    p.set('end_date', filters.end_date);
+                }
+                p.set('year', filters.year || 'All');
+                return p.toString();
+            }
+
+            function drillQueryString(label) {
+                var p = new URLSearchParams();
+                p.set('label', label);
+                p.set('house', filters.house);
+                if (filters.start_date) {
+                    p.set('start_date', filters.start_date);
+                }
+                if (filters.end_date) {
+                    p.set('end_date', filters.end_date);
+                }
+                p.set('year', filters.year || 'All');
+                return p.toString();
+            }
+
+            function renderTuModal(data) {
+                var title = data.title || 'Details';
+                var rows = data.rows || [];
+                document.getElementById('tu-modal-title').textContent = title;
+                var emptyEl = document.getElementById('tu-empty');
+                var wrap = document.getElementById('tu-table-wrap');
+                var thead = document.getElementById('tu-thead');
+                var tbody = document.getElementById('tu-tbody');
+                if (!rows.length) {
+                    emptyEl.style.display = 'block';
+                    wrap.style.display = 'none';
+                    thead.innerHTML = '';
+                    tbody.innerHTML = '';
+                } else {
+                    emptyEl.style.display = 'none';
+                    wrap.style.display = 'block';
+                    var keys = Object.keys(rows[0]);
+                    thead.innerHTML = keys.map(function (k) {
+                        return '<th style="text-align:left;padding:8px 10px;border-bottom:2px solid #334155;">' + escapeHtml(k) + '</th>';
+                    }).join('');
+                    tbody.innerHTML = rows.map(function (row) {
+                        return (
+                            '<tr style="border-bottom:1px solid #334155;">' +
+                            keys
+                                .map(function (k) {
+                                    var v = row[k];
+                                    return '<td style="padding:8px 10px;">' + escapeHtml(v == null ? '' : String(v)) + '</td>';
+                                })
+                                .join('') +
+                            '</tr>'
+                        );
+                    }).join('');
+                }
+                document.getElementById('tu-modal-backdrop').style.display = 'flex';
+            }
+
+            function destroyTuCharts() {
+                ['low', 'freq', 'trend'].forEach(function (k) {
+                    if (tuCharts[k]) {
+                        tuCharts[k].destroy();
+                        tuCharts[k] = null;
+                    }
+                });
+            }
+
+            function renderLowUsage(data) {
+                var recent = data.recent || [];
+                var teacherCounts = {};
+                recent.forEach(function (row) {
+                    var teacher = row.teacher || 'Unknown';
+                    teacherCounts[teacher] = (teacherCounts[teacher] || 0) + 1;
+                });
+                var teachers = Object.keys(teacherCounts).map(function (t) {
+                    return { name: t, count: teacherCounts[t] };
+                });
+                teachers.sort(function (a, b) {
+                    return a.count - b.count;
+                });
+                var bottom = teachers.slice(0, 10);
+                if (!bottom.length) {
+                    bottom.push({ name: 'No data', count: 0 });
+                }
+
+                var common = { fontFamily: 'Arial, sans-serif', foreColor: '#e2e8f0' };
+                tuCharts.low = new ApexCharts(document.querySelector('#tu-low-usage'), {
+                    chart: {
+                        type: 'bar',
+                        height: 380,
+                        fontFamily: common.fontFamily,
+                        foreColor: common.foreColor,
+                        toolbar: { show: false },
+                        events: {
+                            dataPointSelection: function (event, chartContext, config) {
+                                if (event) {
+                                    if (event.preventDefault) {
+                                        event.preventDefault();
+                                    }
+                                    if (event.stopPropagation) {
+                                        event.stopPropagation();
+                                    }
+                                }
+                                var row = bottom[config.dataPointIndex];
+                                if (!row || row.name === 'No data') {
+                                    return;
+                                }
+                                drillDownTeacher(row.name);
+                            }
+                        }
+                    },
+                    series: [{ name: 'Awards', data: bottom.map(function (t) { return t.count; }) }],
+                    xaxis: {
+                        categories: bottom.map(function (t) { return t.name; }),
+                        labels: { rotate: -35, style: { fontSize: '12px' } }
+                    },
+                    yaxis: { min: 0, labels: { style: { fontSize: '13px' } } },
+                    colors: ['#f97316'],
+                    plotOptions: { bar: { borderRadius: 4, horizontal: true } },
+                    grid: { borderColor: '#334155' },
+                    dataLabels: { enabled: true },
+                    tooltip: { theme: 'dark' }
+                });
+                tuCharts.low.render();
+            }
+
+            function renderFrequency(data) {
+                var recent = data.recent || [];
+                var teacherCounts = {};
+                recent.forEach(function (row) {
+                    var teacher = row.teacher || 'Unknown';
+                    teacherCounts[teacher] = (teacherCounts[teacher] || 0) + 1;
+                });
+                var values = Object.values(teacherCounts);
+                var buckets = {
+                    '0-5': 0,
+                    '6-10': 0,
+                    '11-20': 0,
+                    '20+': 0
+                };
+                values.forEach(function (v) {
+                    if (v <= 5) {
+                        buckets['0-5']++;
+                    } else if (v <= 10) {
+                        buckets['6-10']++;
+                    } else if (v <= 20) {
+                        buckets['11-20']++;
+                    } else {
+                        buckets['20+']++;
+                    }
+                });
+                var bucketKeys = Object.keys(buckets);
+                var common = { fontFamily: 'Arial, sans-serif', foreColor: '#e2e8f0' };
+                tuCharts.freq = new ApexCharts(document.querySelector('#tu-frequency'), {
+                    chart: {
+                        type: 'bar',
+                        height: 340,
+                        fontFamily: common.fontFamily,
+                        foreColor: common.foreColor,
+                        toolbar: { show: false },
+                        events: {
+                            dataPointSelection: function (event, chartContext, config) {
+                                if (event) {
+                                    if (event.preventDefault) {
+                                        event.preventDefault();
+                                    }
+                                    if (event.stopPropagation) {
+                                        event.stopPropagation();
+                                    }
+                                }
+                                var bucket = bucketKeys[config.dataPointIndex];
+                                if (bucket === '0-5') {
+                                    fetch(drillUrl + '?' + drillQueryString('LOW_USAGE'), {
+                                        headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                                    })
+                                        .then(function (r) { return r.json(); })
+                                        .then(renderTuModal)
+                                        .catch(function () {});
+                                }
+                            }
+                        }
+                    },
+                    series: [{ name: 'Teachers', data: bucketKeys.map(function (k) { return buckets[k]; }) }],
+                    xaxis: { categories: bucketKeys, labels: { style: { fontSize: '13px' } } },
+                    yaxis: { min: 0, labels: { style: { fontSize: '13px' } } },
+                    colors: ['#64748b'],
+                    plotOptions: { bar: { borderRadius: 4, columnWidth: '55%' } },
+                    grid: { borderColor: '#334155' },
+                    dataLabels: { enabled: true },
+                    tooltip: { theme: 'dark' }
+                });
+                tuCharts.freq.render();
+            }
+
+            function renderTrend(data) {
+                var trend = data.trend || { categories: [], series: [] };
+                var rawDates = trend.categories || [];
+                var seriesPayload = trend.series;
+                var values;
+                if (
+                    Array.isArray(seriesPayload) &&
+                    seriesPayload.length > 0 &&
+                    typeof seriesPayload[0] === 'object' &&
+                    seriesPayload[0] !== null &&
+                    Array.isArray(seriesPayload[0].data)
+                ) {
+                    values = seriesPayload[0].data.map(function (v) { return Number(v) || 0; });
+                } else {
+                    values = (seriesPayload || []).map(function (v) { return Number(v) || 0; });
+                }
+                tuTrendRawDates = rawDates.slice();
+                var displayDates = rawDates.map(function (d) {
+                    var date = new Date(d + 'T00:00:00');
+                    var day = date.getDate();
+                    var month = date.toLocaleString('en-AU', { month: 'short' });
+                    return `${day} ${month}`;
+                });
+                var minValue = values.length ? Math.min.apply(null, values) : 0;
+                var worstIndex = values.length ? values.indexOf(minValue) : 0;
+                var annotations = { points: [] };
+                if (values.length && displayDates[worstIndex] != null) {
+                    annotations.points = [
+                        {
+                            x: displayDates[worstIndex],
+                            y: minValue,
+                            seriesIndex: 0,
+                            marker: { size: 8, fillColor: '#ff4d4f' },
+                            label: {
+                                borderColor: '#ff4d4f',
+                                style: { color: '#fff', background: '#ff4d4f' },
+                                text: 'Lowest Usage Day'
+                            }
+                        }
+                    ];
+                }
+                var common = { fontFamily: 'Arial, sans-serif', foreColor: '#e2e8f0' };
+                tuCharts.trend = new ApexCharts(document.querySelector('#tu-trend'), {
+                    chart: {
+                        type: 'line',
+                        height: 400,
+                        fontFamily: common.fontFamily,
+                        foreColor: common.foreColor,
+                        toolbar: { show: false },
+                        zoom: { enabled: false },
+                        events: {
+                            dataPointSelection: function (event, chartContext, config) {
+                                if (event) {
+                                    if (event.preventDefault) {
+                                        event.preventDefault();
+                                    }
+                                    if (event.stopPropagation) {
+                                        event.stopPropagation();
+                                    }
+                                }
+                                var rawDate = tuTrendRawDates[config.dataPointIndex];
+                                if (rawDate) {
+                                    fetch(drillUrl + '?' + drillQueryString('__TU_DATE__' + rawDate), {
+                                        headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                                    })
+                                        .then(function (r) { return r.json(); })
+                                        .then(renderTuModal)
+                                        .catch(function () {});
+                                }
+                            }
+                        }
+                    },
+                    series: [{ name: 'Points', data: values }],
+                    stroke: { curve: 'smooth', width: 3 },
+                    markers: { size: 5, hover: { size: 8 } },
+                    xaxis: {
+                        type: 'category',
+                        categories: displayDates,
+                        labels: { rotate: -45, style: { fontSize: '12px' } }
+                    },
+                    yaxis: { labels: { style: { fontSize: '13px' } } },
+                    grid: { borderColor: '#334155' },
+                    annotations: annotations,
+                    tooltip: { theme: 'dark' }
+                });
+                tuCharts.trend.render();
+            }
+
+            function drillDownTeacher(teacher) {
+                var label = '__TU_T__' + teacher;
+                fetch(drillUrl + '?' + drillQueryString(label), {
+                    headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                    .then(function (r) { return r.json(); })
+                    .then(renderTuModal)
+                    .catch(function () {});
+            }
+
+            function renderTeacherCharts(data) {
+                destroyTuCharts();
+                renderLowUsage(data);
+                renderFrequency(data);
+                renderTrend(data);
+            }
+
+            function fetchTeacherData() {
+                fetch(dataUrl + '?' + chartsQueryString(), {
+                    headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                    .then(function (res) { return res.json(); })
+                    .then(renderTeacherCharts)
+                    .catch(function () {});
+            }
+
+            function syncFiltersFromDom() {
+                filters.house = document.getElementById('tu-house').value || 'All';
+                filters.start_date = document.getElementById('tu-start').value || null;
+                filters.end_date = document.getElementById('tu-end').value || null;
+                filters.year = document.getElementById('tu-year').value || 'All';
+            }
+
+            function syncDomFromFilters() {
+                document.getElementById('tu-house').value = filters.house;
+                document.getElementById('tu-start').value = filters.start_date || '';
+                document.getElementById('tu-end').value = filters.end_date || '';
+                document.getElementById('tu-year').value = filters.year || 'All';
+            }
+
+            document.getElementById('tu-apply').addEventListener('click', function () {
+                syncFiltersFromDom();
+                fetchTeacherData();
+            });
+            document.getElementById('tu-modal-close').addEventListener('click', function () {
+                document.getElementById('tu-modal-backdrop').style.display = 'none';
+            });
+            document.getElementById('tu-modal-backdrop').addEventListener('click', function (e) {
+                if (e.target.id === 'tu-modal-backdrop') {
+                    document.getElementById('tu-modal-backdrop').style.display = 'none';
+                }
+            });
+
+            syncDomFromFilters();
+            fetchTeacherData();
+        })();
+    </script>
+@endpush

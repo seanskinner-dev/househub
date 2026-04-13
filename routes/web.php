@@ -79,6 +79,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reports/leadership', [ReportController::class, 'leadership'])
         ->name('reports.leadership');
 
+    Route::get('/reports/teachers', [ReportController::class, 'teachers'])
+        ->name('reports.teachers');
+
     Route::get('/reports/data', [App\Http\Controllers\ReportController::class, 'reportChartData'])
         ->name('reports.data');
 
