@@ -205,56 +205,112 @@
                 });
             }
 
-            // TEST DATA (temporary to confirm rendering works)
-            const names = ['Gryffindor', 'Slytherin', 'Ravenclaw', 'Hufflepuff'];
-            const values = [120, 150, 90, 70];
+            var dataUrl = @json(route('reports.data'));
+            var pcCharts = { health: null, trend: null, house: null, risk: null };
 
-            //-----------------------------------
-            // ENGAGEMENT HEALTH
-            //-----------------------------------
-            new ApexCharts(document.querySelector("#engagement-health"), {
-                chart: { type: 'donut', height: 320, events: { dataPointSelection: onAnyChartPoint } },
-                series: values,
-                labels: names,
-                plotOptions: {
-                    pie: {
-                        donut: {
-                            size: '65%'
-                        }
+            function destroyCharts() {
+                Object.keys(pcCharts).forEach(function (key) {
+                    if (pcCharts[key]) {
+                        pcCharts[key].destroy();
+                        pcCharts[key] = null;
                     }
-                },
-                title: { text: 'Engagement Health' }
-            }).render();
+                });
+            }
 
-            //-----------------------------------
-            // ENGAGEMENT TREND
-            //-----------------------------------
-            new ApexCharts(document.querySelector("#engagement-trend"), {
-                chart: { type: 'line', height: 320, events: { dataPointSelection: onAnyChartPoint } },
-                series: [{ data: values }],
-                xaxis: { categories: names },
-                title: { text: 'Engagement Trend' }
-            }).render();
+            function queryStringFromFilters() {
+                var params = new URLSearchParams();
+                params.set('house', document.getElementById('pc-house').value || 'All');
+                params.set('year', document.getElementById('pc-year').value || 'All');
+                var start = document.getElementById('pc-start').value;
+                var end = document.getElementById('pc-end').value;
+                if (start) {
+                    params.set('start_date', start);
+                }
+                if (end) {
+                    params.set('end_date', end);
+                }
+                return params.toString();
+            }
 
-            //-----------------------------------
-            // POINTS BY HOUSE
-            //-----------------------------------
-            new ApexCharts(document.querySelector("#points-by-house"), {
-                chart: { type: 'bar', height: 320, events: { dataPointSelection: onAnyChartPoint } },
-                series: [{ data: values }],
-                xaxis: { categories: names },
-                title: { text: 'Points by House' }
-            }).render();
+            function renderCharts(data) {
+                if (!data || !data.donut) {
+                    console.error('Missing data for charts');
+                    return;
+                }
+                pcCharts.health = new ApexCharts(document.querySelector("#engagement-health"), {
+                    chart: { type: 'donut', height: 320, events: { dataPointSelection: onAnyChartPoint } },
+                    series: data.donut.series,
+                    labels: data.donut.labels,
+                    plotOptions: {
+                        pie: {
+                            donut: {
+                                size: '65%'
+                            }
+                        }
+                    },
+                    title: { text: 'Engagement Health' }
+                });
+                pcCharts.health.render();
 
-            //-----------------------------------
-            // RISK DISTRIBUTION
-            //-----------------------------------
-            new ApexCharts(document.querySelector("#risk-distribution"), {
-                chart: { type: 'polarArea', height: 320, events: { dataPointSelection: onAnyChartPoint } },
-                series: values,
-                labels: names,
-                title: { text: 'Risk Distribution' }
-            }).render();
+                if (!data || !data.donut) {
+                    console.error('Missing data for charts');
+                    return;
+                }
+                pcCharts.trend = new ApexCharts(document.querySelector("#engagement-trend"), {
+                    chart: { type: 'line', height: 320, events: { dataPointSelection: onAnyChartPoint } },
+                    series: data.trend.series,
+                    xaxis: {
+                        categories: data.trend.categories.map(function (d) {
+                            var date = new Date(d + 'T00:00:00');
+                            return date.getDate() + ' ' + date.toLocaleString('en-AU', { month: 'short' });
+                        })
+                    },
+                    title: { text: 'Engagement Trend' }
+                });
+                pcCharts.trend.render();
+
+                if (!data || !data.donut) {
+                    console.error('Missing data for charts');
+                    return;
+                }
+                pcCharts.house = new ApexCharts(document.querySelector("#points-by-house"), {
+                    chart: { type: 'bar', height: 320, events: { dataPointSelection: onAnyChartPoint } },
+                    series: data.house_breakdown.series,
+                    xaxis: {
+                        categories: data.house_breakdown.categories
+                    },
+                    title: { text: 'Points by House' }
+                });
+                pcCharts.house.render();
+
+                if (!data || !data.donut) {
+                    console.error('Missing data for charts');
+                    return;
+                }
+                pcCharts.risk = new ApexCharts(document.querySelector("#risk-distribution"), {
+                    chart: { type: 'polarArea', height: 320, events: { dataPointSelection: onAnyChartPoint } },
+                    series: data.donut.series,
+                    labels: data.donut.labels,
+                    title: { text: 'Risk Distribution' }
+                });
+                pcCharts.risk.render();
+            }
+
+            function fetchPcData() {
+                fetch(dataUrl + '?' + queryStringFromFilters(), {
+                    headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                    .then(function (res) { return res.json(); })
+                    .then(function (data) {
+                        console.log('PC DATA:', data);
+                        destroyCharts();
+                        renderCharts(data);
+                    })
+                    .catch(function () {});
+            }
+
+            document.getElementById('pc-apply').addEventListener('click', fetchPcData);
+            fetchPcData();
 
             modalClose.addEventListener('click', function () {
                 modalBackdrop.style.display = 'none';
