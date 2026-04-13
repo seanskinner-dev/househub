@@ -128,7 +128,7 @@
 
 @push('scripts')
 <script>
-    window.pcData = @json($data);
+    window.pcData = @json($data ?? null);
     console.log('DATA FROM BLADE:', window.pcData);
 </script>
 <script>
