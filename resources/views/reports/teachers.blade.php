@@ -39,7 +39,7 @@
     </div>
 
     <section style="margin-bottom: 2.5rem;">
-        <h2 style="font-size: 1.2rem; margin-bottom: 0.75rem; font-weight: 600;">Lowest-usage staff (bottom 10)</h2>
+        <h2 style="font-size: 1.2rem; margin-bottom: 0.75rem; font-weight: 600;">Top 10 staff</h2>
         <div id="tu-low-usage" style="min-height: 380px;"></div>
     </section>
 
@@ -294,11 +294,11 @@
                     return { name: t, count: teacherCounts[t] };
                 });
                 teachers.sort(function (a, b) {
-                    return a.count - b.count;
+                    return b.count - a.count;
                 });
-                var bottom = teachers.slice(0, 10);
-                if (!bottom.length) {
-                    bottom.push({ name: 'No data', count: 0 });
+                var top = teachers.slice(0, 10);
+                if (!top.length) {
+                    top.push({ name: 'No data', count: 0 });
                 }
 
                 var common = { fontFamily: 'Arial, sans-serif', foreColor: '#e2e8f0' };
@@ -319,7 +319,7 @@
                                         event.stopPropagation();
                                     }
                                 }
-                                var row = bottom[config.dataPointIndex];
+                                var row = top[config.dataPointIndex];
                                 if (!row || row.name === 'No data') {
                                     return;
                                 }
@@ -327,9 +327,9 @@
                             }
                         }
                     },
-                    series: [{ name: 'Awards', data: bottom.map(function (t) { return t.count; }) }],
+                    series: [{ name: 'Awards', data: top.map(function (t) { return t.count; }) }],
                     xaxis: {
-                        categories: bottom.map(function (t) { return t.name; }),
+                        categories: top.map(function (t) { return t.name; }),
                         labels: { rotate: -35, style: { fontSize: '12px' } }
                     },
                     yaxis: { min: 0, labels: { style: { fontSize: '13px' } } },
