@@ -1,6 +1,16 @@
 @extends('layouts.app')
 
 @section('content')
+    <style>
+        #pc-report-grid .card {
+            padding: 10px;
+        }
+
+        #pc-report-grid .row {
+            margin-bottom: 20px;
+        }
+    </style>
+
     <h1 style="font-size: 2rem; margin-bottom: 0.75rem; font-weight: 700;">At-Risk Students</h1>
     <p style="font-size: 1.125rem; opacity: 0.9; margin-bottom: 1.25rem; max-width: 52rem;">
         Pastoral care overview — weekday data only (Mon–Fri). Use filters and click charts for details (no page reload).
@@ -43,43 +53,55 @@
         </div>
     </div>
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5>Engagement Health</h5>
-            <p class="text-muted small mb-3">
-                Shows the proportion of students actively receiving points during the selected period.
-            </p>
-            <div id="engagement-health" style="min-height: 420px;"></div>
+    <div id="pc-report-grid">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-4 bg-dark text-white border-0">
+                    <div class="card-body">
+                        <h5>Engagement Health</h5>
+                        <p class="small mb-3 text-white-50">
+                            Shows how many students are actively receiving points. Lower segments indicate disengagement risk.
+                        </p>
+                        <div id="engagement-health"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card mb-4 bg-dark text-white border-0">
+                    <div class="card-body">
+                        <h5>Engagement Trend</h5>
+                        <p class="small mb-3 text-white-50">
+                            Tracks daily engagement. Sudden drops highlight days where participation is low.
+                        </p>
+                        <div id="engagement-trend"></div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5>Engagement Trend</h5>
-            <p class="text-muted small mb-3">
-                Displays points awarded across weekdays. Click a day to view activity.
-            </p>
-            <div id="engagement-trend" style="min-height: 400px;"></div>
-        </div>
-    </div>
-
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5>Points by House</h5>
-            <p class="text-muted small mb-3">
-                Breakdown of total points awarded per house within the selected filters.
-            </p>
-            <div id="points-by-house" style="min-height: 420px;"></div>
-        </div>
-    </div>
-
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5>Risk Distribution</h5>
-            <p class="text-muted small mb-3">
-                Shows how students are grouped by engagement risk level.
-            </p>
-            <div id="risk-distribution" style="min-height: 360px; max-width: 460px;"></div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-4 bg-dark text-white border-0">
+                    <div class="card-body">
+                        <h5>Points by House</h5>
+                        <p class="small mb-3 text-white-50">
+                            Compares which houses are contributing most. Lower values may indicate disengaged groups.
+                        </p>
+                        <div id="points-by-house"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card mb-4 bg-dark text-white border-0">
+                    <div class="card-body">
+                        <h5>Risk Distribution</h5>
+                        <p class="small mb-3 text-white-50">
+                            Breaks students into engagement levels. Focus on high-risk groups to improve participation.
+                        </p>
+                        <div id="risk-distribution"></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -105,6 +127,83 @@
 @push('scripts')
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+            var drillUrl = @json(route('reports.drilldown'));
+            var modalBackdrop = document.getElementById('pc-modal-backdrop');
+            var modalClose = document.getElementById('pc-modal-close');
+
+            function drillDown(payload) {
+                var meta = document.querySelector('meta[name="csrf-token"]');
+                var token = meta ? meta.getAttribute('content') : '';
+                fetch(drillUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': token
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify(payload || {})
+                })
+                    .then(function (res) { return res.json(); })
+                    .then(renderDrillDownModal)
+                    .catch(function () {});
+            }
+
+            function renderDrillDownModal(data) {
+                var title = data.title || 'Details';
+                var rows = data.rows || [];
+                document.getElementById('pc-modal-title').textContent = title;
+                var emptyEl = document.getElementById('pc-drilldown-empty');
+                var wrapEl = document.getElementById('pc-drilldown-wrap');
+                var theadRow = document.getElementById('pc-drilldown-thead-row');
+                var tbody = document.getElementById('pc-drilldown-tbody');
+                if (!rows.length) {
+                    emptyEl.style.display = 'block';
+                    wrapEl.style.display = 'none';
+                    theadRow.innerHTML = '';
+                    tbody.innerHTML = '';
+                } else {
+                    var keys = Object.keys(rows[0]);
+                    emptyEl.style.display = 'none';
+                    wrapEl.style.display = 'block';
+                    theadRow.innerHTML = keys
+                        .map(function (k) {
+                            return '<th style="text-align:left;padding:10px 12px;border-bottom:2px solid #334155;">' + k + '</th>';
+                        })
+                        .join('');
+                    tbody.innerHTML = rows
+                        .map(function (row) {
+                            return (
+                                '<tr style="border-bottom:1px solid #334155;">' +
+                                keys.map(function (k) {
+                                    var v = row[k];
+                                    return '<td style="padding:10px 12px;">' + (v == null ? '' : String(v)) + '</td>';
+                                }).join('') +
+                                '</tr>'
+                            );
+                        })
+                        .join('');
+                }
+                modalBackdrop.style.display = 'flex';
+            }
+
+            function onAnyChartPoint(event, chartContext, config) {
+                let value;
+
+                if (config.w.config.labels) {
+                    value = config.w.config.labels[config.dataPointIndex];
+                }
+
+                if (config.w.config.xaxis?.categories) {
+                    value = config.w.config.xaxis.categories[config.dataPointIndex];
+                }
+
+                drillDown({
+                    type: 'low',
+                    value: value
+                });
+            }
 
             // TEST DATA (temporary to confirm rendering works)
             const names = ['Gryffindor', 'Slytherin', 'Ravenclaw', 'Hufflepuff'];
@@ -114,9 +213,16 @@
             // ENGAGEMENT HEALTH
             //-----------------------------------
             new ApexCharts(document.querySelector("#engagement-health"), {
-                chart: { type: 'donut' },
+                chart: { type: 'donut', height: 320, events: { dataPointSelection: onAnyChartPoint } },
                 series: values,
                 labels: names,
+                plotOptions: {
+                    pie: {
+                        donut: {
+                            size: '65%'
+                        }
+                    }
+                },
                 title: { text: 'Engagement Health' }
             }).render();
 
@@ -124,7 +230,7 @@
             // ENGAGEMENT TREND
             //-----------------------------------
             new ApexCharts(document.querySelector("#engagement-trend"), {
-                chart: { type: 'line' },
+                chart: { type: 'line', height: 320, events: { dataPointSelection: onAnyChartPoint } },
                 series: [{ data: values }],
                 xaxis: { categories: names },
                 title: { text: 'Engagement Trend' }
@@ -134,7 +240,7 @@
             // POINTS BY HOUSE
             //-----------------------------------
             new ApexCharts(document.querySelector("#points-by-house"), {
-                chart: { type: 'bar' },
+                chart: { type: 'bar', height: 320, events: { dataPointSelection: onAnyChartPoint } },
                 series: [{ data: values }],
                 xaxis: { categories: names },
                 title: { text: 'Points by House' }
@@ -144,11 +250,20 @@
             // RISK DISTRIBUTION
             //-----------------------------------
             new ApexCharts(document.querySelector("#risk-distribution"), {
-                chart: { type: 'polarArea' },
+                chart: { type: 'polarArea', height: 320, events: { dataPointSelection: onAnyChartPoint } },
                 series: values,
                 labels: names,
                 title: { text: 'Risk Distribution' }
             }).render();
+
+            modalClose.addEventListener('click', function () {
+                modalBackdrop.style.display = 'none';
+            });
+            modalBackdrop.addEventListener('click', function (e) {
+                if (e.target.id === 'pc-modal-backdrop') {
+                    modalBackdrop.style.display = 'none';
+                }
+            });
 
         });
     </script>
