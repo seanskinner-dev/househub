@@ -6,25 +6,6 @@
         Pastoral care overview — weekday data only (Mon–Fri). Use filters and click charts for details (no page reload).
     </p>
 
-    <div id="insight-banner" style="background:#1e293b; color:#fff; padding:14px 18px; border-radius:10px; margin-bottom:15px; font-weight:600;"></div>
-
-    <div style="display:flex; gap:12px; margin-bottom:20px;">
-        <div class="kpi-card" data-type="total" style="flex:1; background:#0f172a; color:#fff; padding:14px; border-radius:10px;">
-            <div>Total Points</div>
-            <div id="kpi-total" style="font-size:22px; font-weight:bold;"></div>
-        </div>
-
-        <div class="kpi-card" data-type="active" style="flex:1; background:#0f172a; color:#fff; padding:14px; border-radius:10px; cursor:pointer;">
-            <div>Active Students</div>
-            <div id="kpi-active" style="font-size:22px; font-weight:bold;"></div>
-        </div>
-
-        <div class="kpi-card" data-type="low" style="flex:1; background:#0f172a; color:#fff; padding:14px; border-radius:10px; cursor:pointer;">
-            <div>Low Engagement</div>
-            <div id="kpi-low" style="font-size:22px; font-weight:bold;"></div>
-        </div>
-    </div>
-
     <div id="pc-filter-bar" style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; margin-bottom: 2.5rem; padding: 18px; background: #1e293b; border-radius: 8px;">
         <div>
             <label for="pc-house" style="display: block; font-size: 0.85rem; opacity: 0.85; margin-bottom: 6px;">House</label>
@@ -297,26 +278,6 @@
             }
 
             function updateAllCharts(data) {
-                // ===== KPI RENDER =====
-                if (data.kpis) {
-                    document.getElementById('kpi-total').innerText = data.kpis.total_points ?? 0;
-                    document.getElementById('kpi-active').innerText = data.kpis.active_students ?? 0;
-                    document.getElementById('kpi-low').innerText = data.kpis.low_engagement ?? 0;
-
-                    var banner = document.getElementById('insight-banner');
-
-                    if (banner) {
-                        var percent = data.kpis.total_students > 0
-                            ? Math.round((data.kpis.active_students / data.kpis.total_students) * 100)
-                            : 0;
-
-                        banner.innerHTML =
-                            '📊 ' + data.kpis.total_points + ' points awarded | ' +
-                            '👥 ' + percent + '% active | ' +
-                            '⚠️ ' + data.kpis.low_engagement + ' low engagement';
-                    }
-                }
-
                 if (charts.donut && data.donut) {
                     charts.donut.updateOptions({ labels: data.donut.labels });
                     charts.donut.updateSeries(data.donut.series);
@@ -415,8 +376,7 @@
                                         event.stopPropagation();
                                     }
                                 }
-                                var cats = config.w && config.w.config && config.w.config.xaxis && config.w.config.xaxis.categories;
-                                var label = cats ? cats[config.dataPointIndex] : null;
+                                var label = config.w.config.xaxis.categories[config.dataPointIndex];
                                 if (label) {
                                     drillDown(label);
                                 }
@@ -447,7 +407,10 @@
                     },
                     yaxis: { labels: { style: { fontSize: '13px' } } },
                     grid: { borderColor: '#334155' },
-                    tooltip: pcCustomTooltip('Points')
+                    tooltip: {
+                        enabled: true,
+                        theme: 'dark'
+                    }
                 });
                 charts.trend.render();
 
@@ -501,19 +464,6 @@
             document.getElementById('pc-apply').addEventListener('click', function () {
                 syncFiltersFromDom();
                 fetchCharts();
-            });
-
-            document.querySelectorAll('.kpi-card').forEach(function (card) {
-                card.addEventListener('click', function () {
-                    var type = this.dataset.type;
-
-                    if (type === 'low') {
-                        drillDown('Low');
-                    }
-                    if (type === 'active') {
-                        drillDown('Active');
-                    }
-                });
             });
 
             document.getElementById('pc-modal-close').addEventListener('click', closeModal);

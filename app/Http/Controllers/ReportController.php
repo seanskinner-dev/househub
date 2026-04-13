@@ -75,48 +75,11 @@ class ReportController extends Controller
     {
         [$start, $end, $house] = $this->pcParseFilters($request);
 
-        // ===== KPI CALCULATIONS =====
-        $totalPoints = (int) DB::table('point_transactions')
-            ->join('students', 'students.id', '=', 'point_transactions.student_id')
-            ->when($house !== 'All', function ($q) use ($house) {
-                $q->join('houses', 'houses.id', '=', 'students.house_id')
-                    ->where('houses.name', $house);
-            })
-            ->whereBetween('point_transactions.created_at', [$start, $end])
-            ->whereRaw('EXTRACT(DOW FROM point_transactions.created_at) BETWEEN 1 AND 5')
-            ->sum('point_transactions.amount');
-
-        $activeStudents = (int) DB::table('point_transactions')
-            ->join('students', 'students.id', '=', 'point_transactions.student_id')
-            ->when($house !== 'All', function ($q) use ($house) {
-                $q->join('houses', 'houses.id', '=', 'students.house_id')
-                    ->where('houses.name', $house);
-            })
-            ->whereBetween('point_transactions.created_at', [$start, $end])
-            ->whereRaw('EXTRACT(DOW FROM point_transactions.created_at) BETWEEN 1 AND 5')
-            ->distinct()
-            ->count('students.id');
-
-        $totalStudents = (int) DB::table('students')
-            ->when($house !== 'All', function ($q) use ($house) {
-                $q->join('houses', 'houses.id', '=', 'students.house_id')
-                    ->where('houses.name', $house);
-            })
-            ->count();
-
-        $lowEngagement = $totalStudents - $activeStudents;
-
         return response()->json([
             'donut' => $this->pcChartDonut($house, $start, $end),
             'trend' => $this->pcChartTrend($house, $start, $end),
             'house_breakdown' => $this->pcChartHousePoints($house, $start, $end),
             'year_level' => $this->pcChartYearLevel($house, $start, $end),
-            'kpis' => [
-                'total_points' => $totalPoints,
-                'active_students' => $activeStudents,
-                'total_students' => $totalStudents,
-                'low_engagement' => $lowEngagement,
-            ],
         ]);
     }
 
@@ -330,18 +293,18 @@ class ReportController extends Controller
      */
     private function pcChartYearLevel(string $house, Carbon $start, Carbon $end): array
     {
-        $q = DB::table('point_transactions as pt')
-            ->join('students as s', 'pt.student_id', '=', 's.id')
-            ->whereBetween('pt.created_at', [$start, $end])
-            ->whereRaw('EXTRACT(DOW FROM pt.created_at::timestamp) BETWEEN 1 AND 5')
-            ->select('s.year_level')
-            ->selectRaw('SUM(pt.amount) as total')
-            ->groupBy('s.year_level')
-            ->orderBy('s.year_level');
+        $q = DB::table('point_transactions')
+            ->join('students', 'students.id', '=', 'point_transactions.student_id')
+            ->whereBetween('point_transactions.created_at', [$start, $end])
+            ->whereRaw('EXTRACT(DOW FROM point_transactions.created_at::timestamp) BETWEEN 1 AND 5')
+            ->select('students.year_level')
+            ->selectRaw('SUM(point_transactions.amount) as total')
+            ->groupBy('students.year_level')
+            ->orderBy('students.year_level');
 
         if ($house !== 'All') {
-            $q->join('houses as h', 's.house_id', '=', 'h.id')
-                ->where('h.name', $house);
+            $q->join('houses', 'students.house_id', '=', 'houses.id')
+                ->where('houses.name', $house);
         }
 
         $rows = $q->get();
@@ -514,19 +477,19 @@ class ReportController extends Controller
      */
     private function pcDrilldownYearLevel(int $yearLevel, string $house, Carbon $start, Carbon $end): array
     {
-        $q = DB::table('point_transactions as pt')
-            ->join('students as s', 'pt.student_id', '=', 's.id')
-            ->leftJoin('houses as h', 's.house_id', '=', 'h.id')
-            ->where('s.year_level', $yearLevel)
-            ->whereBetween('pt.created_at', [$start, $end])
-            ->whereRaw('EXTRACT(DOW FROM pt.created_at::timestamp) BETWEEN 1 AND 5')
-            ->selectRaw('TRIM(CONCAT(s.first_name, \' \', s.last_name)) as name')
-            ->selectRaw('h.name as house')
-            ->select('pt.category', 'pt.amount', 'pt.created_at')
-            ->orderBy('pt.created_at', 'desc');
+        $q = DB::table('point_transactions')
+            ->join('students', 'students.id', '=', 'point_transactions.student_id')
+            ->leftJoin('houses', 'students.house_id', '=', 'houses.id')
+            ->where('students.year_level', $yearLevel)
+            ->whereBetween('point_transactions.created_at', [$start, $end])
+            ->whereRaw('EXTRACT(DOW FROM point_transactions.created_at::timestamp) BETWEEN 1 AND 5')
+            ->selectRaw('TRIM(CONCAT(students.first_name, \' \', students.last_name)) as name')
+            ->selectRaw('houses.name as house')
+            ->select('point_transactions.category', 'point_transactions.amount', 'point_transactions.created_at')
+            ->orderBy('point_transactions.created_at', 'desc');
 
         if ($house !== 'All') {
-            $q->where('h.name', $house);
+            $q->where('houses.name', $house);
         }
 
         $rows = $q->limit(200)->get()->map(fn ($r) => [
