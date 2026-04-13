@@ -225,15 +225,25 @@ document.addEventListener("DOMContentLoaded", function () {
         'year-level-distribution': 'year_level'
     };
 
-    function renderChart(containerId, dataset, config) {
+    function renderChart(id, data, config) {
+        const containerId = id;
         destroyChart(containerId);
-        const categories = Array.isArray(dataset?.categories) ? dataset.categories : [];
-        const dataPoints = normalizeSeries(dataset);
-
-        if (categories.length !== dataPoints.length) {
-            console.error('Dataset shape mismatch:', containerId, { categories, dataPoints, dataset });
+        if (!data?.series || !data?.series[0] || !data?.series[0]?.data) {
+            console.warn('Invalid series structure', id, data);
             return;
         }
+        if ((data.categories || []).length !== data.series[0].data.length) {
+            console.warn('Mismatch categories vs data', id, data);
+        }
+
+        console.log('Rendering chart:', id, {
+            categories: data.categories?.length,
+            series: data.series?.[0]?.data?.length
+        });
+
+        const categories = Array.isArray(data?.categories) ? data.categories : [];
+        const dataPoints = normalizeSeries(data);
+
         if (categories.length === 0 || dataPoints.length === 0) {
             showEmpty(containerId);
             return;
@@ -255,7 +265,7 @@ document.addEventListener("DOMContentLoaded", function () {
             tooltip: { theme: 'dark' },
             series: config.type === 'donut'
                 ? dataPoints
-                : [{ name: (dataset.series?.[0]?.name || 'Value'), data: dataPoints }],
+                : [{ name: (data.series?.[0]?.name || 'Value'), data: dataPoints }],
             xaxis: config.type === 'donut' ? undefined : { categories: categories },
             labels: config.type === 'donut' ? categories : undefined,
             colors: config.colors || undefined

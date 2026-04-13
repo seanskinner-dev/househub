@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ReportController extends Controller
 {
@@ -111,32 +112,51 @@ class ReportController extends Controller
         $medium = (int) ($legacyDonut['series'][1] ?? 0);
         $low = (int) ($legacyDonut['series'][2] ?? 0);
 
-        $riskDistribution = [
-            'type' => 'breakdown',
-            'categories' => ['Low', 'Medium', 'High'],
-            'series' => [[
-                'name' => 'Students',
-                'data' => [$low, $medium, $high],
-            ]],
-        ];
+        $buildDataset = function (string $type, array $categories, array $data, string $name): array {
+            $categories = array_values($categories);
+            $data = array_values(array_map('intval', $data));
 
-        $pointsByHouse = [
-            'type' => 'breakdown',
-            'categories' => array_values($legacyHouse['categories'] ?? []),
-            'series' => [[
-                'name' => 'Points',
-                'data' => array_values(array_map('intval', $legacyHouse['series'] ?? [])),
-            ]],
-        ];
+            if (count($categories) !== count($data)) {
+                Log::error('Chart data mismatch', [
+                    'categories' => count($categories),
+                    'data' => count($data),
+                ]);
+            }
 
-        $engagementTrend = [
-            'type' => 'trend',
-            'categories' => array_values($legacyTrend['categories'] ?? []),
-            'series' => [[
-                'name' => 'Engagement',
-                'data' => array_values(array_map('intval', $legacyTrend['series'] ?? [])),
-            ]],
-        ];
+            if ($categories === [] || $data === []) {
+                return [
+                    'type' => $type,
+                    'categories' => [],
+                    'series' => [[
+                        'name' => 'Empty',
+                        'data' => [],
+                    ]],
+                ];
+            }
+
+            return [
+                'type' => $type,
+                'categories' => $categories,
+                'series' => [[
+                    'name' => $name,
+                    'data' => $data,
+                ]],
+            ];
+        };
+
+        $riskDistribution = $buildDataset('breakdown', ['Low', 'Medium', 'High'], [$low, $medium, $high], 'Students');
+        $pointsByHouse = $buildDataset(
+            'breakdown',
+            (array) ($legacyHouse['categories'] ?? []),
+            (array) ($legacyHouse['series'] ?? []),
+            'Points'
+        );
+        $engagementTrend = $buildDataset(
+            'trend',
+            (array) ($legacyTrend['categories'] ?? []),
+            (array) ($legacyTrend['series'] ?? []),
+            'Engagement'
+        );
 
         $yearLevelRows = DB::table('students as s')
             ->leftJoin('houses as h', 's.house_id', '=', 'h.id')
@@ -148,14 +168,12 @@ class ReportController extends Controller
             ->orderBy('s.year_level')
             ->get();
 
-        $yearLevelDistribution = [
-            'type' => 'breakdown',
-            'categories' => $yearLevelRows->pluck('year_level')->map(fn ($yl) => 'Year '.(int) $yl)->values()->all(),
-            'series' => [[
-                'name' => 'Students',
-                'data' => $yearLevelRows->pluck('total_students')->map(fn ($v) => (int) $v)->values()->all(),
-            ]],
-        ];
+        $yearLevelDistribution = $buildDataset(
+            'breakdown',
+            $yearLevelRows->pluck('year_level')->map(fn ($yl) => 'Year '.(int) $yl)->values()->all(),
+            $yearLevelRows->pluck('total_students')->values()->all(),
+            'Students'
+        );
 
         return [
             'risk_distribution' => $riskDistribution,
