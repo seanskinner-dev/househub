@@ -128,6 +128,10 @@
 
 @push('scripts')
 <script>
+    window.pcData = @json($data);
+    console.log('DATA FROM BLADE:', window.pcData);
+</script>
+<script>
 document.addEventListener("DOMContentLoaded", function () {
     console.log('SCRIPT RUNNING');
     console.log('ApexCharts:', typeof ApexCharts);
@@ -204,18 +208,16 @@ document.addEventListener("DOMContentLoaded", function () {
             .catch(() => {});
     }
 
-    const data = @json($data ?? null);
+    const data = window.pcData;
+    if (!data) {
+        console.error('No data passed from backend');
+        return;
+    }
 
     console.log('PC DATA:', data);
     console.log('FULL DATA:', data);
     console.log(document.querySelector("#engagement-trend"));
     console.log(document.querySelector("#points-by-house"));
-
-    new ApexCharts(document.querySelector("#engagement-trend"), {
-        chart: { type: 'bar', height: 300 },
-        series: [{ data: [10,20,30] }],
-        xaxis: { categories: ['A','B','C'] }
-    }).render();
 
     function renderCharts(payload) {
         if (!payload || !payload.donut || !payload.trend || !payload.house_breakdown) {
@@ -240,6 +242,9 @@ document.addEventListener("DOMContentLoaded", function () {
             if (el) el.innerHTML = '';
         });
 
+        if (!data.donut || !data.donut.series) {
+            console.error('Donut data missing');
+        }
         if (!data.donut || !data.donut.series || !data.donut.labels) {
             console.error('Donut data invalid:', data.donut);
         } else {
@@ -317,6 +322,9 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
 
+        if (!data.trend || !data.trend.series) {
+            console.error('Trend data missing');
+        }
         try {
             if (data.trend && data.trend.series && data.trend.categories) {
             new ApexCharts(document.querySelector("#engagement-trend"), {
@@ -351,6 +359,9 @@ document.addEventListener("DOMContentLoaded", function () {
             console.error('engagement-trend failed', e);
         }
 
+        if (!data.house_breakdown || !data.house_breakdown.series) {
+            console.error('House data missing');
+        }
         try {
             if (data.house_breakdown && data.house_breakdown.series && data.house_breakdown.categories) {
             new ApexCharts(document.querySelector("#points-by-house"), {
