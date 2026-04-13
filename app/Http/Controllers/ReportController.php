@@ -103,20 +103,19 @@ class ReportController extends Controller
             return response()->json($this->pcDrilldownDate($label, $house, $start, $end, $yearFilter));
         }
 
-        if ($label === 'High Risk') {
-            return response()->json($this->pcDrilldownRiskHigh($house, $yearFilter));
-        }
-
-        if ($label === 'Medium Risk') {
-            return response()->json($this->pcDrilldownRiskMedium($house, $start, $end, $yearFilter));
-        }
-
         if ($label === 'Active') {
             return response()->json($this->pcDrilldownRiskActive($house, $start, $end, $yearFilter));
         }
 
-        if ($label === 'Low') {
-            return response()->json($this->pcDrilldownLowEngagement($house, $start, $end, $yearFilter));
+        // ===== ENGAGEMENT DRILLDOWN (weekday in-range transaction counts per student)
+        $activityBucket = match (true) {
+            $label === 'Low' => 'Low',
+            $label === 'Medium' || $label === 'Medium Risk' => 'Medium',
+            $label === 'High' || $label === 'High Risk' => 'High',
+            default => null,
+        };
+        if ($activityBucket !== null) {
+            return response()->json($this->pcDrilldownEngagementActivity($activityBucket, $house, $start, $end, $yearFilter));
         }
 
         // ===== YEAR LEVEL DRILLDOWN (FIX) — matches chart categories "Year N"; before house matching
@@ -371,79 +370,55 @@ class ReportController extends Controller
     }
 
     /**
-     * @return array{title: string, rows: list<array<string, mixed>>}
+     * Weekday in-range point_transaction row counts per student (not amounts).
+     *
+     * @return array{title: string, rows: \Illuminate\Support\Collection<int, object>}
      */
-    private function pcDrilldownLowEngagement(string $house, Carbon $start, Carbon $end, string $yearFilter = 'All'): array
+    private function pcDrilldownEngagementActivity(string $bucket, string $house, Carbon $start, Carbon $end, string $yearFilter = 'All'): array
     {
-        $q = $this->pcStudentWithHouseQuery($house)
-            ->when($yearFilter !== 'All', function ($q) use ($yearFilter) {
-                $q->where('students.year_level', (int) $yearFilter);
-            })
-            ->leftJoin('point_transactions as pw', function ($join) use ($start, $end) {
-                $join->on('students.id', '=', 'pw.student_id');
-                $this->pcTransactionsInRangeWeekday($join, $start, $end, 'pw');
-            })
-            ->selectRaw('TRIM(CONCAT(students.first_name, \' \', students.last_name)) as name')
-            ->selectRaw('h.name as house_name')
-            ->groupBy('students.id', 'students.first_name', 'students.last_name', 'h.name')
-            ->havingRaw('COUNT(pw.id) = 0')
-            ->orderBy('name');
+        $query = DB::table('students')
+            ->leftJoin('point_transactions as pt', function ($join) use ($start, $end) {
+                $join->on('students.id', '=', 'pt.student_id')
+                    ->whereBetween('pt.created_at', [$start, $end])
+                    ->whereRaw('EXTRACT(DOW FROM pt.created_at::timestamp) BETWEEN 1 AND 5');
+            });
 
-        $rows = $q->get()->map(fn ($r) => [
-            'name' => $r->name,
-            'house' => $r->house_name ?? '—',
-        ])->all();
+        if ($house !== 'All') {
+            $query->join('houses', 'houses.id', '=', 'students.house_id')
+                ->where('houses.name', $house);
+        }
 
-        return ['title' => 'Low engagement (no weekday points in range)', 'rows' => $rows];
-    }
+        if ($yearFilter !== 'All') {
+            $query->where('students.year_level', (int) $yearFilter);
+        }
 
-    /**
-     * @return array{title: string, rows: list<array<string, mixed>>}
-     */
-    private function pcDrilldownRiskHigh(string $house, string $yearFilter = 'All'): array
-    {
-        $q = $this->pcStudentWithHouseQuery($house)
-            ->when($yearFilter !== 'All', function ($q) use ($yearFilter) {
-                $q->where('students.year_level', (int) $yearFilter);
-            })
-            ->selectRaw('TRIM(CONCAT(students.first_name, \' \', students.last_name)) as name')
-            ->selectRaw('h.name as house_name')
-            ->whereRaw('(SELECT COUNT(*) FROM point_transactions t WHERE t.student_id = students.id) = 0')
-            ->orderBy('name');
+        $query->groupBy('students.id', 'students.first_name', 'students.last_name', 'students.year_level')
+            ->select(
+                'students.first_name',
+                'students.last_name',
+                'students.year_level',
+                DB::raw('COUNT(pt.id) as activity_count')
+            )
+            ->orderBy('students.last_name')
+            ->orderBy('students.first_name');
 
-        $rows = $q->get()->map(fn ($r) => [
-            'name' => $r->name,
-            'house' => $r->house_name ?? '—',
-        ])->all();
+        if ($bucket === 'Low') {
+            $query->havingRaw('COUNT(pt.id) = 0');
+        } elseif ($bucket === 'Medium') {
+            $query->havingRaw('COUNT(pt.id) BETWEEN 1 AND 5');
+        } else {
+            $query->havingRaw('COUNT(pt.id) > 5');
+        }
 
-        return ['title' => 'High risk (no transactions ever)', 'rows' => $rows];
-    }
+        $rows = $query->get();
 
-    /**
-     * @return array{title: string, rows: list<array<string, mixed>>}
-     */
-    private function pcDrilldownRiskMedium(string $house, Carbon $start, Carbon $end, string $yearFilter = 'All'): array
-    {
-        $q = $this->pcStudentWithHouseQuery($house)
-            ->when($yearFilter !== 'All', function ($q) use ($yearFilter) {
-                $q->where('students.year_level', (int) $yearFilter);
-            })
-            ->leftJoin('point_transactions as pw', function ($join) use ($start, $end) {
-                $join->on('students.id', '=', 'pw.student_id');
-                $this->pcTransactionsInRangeWeekday($join, $start, $end, 'pw');
-            })
-            ->selectRaw('TRIM(CONCAT(students.first_name, \' \', students.last_name)) as name')
-            ->selectRaw('h.name as house_name')
-            ->groupBy('students.id', 'students.first_name', 'students.last_name', 'h.name')
-            ->havingRaw('(SELECT COUNT(*) FROM point_transactions t WHERE t.student_id = students.id) > 0 AND COUNT(pw.id) = 0')
-            ->orderBy('name');
+        $title = match ($bucket) {
+            'Low' => 'Low activity (0 weekday point rows in range)',
+            'Medium' => 'Medium activity (1–5 weekday point rows in range)',
+            default => 'High activity (>5 weekday point rows in range)',
+        };
 
-        $rows = $q->get()->map(fn ($r) => [
-            'name' => $r->name,
-            'house' => $r->house_name ?? '—',
-        ])->all();
-
-        return ['title' => 'Medium risk (no weekday activity in range)', 'rows' => $rows];
+        return ['title' => $title, 'rows' => $rows];
     }
 
     /**

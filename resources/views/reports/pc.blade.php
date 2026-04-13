@@ -372,8 +372,10 @@
                 if (charts.trend && data.trend) {
                     charts.trend.updateOptions({
                         xaxis: {
+                            type: 'category',
                             categories: data.trend.categories,
                             labels: {
+                                rotate: -45,
                                 formatter: trendAxisLabelFormatter
                             }
                         }
@@ -412,13 +414,20 @@
                                         event.stopPropagation();
                                     }
                                 }
-                                var index = config.dataPointIndex;
-                                var label;
-                                if (config.w && config.w.config && config.w.config.labels) {
-                                    label = config.w.config.labels[index];
+                                const label = config.w.config.labels[config.dataPointIndex];
+                                let mappedLabel = '';
+                                const lower = String(label || '').toLowerCase();
+                                if (lower.includes('low')) {
+                                    mappedLabel = 'Low';
+                                } else if (lower.includes('medium')) {
+                                    mappedLabel = 'Medium';
+                                } else if (lower.includes('high')) {
+                                    mappedLabel = 'High';
+                                } else {
+                                    mappedLabel = label;
                                 }
-                                if (label) {
-                                    drillDown(label);
+                                if (mappedLabel) {
+                                    drillDown(mappedLabel);
                                 }
                             }
                         }
@@ -485,8 +494,10 @@
                     stroke: { curve: 'smooth', width: 3 },
                     markers: { size: 6, hover: { size: 9 } },
                     xaxis: {
+                        type: 'category',
                         categories: [],
                         labels: {
+                            rotate: -45,
                             formatter: trendAxisLabelFormatter
                         }
                     },
