@@ -173,6 +173,12 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     function drillDown(payload) {
+        if (payload && payload.type === 'risk') {
+            payload = {
+                type: 'risk_segment',
+                value: payload.value
+            };
+        }
         const meta = document.querySelector('meta[name="csrf-token"]');
         const token = meta ? meta.getAttribute('content') : '';
         fetch(drillUrl + '?' + queryStringFromFilters(), {
@@ -201,22 +207,15 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     console.log('PC DATA:', data);
 
-    function handleDrill(label) {
-        if (!label) return;
-        let type = 'low';
-        const l = label.toLowerCase();
-        if (l.includes('high')) type = 'high';
-        else if (l.includes('medium')) type = 'medium';
-        else if (l.includes('low')) type = 'low';
-
-        if (type === 'high' || type === 'medium') {
-            drillDown({ type: 'risk_segment', value: label });
-        } else {
-            drillDown({ type: 'engagement_active', value: label });
-        }
-    }
-
     function renderCharts(payload) {
+        console.log('Risk labels:', payload.donut.labels);
+        const riskColors = payload.donut.labels.map(label => {
+            const l = String(label).toLowerCase();
+            if (l.includes('high')) return '#ef4444';
+            if (l.includes('medium')) return '#eab308';
+            return '#22c55e';
+        });
+
         ['engagement-health', 'risk-distribution', 'engagement-trend', 'points-by-house'].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.innerHTML = '';
@@ -227,15 +226,18 @@ document.addEventListener("DOMContentLoaded", async function () {
                 type: 'donut',
                 height: 320,
                 events: {
-                    dataPointSelection: (e, ctx, config) => {
+                    dataPointSelection: function(event, chartContext, config) {
                         const label = config.w.config.labels[config.dataPointIndex];
-                        handleDrill(label);
+                        drillDown({
+                            type: 'risk',
+                            value: label
+                        });
                     }
                 }
             },
             series: payload.donut.series,
             labels: payload.donut.labels,
-            colors: ['#22c55e', '#eab308', '#ef4444'],
+            colors: riskColors,
             plotOptions: {
                 pie: {
                     donut: {
@@ -250,15 +252,18 @@ document.addEventListener("DOMContentLoaded", async function () {
                 type: 'polarArea',
                 height: 320,
                 events: {
-                    dataPointSelection: (e, ctx, config) => {
+                    dataPointSelection: function(event, chartContext, config) {
                         const label = config.w.config.labels[config.dataPointIndex];
-                        handleDrill(label);
+                        drillDown({
+                            type: 'risk',
+                            value: label
+                        });
                     }
                 }
             },
             series: payload.donut.series,
             labels: payload.donut.labels,
-            colors: ['#22c55e', '#eab308', '#ef4444']
+            colors: riskColors
         }).render();
 
         new ApexCharts(document.querySelector("#engagement-trend"), {
