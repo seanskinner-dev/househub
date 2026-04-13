@@ -590,19 +590,25 @@ class ReportController extends Controller
     }
 
     /**
-     * @return list<array{teacher: string}>
+     * Recent activity rows for charts; includes teacher (awarding user) per transaction.
+     *
+     * @return list<object>
      */
     private function pcTeacherRecentRows(string $house, Carbon $start, Carbon $end, string $yearFilter): array
     {
         $q = $this->tuPointTransactionsBase($house, $start, $end, $yearFilter);
 
         return $q
-            ->selectRaw("COALESCE(NULLIF(TRIM(u.name), ''), 'Unknown') as teacher")
-            ->select('pt.id')
+            ->select(
+                's.first_name',
+                's.last_name',
+                'pt.amount',
+                'pt.created_at',
+                'u.name as teacher'
+            )
             ->orderByDesc('pt.created_at')
             ->limit(10000)
             ->get()
-            ->map(fn ($r) => ['teacher' => $r->teacher])
             ->all();
     }
 
