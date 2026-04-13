@@ -99,57 +99,75 @@ class ReportController extends Controller
 
     private function getReportData(Request $request): array
     {
-        // Temporary debug mode: use all-time ranges and unfiltered chart queries.
-        $start = Carbon::create(2000, 1, 1)->startOfDay();
-        $end = Carbon::now()->endOfDay();
-        $house = 'All';
-        $yearFilter = 'All';
+        [$start, $end, $house, $yearFilter] = $this->pcParseFilters($request);
 
-        $donut = $this->pcChartDonut($house, $start, $end, $yearFilter);
-        $year_level = $this->pcChartYearLevel($house, $start, $end, $yearFilter);
+        $legacyDonut = $this->pcChartDonut($house, $start, $end, $yearFilter);
+        $legacyTrend = $this->pcChartTrend($house, $start, $end, $yearFilter);
+        $legacyHouse = $this->pcChartHousePoints($house, $start, $end, $yearFilter);
+        $legacyYearLevel = $this->pcChartYearLevel($house, $start, $end, $yearFilter);
         $recent = $this->pcTeacherRecentRows($house, $start, $end, $yearFilter);
 
-        $trend = DB::table('point_transactions')
-            ->selectRaw('DATE(created_at) as date, SUM(amount) as total')
-            ->groupBy('date')
-            ->orderBy('date')
-            ->get();
+        $high = (int) ($legacyDonut['series'][0] ?? 0);
+        $medium = (int) ($legacyDonut['series'][1] ?? 0);
+        $low = (int) ($legacyDonut['series'][2] ?? 0);
 
-        $trendData = [
-            'series' => [
-                [
-                    'name' => 'Points',
-                    'data' => $trend->pluck('total')->map(fn ($v) => (int) $v)->toArray(),
-                ],
-            ],
-            'categories' => $trend->pluck('date')->toArray(),
+        $riskDistribution = [
+            'type' => 'breakdown',
+            'categories' => ['Low', 'Medium', 'High'],
+            'series' => [[
+                'name' => 'Students',
+                'data' => [$low, $medium, $high],
+            ]],
         ];
 
-        $houses = DB::table('point_transactions as pt')
-            ->join('students as s', 'pt.student_id', '=', 's.id')
-            ->join('houses as h', 's.house_id', '=', 'h.id')
-            ->selectRaw('h.name as house_name, SUM(pt.amount) as total')
-            ->whereNotNull('h.name')
-            ->groupBy('h.name')
-            ->get();
-
-        $houseData = [
-            'series' => [
-                [
-                    'name' => 'Points',
-                    'data' => $houses->pluck('total')->map(fn ($v) => (int) $v)->toArray(),
-                ],
-            ],
-            'categories' => $houses->pluck('house_name')->toArray(),
+        $pointsByHouse = [
+            'type' => 'breakdown',
+            'categories' => array_values($legacyHouse['categories'] ?? []),
+            'series' => [[
+                'name' => 'Points',
+                'data' => array_values(array_map('intval', $legacyHouse['series'] ?? [])),
+            ]],
         ];
 
-        dd($trendData, $houseData);
+        $engagementTrend = [
+            'type' => 'trend',
+            'categories' => array_values($legacyTrend['categories'] ?? []),
+            'series' => [[
+                'name' => 'Engagement',
+                'data' => array_values(array_map('intval', $legacyTrend['series'] ?? [])),
+            ]],
+        ];
+
+        $yearLevelRows = DB::table('students as s')
+            ->leftJoin('houses as h', 's.house_id', '=', 'h.id')
+            ->when($house !== 'All', fn ($q) => $q->where('h.name', $house))
+            ->when($yearFilter !== 'All', fn ($q) => $q->where('s.year_level', (int) $yearFilter))
+            ->whereNotNull('s.year_level')
+            ->selectRaw('s.year_level as year_level, COUNT(*) as total_students')
+            ->groupBy('s.year_level')
+            ->orderBy('s.year_level')
+            ->get();
+
+        $yearLevelDistribution = [
+            'type' => 'breakdown',
+            'categories' => $yearLevelRows->pluck('year_level')->map(fn ($yl) => 'Year '.(int) $yl)->values()->all(),
+            'series' => [[
+                'name' => 'Students',
+                'data' => $yearLevelRows->pluck('total_students')->map(fn ($v) => (int) $v)->values()->all(),
+            ]],
+        ];
 
         return [
-            'donut' => $donut,
-            'trend' => $trendData,
-            'house_breakdown' => $houseData,
-            'year_level' => $year_level,
+            'risk_distribution' => $riskDistribution,
+            'points_by_house' => $pointsByHouse,
+            'engagement_trend' => $engagementTrend,
+            'year_level_distribution' => $yearLevelDistribution,
+
+            // Legacy keys kept for existing report pages.
+            'donut' => $legacyDonut,
+            'trend' => $legacyTrend,
+            'house_breakdown' => $legacyHouse,
+            'year_level' => $legacyYearLevel,
             'recent' => $recent,
         ];
     }
