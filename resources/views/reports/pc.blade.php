@@ -122,6 +122,70 @@
                 return cats[config.dataPointIndex];
             }
 
+            function escapeHtml(s) {
+                var d = document.createElement('div');
+                d.textContent = s;
+                return d.innerHTML;
+            }
+
+            /**
+             * Dark tooltips for all PC charts. Donut uses pie-style series[seriesIndex]; line/bar use series[si][dpi].
+             */
+            function pcCustomTooltip(valueSuffix) {
+                return {
+                    theme: false,
+                    style: {
+                        fontSize: '14px',
+                        color: '#ffffff'
+                    },
+                    custom: function (ctx) {
+                        var series = ctx.series;
+                        var seriesIndex = ctx.seriesIndex;
+                        var dataPointIndex = ctx.dataPointIndex;
+                        var w = ctx.w;
+                        var chartType = w && w.config && w.config.chart ? w.config.chart.type : '';
+
+                        var value;
+                        var label = '';
+
+                        if (chartType === 'donut' || chartType === 'pie') {
+                            value = series[seriesIndex];
+                            if (w.globals.labels && w.globals.labels.length) {
+                                label = w.globals.labels[seriesIndex];
+                            }
+                        } else {
+                            var row = series[seriesIndex];
+                            value = row != null ? row[dataPointIndex] : null;
+                            if (w.globals.categoryLabels && w.globals.categoryLabels.length) {
+                                label = w.globals.categoryLabels[dataPointIndex];
+                            } else if (w.globals.labels && w.globals.labels.length) {
+                                label = w.globals.labels[dataPointIndex];
+                            }
+                        }
+
+                        if (label && /^\d{4}-\d{2}-\d{2}$/.test(String(label))) {
+                            var d = new Date(String(label) + 'T12:00:00');
+                            var day = d.getDate();
+                            var month = d.toLocaleString('en-AU', { month: 'short' });
+                            label = day + ' ' + month;
+                        }
+
+                        var v = value != null && value !== '' ? value : '—';
+
+                        return (
+                            '<div style="' +
+                            'background:#1e293b;color:#ffffff;padding:10px 14px;border-radius:8px;' +
+                            'font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,0.4);font-size:14px;' +
+                            '">' +
+                            (label ? escapeHtml(String(label)) : '') +
+                            (label ? '<br/>' : '') +
+                            valueSuffix + ': ' + escapeHtml(String(v)) +
+                            '</div>'
+                        );
+                    }
+                };
+            }
+
             function syncFiltersFromDom() {
                 filters.house = document.getElementById('pc-house').value || 'All';
                 filters.start_date = document.getElementById('pc-start').value || null;
@@ -209,12 +273,6 @@
                 document.getElementById('pc-modal-backdrop').style.display = 'flex';
             }
 
-            function escapeHtml(s) {
-                var d = document.createElement('div');
-                d.textContent = s;
-                return d.innerHTML;
-            }
-
             function closeModal() {
                 document.getElementById('pc-modal-backdrop').style.display = 'none';
             }
@@ -291,7 +349,7 @@
                     colors: ['#b91c1c', '#d97706', '#15803d'],
                     legend: { position: 'bottom', fontSize: '15px' },
                     dataLabels: { enabled: true, style: { fontSize: '13px' } },
-                    tooltip: { y: { formatter: function (val) { return val + ' students'; } } }
+                    tooltip: pcCustomTooltip('Students')
                 });
                 charts.donut.render();
 
@@ -347,14 +405,7 @@
                     },
                     yaxis: { labels: { style: { fontSize: '13px' } } },
                     grid: { borderColor: '#334155' },
-                    tooltip: {
-                        x: {
-                            formatter: function (val) {
-                                return trendAxisLabelFormatter(val);
-                            }
-                        },
-                        y: { formatter: function (val) { return val + ' pts'; } }
-                    }
+                    tooltip: pcCustomTooltip('Points')
                 });
                 charts.trend.render();
 
@@ -395,7 +446,7 @@
                         yaxis: { labels: { style: { fontSize: '13px' } }, min: 0 },
                         grid: { borderColor: '#334155' },
                         dataLabels: { enabled: true, style: { fontSize: '11px' } },
-                        tooltip: { y: { formatter: function (val) { return val + ' pts'; } } }
+                        tooltip: pcCustomTooltip('Points')
                     });
                 };
 
