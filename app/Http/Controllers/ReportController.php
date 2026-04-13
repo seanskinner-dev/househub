@@ -489,34 +489,41 @@ class ReportController extends Controller
             return ['title' => 'Transactions on '.$dateStr.' (not a weekday in range)', 'rows' => []];
         }
 
-        $q = DB::table('point_transactions as pt')
-            ->join('students as s', 'pt.student_id', '=', 's.id')
-            ->leftJoin('houses as h', 's.house_id', '=', 'h.id')
-            ->whereDate('pt.created_at', $dateStr)
-            ->whereBetween('pt.created_at', [$start, $end])
-            ->whereRaw('EXTRACT(DOW FROM pt.created_at::timestamp) BETWEEN 1 AND 5')
-            ->selectRaw('TRIM(CONCAT(s.first_name, \' \', s.last_name)) as student')
-            ->selectRaw('h.name as house')
-            ->select('pt.category', 'pt.amount', 'pt.description')
-            ->orderBy('pt.created_at');
+        $query = DB::table('point_transactions')
+            ->join('students', 'students.id', '=', 'point_transactions.student_id');
 
         if ($house !== 'All') {
-            $q->where('h.name', $house);
+            $query->join('houses', 'houses.id', '=', 'students.house_id')
+                ->where('houses.name', $house);
         }
+
+        if ($start && $end) {
+            $query->whereBetween('point_transactions.created_at', [$start, $end]);
+        }
+
+        $query->whereRaw('EXTRACT(DOW FROM point_transactions.created_at::timestamp) BETWEEN 1 AND 5')
+            ->whereDate('point_transactions.created_at', $dateStr);
 
         if ($yearFilter !== 'All') {
-            $q->where('s.year_level', (int) $yearFilter);
+            $query->where('students.year_level', (int) $yearFilter);
         }
 
-        $rows = $q->get()->map(fn ($r) => [
-            'student' => $r->student,
-            'house' => $r->house ?? '—',
-            'category' => $r->category,
-            'amount' => (int) $r->amount,
-            'description' => $r->description ?? '',
-        ])->all();
+        $rows = $query
+            ->select(
+                'students.first_name',
+                'students.last_name',
+                'students.year_level',
+                'point_transactions.amount',
+                'point_transactions.created_at'
+            )
+            ->orderByDesc('point_transactions.created_at')
+            ->limit(300)
+            ->get();
 
-        return ['title' => 'Transactions on '.$dateStr, 'rows' => $rows];
+        return [
+            'title' => 'Transactions on '.$dateStr,
+            'rows' => $rows,
+        ];
     }
 
     /**

@@ -126,16 +126,16 @@
                     return '';
                 }
                 var str = String(value);
-                var date = new Date(str.indexOf('T') === -1 ? str + 'T12:00:00' : str);
-                if (isNaN(date.getTime())) {
+                var d = new Date(str.indexOf('T') === -1 ? str + 'T12:00:00' : str);
+                if (isNaN(d.getTime())) {
                     return str;
                 }
-                var day = date.getDate();
-                var month = date.toLocaleString('en-AU', { month: 'short' });
+                var day = d.getDate();
+                var month = d.toLocaleString('en-AU', { month: 'short' });
                 return day + ' ' + month;
             }
 
-            function trendDrillLabelFromConfig(config) {
+            function trendRawDateFromConfig(config) {
                 if (!config || config.dataPointIndex == null) {
                     return null;
                 }
@@ -465,9 +465,9 @@
                                         event.stopPropagation();
                                     }
                                 }
-                                var label = config.w.config.xaxis.categories[config.dataPointIndex];
-                                if (label) {
-                                    drillDown(label);
+                                var rawDate = trendRawDateFromConfig(config);
+                                if (rawDate) {
+                                    drillDown(String(rawDate));
                                 }
                             },
                             markerClick: function (event, chartContext, config) {
@@ -479,9 +479,9 @@
                                         event.stopPropagation();
                                     }
                                 }
-                                var label = trendDrillLabelFromConfig(config);
-                                if (label) {
-                                    drillDown(label);
+                                var rawDate = trendRawDateFromConfig(config);
+                                if (rawDate) {
+                                    drillDown(String(rawDate));
                                 }
                             }
                         }
