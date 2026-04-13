@@ -356,6 +356,23 @@
                 }
                 if (charts.trend && data.trend) {
                     const rawDates = data.trend.categories || [];
+                    const seriesPayload = data.trend.series;
+                    var values;
+                    if (
+                        Array.isArray(seriesPayload) &&
+                        seriesPayload.length > 0 &&
+                        typeof seriesPayload[0] === 'object' &&
+                        seriesPayload[0] !== null &&
+                        Array.isArray(seriesPayload[0].data)
+                    ) {
+                        values = seriesPayload[0].data.map(function (v) {
+                            return Number(v) || 0;
+                        });
+                    } else {
+                        values = (seriesPayload || []).map(function (v) {
+                            return Number(v) || 0;
+                        });
+                    }
                     const displayDates = rawDates.map(function (d) {
                         const date = new Date(d + 'T00:00:00');
                         const day = date.getDate();
@@ -363,10 +380,6 @@
                         return `${day} ${month}`;
                     });
                     pcTrendRawCategories = rawDates.slice();
-
-                    var values = (data.trend.series || []).map(function (v) {
-                        return Number(v) || 0;
-                    });
                     var worstIndex = 0;
                     var minValue = 0;
                     var markerSizes = 4;
@@ -452,11 +465,7 @@
                                         event.stopPropagation();
                                     }
                                 }
-                                const label = config.w.config.labels[config.dataPointIndex];
-                                const lower = String(label || '').toLowerCase();
-                                if (lower.includes('low') || lower.includes('risk')) {
-                                    drillDown('Low');
-                                }
+                                drillDown('Low');
                             }
                         }
                     },

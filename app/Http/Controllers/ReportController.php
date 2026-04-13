@@ -107,9 +107,12 @@ class ReportController extends Controller
             return response()->json($this->pcDrilldownRiskActive($house, $start, $end, $yearFilter));
         }
 
-        // ===== ENGAGEMENT DRILLDOWN (weekday in-range transaction counts per student)
+        if ($label === 'Low') {
+            return response()->json($this->pcDrilldownLowAtRisk($house, $start, $end, $yearFilter));
+        }
+
+        // ===== ENGAGEMENT DRILLDOWN (weekday in-range row counts; Medium / High only)
         $activityBucket = match (true) {
-            $label === 'Low' => 'Low',
             $label === 'Medium' || $label === 'Medium Risk' => 'Medium',
             $label === 'High' || $label === 'High Risk' => 'High',
             default => null,
@@ -370,7 +373,49 @@ class ReportController extends Controller
     }
 
     /**
-     * Weekday in-range point_transaction row counts per student (not amounts).
+     * At-risk students: zero weekday point_transaction rows in the filter range.
+     *
+     * @return array{title: string, rows: \Illuminate\Support\Collection<int, object>}
+     */
+    private function pcDrilldownLowAtRisk(string $house, Carbon $start, Carbon $end, string $yearFilter = 'All'): array
+    {
+        $query = DB::table('students')
+            ->leftJoin('point_transactions as pt', function ($join) use ($start, $end) {
+                $join->on('students.id', '=', 'pt.student_id')
+                    ->whereBetween('pt.created_at', [$start, $end])
+                    ->whereRaw('EXTRACT(DOW FROM pt.created_at::timestamp) BETWEEN 1 AND 5');
+            });
+
+        if ($house !== 'All') {
+            $query->join('houses', 'houses.id', '=', 'students.house_id')
+                ->where('houses.name', $house);
+        }
+
+        if ($yearFilter !== 'All') {
+            $query->where('students.year_level', (int) $yearFilter);
+        }
+
+        $rows = $query
+            ->groupBy('students.id', 'students.first_name', 'students.last_name', 'students.year_level')
+            ->select(
+                'students.first_name',
+                'students.last_name',
+                'students.year_level',
+                DB::raw('COUNT(pt.id) as activity_count')
+            )
+            ->havingRaw('COUNT(pt.id) = 0')
+            ->orderBy('students.last_name')
+            ->orderBy('students.first_name')
+            ->get();
+
+        return [
+            'title' => 'At risk (no weekday points in range)',
+            'rows' => $rows,
+        ];
+    }
+
+    /**
+     * Weekday in-range point_transaction row counts per student — Medium / High buckets only.
      *
      * @return array{title: string, rows: \Illuminate\Support\Collection<int, object>}
      */
@@ -402,9 +447,7 @@ class ReportController extends Controller
             ->orderBy('students.last_name')
             ->orderBy('students.first_name');
 
-        if ($bucket === 'Low') {
-            $query->havingRaw('COUNT(pt.id) = 0');
-        } elseif ($bucket === 'Medium') {
+        if ($bucket === 'Medium') {
             $query->havingRaw('COUNT(pt.id) BETWEEN 1 AND 5');
         } else {
             $query->havingRaw('COUNT(pt.id) > 5');
@@ -412,11 +455,9 @@ class ReportController extends Controller
 
         $rows = $query->get();
 
-        $title = match ($bucket) {
-            'Low' => 'Low activity (0 weekday point rows in range)',
-            'Medium' => 'Medium activity (1–5 weekday point rows in range)',
-            default => 'High activity (>5 weekday point rows in range)',
-        };
+        $title = $bucket === 'Medium'
+            ? 'Medium activity (1–5 weekday point rows in range)'
+            : 'High activity (>5 weekday point rows in range)';
 
         return ['title' => $title, 'rows' => $rows];
     }
