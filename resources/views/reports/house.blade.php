@@ -33,34 +33,39 @@
 @endsection
 
 @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script>
-        function drillDown(payload) {
-            var meta = document.querySelector('meta[name="csrf-token"]');
-            var token = meta ? meta.getAttribute('content') : '';
-            fetch('/reports/drilldown', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': token,
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                },
-                credentials: 'same-origin',
-                body: JSON.stringify(payload || {})
-            }).catch(function () {});
-        }
-
         document.addEventListener("DOMContentLoaded", function () {
             if (typeof ApexCharts === 'undefined') {
                 return;
             }
 
-            const houses = @json($housePerformance);
+            const data = @json($housePerformance);
 
-            const names = houses.map(h => h.house);
-            const thisTerm = houses.map(h => Number(h.this_term ?? h.term_total ?? 0));
-            const previousTerm = houses.map(h => Number(h.previous_term ?? h.last_term_total ?? 0));
+            const names = data.map(h => h.house);
+            const thisTerm = data.map(h => Number(h.this_term ?? h.term_total ?? 0));
+            const previousTerm = data.map(h => Number(h.previous_term ?? h.last_term_total ?? 0));
+
+            function drillDown(payload) {
+                var meta = document.querySelector('meta[name="csrf-token"]');
+                var token = meta ? meta.getAttribute('content') : '';
+                fetch('/reports/drilldown', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': token,
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify(payload || {})
+                }).catch(function () {});
+            }
+
+            //-----------------------------------
+            // CLEAR OLD INSTANCES
+            //-----------------------------------
+            document.querySelectorAll('#house-comparison, #house-momentum, #house-contribution, #house-risk')
+                .forEach(el => el.innerHTML = '');
 
             //-----------------------------------
             // 1. TERM COMPARISON
@@ -83,11 +88,11 @@
                     { name: 'Previous Term', data: previousTerm }
                 ],
                 xaxis: { categories: names },
-                title: { text: 'Term Performance Comparison' }
+                title: { text: 'Term Comparison' }
             }).render();
 
             //-----------------------------------
-            // 2. MOMENTUM (LINE)
+            // 2. MOMENTUM
             //-----------------------------------
             new ApexCharts(document.querySelector("#house-momentum"), {
                 chart: {
@@ -95,19 +100,20 @@
                     height: 300,
                     events: {
                         dataPointSelection: function(event, chartContext, config) {
-                            drillDown({ type: 'date' });
+                            const house = names[config.dataPointIndex];
+                            if (house) {
+                                drillDown({ type: 'house_low', value: house });
+                            }
                         }
                     }
                 },
-                series: [
-                    { name: 'This Term', data: thisTerm }
-                ],
+                series: [{ name: 'Momentum', data: thisTerm }],
                 xaxis: { categories: names },
-                title: { text: 'House Momentum (Relative)' }
+                title: { text: 'Momentum' }
             }).render();
 
             //-----------------------------------
-            // 3. CONTRIBUTION SPREAD (RADAR)
+            // 3. CONTRIBUTION
             //-----------------------------------
             const contribution = thisTerm.map(v => Math.max(1, Math.floor(v / 10)));
 
@@ -125,7 +131,7 @@
                     }
                 },
                 series: [{
-                    name: 'Contributors',
+                    name: 'Contribution',
                     data: contribution
                 }],
                 labels: names,
@@ -133,7 +139,7 @@
             }).render();
 
             //-----------------------------------
-            // 4. UNDERPERFORMANCE
+            // 4. RISK
             //-----------------------------------
             const risk = thisTerm.map(v => Math.floor(100 / (v + 1)));
 
@@ -150,11 +156,10 @@
                         }
                     }
                 },
-                series: [{ name: 'Risk %', data: risk }],
+                series: [{ name: 'Risk', data: risk }],
                 xaxis: { categories: names },
-                title: { text: 'Underperformance Index' }
+                title: { text: 'Underperformance' }
             }).render();
-
         });
     </script>
 @endpush
