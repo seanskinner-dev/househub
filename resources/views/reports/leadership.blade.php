@@ -43,53 +43,67 @@
         </div>
     </div>
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5>Engagement Health</h5>
-            <p class="text-muted small mb-3">
-                Shows the proportion of students actively receiving points during the selected period.
-            </p>
-            <div id="engagement-health" style="max-width: 420px; min-height: 320px;"></div>
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card mb-4 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="mb-2">Engagement Health</h5>
+                    <p class="text-muted small mb-3">
+                        Shows the proportion of students receiving points in the selected range. Higher values indicate stronger day-to-day engagement.
+                    </p>
+                    <div id="engagement-health" style="min-height: 320px;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-4 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="mb-2">Weekday Activity Heatmap</h5>
+                    <p class="text-muted small mb-3">
+                        Visualises activity concentration across weekdays. Darker cells indicate stronger engagement intensity.
+                    </p>
+                    <div id="heatmap" style="min-height: 320px;"></div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5>Weekday Activity Heatmap</h5>
-            <p class="text-muted small mb-3">
-                Visualises engagement intensity across days. Darker areas indicate higher activity.
-            </p>
-            <div id="heatmap" style="min-height: 380px;"></div>
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card mb-4 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="mb-2">Points by Year Level</h5>
+                    <p class="text-muted small mb-3">
+                        Compares engagement totals across year cohorts. Click a point to inspect year-level student detail.
+                    </p>
+                    <div id="year-level" style="min-height: 320px;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-4 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="mb-2">Risk Mix</h5>
+                    <p class="text-muted small mb-3">
+                        Breaks the cohort into risk bands for quick comparison. Use segment clicks to drill into targeted intervention groups.
+                    </p>
+                    <div id="risk-mix" style="min-height: 320px;"></div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5>Points by Year Level</h5>
-            <p class="text-muted small mb-3">
-                Shows how engagement varies across different year levels.
-            </p>
-            <div id="year-level" style="min-height: 400px;"></div>
-        </div>
-    </div>
-
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5>Risk Mix</h5>
-            <p class="text-muted small mb-3">
-                Breakdown of student engagement levels across the cohort.
-            </p>
-            <div id="risk-mix" style="max-width: 520px; min-height: 420px;"></div>
-        </div>
-    </div>
-
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5>Students Without Weekday Points</h5>
-            <p class="text-muted small mb-3">
-                Highlights students with no weekday points in the selected range.
-            </p>
-            <div id="lr-dropoff" style="min-height: 360px;"></div>
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card mb-4 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="mb-2">Students Without Weekday Points</h5>
+                    <p class="text-muted small mb-3">
+                        Highlights students with no weekday point activity in range. Use this as a direct indicator for engagement drop-off.
+                    </p>
+                    <div id="lr-dropoff" style="min-height: 320px;"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -379,7 +393,7 @@
                     series: [{ name: 'Weekday points', data: points }],
                     chart: {
                         type: 'heatmap',
-                        height: 380,
+                        height: 320,
                         fontFamily: commonFont.fontFamily,
                         foreColor: commonFont.foreColor,
                         toolbar: { show: false },
@@ -418,7 +432,7 @@
                     series: [{ name: 'Points', data: ser.map(function (v) { return Number(v) || 0; }) }],
                     chart: {
                         type: 'area',
-                        height: 400,
+                        height: 320,
                         fontFamily: commonFont.fontFamily,
                         foreColor: commonFont.foreColor,
                         toolbar: { show: false },
@@ -467,7 +481,7 @@
                     labels: labels,
                     chart: {
                         type: 'polarArea',
-                        height: 420,
+                        height: 320,
                         fontFamily: commonFont.fontFamily,
                         foreColor: commonFont.foreColor,
                         toolbar: { show: false },
@@ -502,7 +516,7 @@
                     series: [{ name: 'Students', data: [count] }],
                     chart: {
                         type: 'bar',
-                        height: 340,
+                        height: 320,
                         fontFamily: commonFont.fontFamily,
                         foreColor: commonFont.foreColor,
                         toolbar: { show: false },

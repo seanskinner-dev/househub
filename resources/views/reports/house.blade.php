@@ -3,43 +3,53 @@
 @section('content')
     <h1 style="font-size: 1.5rem; margin-bottom: 1rem;">House Performance Report</h1>
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5>Term Performance Comparison</h5>
-            <p class="text-muted small mb-3">
-                Compares current term performance against the previous term.
-            </p>
-            <div id="house-comparison" style="min-height: 300px;"></div>
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card mb-4 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="mb-2">Term Performance Comparison</h5>
+                    <p class="text-muted small mb-3">
+                        Compares house point totals between this term and the prior term. Use this to identify improving and declining house performance.
+                    </p>
+                    <div id="house-comparison" style="min-height: 320px;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-4 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="mb-2">House Momentum</h5>
+                    <p class="text-muted small mb-3">
+                        Shows relative momentum patterns for each house over the selected period. Lower trajectories highlight where engagement is slowing.
+                    </p>
+                    <div id="house-momentum" style="min-height: 320px;"></div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5>House Momentum</h5>
-            <p class="text-muted small mb-3">
-                Shows relative performance trends across houses.
-            </p>
-            <div id="house-momentum" style="min-height: 300px;"></div>
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card mb-4 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="mb-2">Contribution Spread</h5>
+                    <p class="text-muted small mb-3">
+                        Indicates how widely contributions are spread within each house. Narrow spread can signal uneven participation.
+                    </p>
+                    <div id="house-contribution" style="min-height: 320px;"></div>
+                </div>
+            </div>
         </div>
-    </div>
-
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5>Contribution Spread</h5>
-            <p class="text-muted small mb-3">
-                Indicates how widely students contribute within each house.
-            </p>
-            <div id="house-contribution" style="min-height: 300px;"></div>
-        </div>
-    </div>
-
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5>Underperformance Index</h5>
-            <p class="text-muted small mb-3">
-                Highlights houses with higher proportions of low-engagement students.
-            </p>
-            <div id="house-risk" style="min-height: 300px;"></div>
+        <div class="col-md-6">
+            <div class="card mb-4 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="mb-2">Underperformance Index</h5>
+                    <p class="text-muted small mb-3">
+                        Highlights houses with higher concentrations of low engagement activity. Click bars to drill into support-target students.
+                    </p>
+                    <div id="house-risk" style="min-height: 320px;"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -110,7 +120,7 @@
                 new ApexCharts(document.querySelector("#house-comparison"), {
                 chart: {
                     type: 'bar',
-                    height: 300,
+                    height: 320,
                     events: {
                         dataPointSelection: function(event, chartContext, config) {
                             const house = names[config.dataPointIndex];
@@ -134,7 +144,7 @@
                 new ApexCharts(document.querySelector("#house-momentum"), {
                 chart: {
                     type: 'line',
-                    height: 300,
+                    height: 320,
                     events: {
                         dataPointSelection: function(event, chartContext, config) {
                             const house = names[config.dataPointIndex];
@@ -157,7 +167,7 @@
                 new ApexCharts(document.querySelector("#house-contribution"), {
                 chart: {
                     type: 'radar',
-                    height: 300,
+                    height: 320,
                     events: {
                         dataPointSelection: function(event, chartContext, config) {
                             const house = names[config.dataPointIndex];
@@ -183,7 +193,7 @@
                 new ApexCharts(document.querySelector("#house-risk"), {
                 chart: {
                     type: 'bar',
-                    height: 300,
+                    height: 320,
                     events: {
                         dataPointSelection: function(event, chartContext, config) {
                             const house = names[config.dataPointIndex];

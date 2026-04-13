@@ -6,43 +6,53 @@
         House-focused insights emphasizing low or weakening outcomes. Click any chart element to drill into problem areas.
     </p>
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5>Term Performance Comparison</h5>
-            <p class="text-muted small mb-3">
-                Compares current term performance against the previous term.
-            </p>
-            <div id="house-comparison" style="min-height: 380px;"></div>
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card mb-4 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="mb-2">Term Performance Comparison</h5>
+                    <p class="text-muted small mb-3">
+                        Compares house point totals between current and prior term windows. Use differences to identify houses that are stalling or improving.
+                    </p>
+                    <div id="house-comparison" style="min-height: 320px;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-4 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="mb-2">House Momentum</h5>
+                    <p class="text-muted small mb-3">
+                        Tracks trend direction across selected dates for each house. Click low points to inspect weaker activity days.
+                    </p>
+                    <div id="house-momentum" style="min-height: 320px;"></div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5>House Momentum</h5>
-            <p class="text-muted small mb-3">
-                Shows relative performance trends across houses.
-            </p>
-            <div id="house-momentum" style="min-height: 420px;"></div>
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card mb-4 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="mb-2">Contribution Spread</h5>
+                    <p class="text-muted small mb-3">
+                        Highlights how broadly contributions are distributed within each house. Narrow spread can indicate over-reliance on a small group.
+                    </p>
+                    <div id="house-contribution" style="min-height: 320px;"></div>
+                </div>
+            </div>
         </div>
-    </div>
-
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5>Contribution Spread</h5>
-            <p class="text-muted small mb-3">
-                Indicates how widely students contribute within each house.
-            </p>
-            <div id="house-contribution" style="min-height: 380px;"></div>
-        </div>
-    </div>
-
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5>Underperformance Index</h5>
-            <p class="text-muted small mb-3">
-                Highlights houses with higher proportions of low-engagement students.
-            </p>
-            <div id="house-risk" style="min-height: 360px;"></div>
+        <div class="col-md-6">
+            <div class="card mb-4 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="mb-2">Underperformance Index</h5>
+                    <p class="text-muted small mb-3">
+                        Flags houses with higher relative risk or lower engagement output. Click bars to drill into students needing support.
+                    </p>
+                    <div id="house-risk" style="min-height: 320px;"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -154,7 +164,7 @@
                 charts.rank = new ApexCharts(document.querySelector('#house-comparison'), {
                     chart: {
                         type: 'bar',
-                        height: 380,
+                        height: 320,
                         toolbar: { show: false },
                         events: {
                             dataPointSelection: function (event, chartContext, config) {
@@ -183,7 +193,7 @@
                 charts.contribution = new ApexCharts(document.querySelector('#house-contribution'), {
                     chart: {
                         type: 'radar',
-                        height: 380,
+                        height: 320,
                         toolbar: { show: false },
                         events: {
                             dataPointSelection: function (event, chartContext, config) {
@@ -213,7 +223,7 @@
                 charts.risk = new ApexCharts(document.querySelector('#house-risk'), {
                     chart: {
                         type: 'bar',
-                        height: 360,
+                        height: 320,
                         toolbar: { show: false },
                         events: {
                             dataPointSelection: function (event, chartContext, config) {
@@ -256,7 +266,7 @@
                 charts.momentum = new ApexCharts(document.querySelector('#house-momentum'), {
                     chart: {
                         type: 'area',
-                        height: 420,
+                        height: 320,
                         toolbar: { show: false },
                         events: {
                             dataPointSelection: function (event, chartContext, config) {

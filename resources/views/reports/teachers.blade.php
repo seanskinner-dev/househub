@@ -38,33 +38,42 @@
         </div>
     </div>
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5>Student Distribution by Teacher</h5>
-            <p class="text-muted small mb-3">
-                Highlights how each teacher distributes points across students.
-            </p>
-            <div id="teacher-bias" style="min-height: 380px;"></div>
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card mb-4 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="mb-2">Student Distribution by Teacher</h5>
+                    <p class="text-muted small mb-3">
+                        Shows which students receive the highest share of points from each teacher. Use this to identify concentration and potential award bias.
+                    </p>
+                    <div id="teacher-bias" style="min-height: 320px;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-4 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="mb-2">Staff Usage Frequency</h5>
+                    <p class="text-muted small mb-3">
+                        Groups staff by how often they award points in the selected period. Lower buckets highlight underuse and support opportunities.
+                    </p>
+                    <div id="teacher-frequency" style="min-height: 320px;"></div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5>Staff Usage Frequency</h5>
-            <p class="text-muted small mb-3">
-                Shows how frequently staff award points. Lower values may indicate underuse.
-            </p>
-            <div id="teacher-frequency" style="min-height: 340px;"></div>
-        </div>
-    </div>
-
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5>Weekday Points Trend</h5>
-            <p class="text-muted small mb-3">
-                Displays staff awarding activity over time. Click a day to inspect low-activity staff events.
-            </p>
-            <div id="tu-trend" style="min-height: 400px;"></div>
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card mb-4 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="mb-2">Weekday Points Trend</h5>
+                    <p class="text-muted small mb-3">
+                        Displays overall staff point activity across weekdays. Sudden dips help pinpoint low-engagement days for follow-up.
+                    </p>
+                    <div id="tu-trend" style="min-height: 320px;"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -208,7 +217,7 @@
                     var options = {
                         chart: {
                             type: 'bar',
-                            height: Math.max(320, students.length * 40),
+                            height: 320,
                             fontFamily: common.fontFamily,
                             foreColor: common.foreColor,
                             toolbar: { show: false }
@@ -355,7 +364,7 @@
                 tuCharts.low = new ApexCharts(document.querySelector('#teacher-bias'), {
                     chart: {
                         type: 'bar',
-                        height: 380,
+                        height: 320,
                         fontFamily: common.fontFamily,
                         foreColor: common.foreColor,
                         toolbar: { show: false },
@@ -433,7 +442,7 @@
                 tuCharts.freq = new ApexCharts(document.querySelector('#teacher-frequency'), {
                     chart: {
                         type: 'bar',
-                        height: 340,
+                        height: 320,
                         fontFamily: common.fontFamily,
                         foreColor: common.foreColor,
                         toolbar: { show: false },
@@ -510,7 +519,7 @@
                 tuCharts.trend = new ApexCharts(document.querySelector('#tu-trend'), {
                     chart: {
                         type: 'line',
-                        height: 400,
+                        height: 320,
                         fontFamily: common.fontFamily,
                         foreColor: common.foreColor,
                         toolbar: { show: false },
