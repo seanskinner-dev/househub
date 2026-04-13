@@ -100,8 +100,14 @@ class ReportController extends Controller
 
     public function reportDrilldown(Request $request)
     {
-        $label = trim((string) $request->query('label', ''));
         [$start, $end, $house, $yearFilter] = $this->pcParseFilters($request);
+
+        $teacher = trim((string) $request->query('teacher', ''));
+        if ($teacher !== '') {
+            return response()->json($this->tuDrilldownTeacherStudentBreakdown($teacher, $house, $start, $end, $yearFilter));
+        }
+
+        $label = trim((string) $request->query('label', ''));
 
         if ($label === '') {
             return response()->json(['title' => 'Drill-down', 'rows' => []]);
@@ -670,6 +676,30 @@ class ReportController extends Controller
         return [
             'title' => 'Staff awards: '.$teacher,
             'rows' => $rows,
+        ];
+    }
+
+    /**
+     * @return array{title: string, student_breakdown: list<object>}
+     */
+    private function tuDrilldownTeacherStudentBreakdown(string $teacher, string $house, Carbon $start, Carbon $end, string $yearFilter): array
+    {
+        $rows = $this->tuPointTransactionsBase($house, $start, $end, $yearFilter)
+            ->whereNotNull('pt.student_id')
+            ->whereRaw("COALESCE(NULLIF(TRIM(u.name), ''), 'Unknown') = ?", [$teacher])
+            ->select(
+                's.first_name',
+                's.last_name',
+                DB::raw('SUM(pt.amount) as total_points')
+            )
+            ->groupBy('s.id', 's.first_name', 's.last_name')
+            ->orderByDesc('total_points')
+            ->limit(15)
+            ->get();
+
+        return [
+            'title' => 'Students receiving points from '.$teacher.' (top 15 by total)',
+            'student_breakdown' => $rows->values()->all(),
         ];
     }
 

@@ -62,6 +62,9 @@
                 <button type="button" id="tu-modal-close" style="background: transparent; border: none; color: #fff; font-size: 1.5rem; line-height: 1; cursor: pointer;" aria-label="Close">&times;</button>
             </div>
             <div id="tu-modal-body" style="padding: 16px 18px;">
+                <div id="tu-drilldown-chart-wrap" style="display: none; margin-bottom: 20px;">
+                    <div id="tu-drilldown-chart" style="min-height: 280px;"></div>
+                </div>
                 <p id="tu-empty" style="opacity:0.9;margin:0;display:none;">No rows.</p>
                 <div id="tu-table-wrap" style="display:none; overflow-x: auto;">
                     <table id="tu-table" style="width:100%;border-collapse:collapse;font-size:0.95rem;">
@@ -82,6 +85,7 @@
             var drillUrl = @json(route('reports.drilldown'));
 
             var tuCharts = { low: null, freq: null, trend: null };
+            var tuModalChart = null;
             var tuTrendRawDates = [];
 
             var filters = {
@@ -137,15 +141,94 @@
                 return p.toString();
             }
 
+            function destroyTuModalChart() {
+                if (tuModalChart) {
+                    tuModalChart.destroy();
+                    tuModalChart = null;
+                }
+                var chartHost = document.getElementById('tu-drilldown-chart');
+                if (chartHost) {
+                    chartHost.innerHTML = '';
+                }
+            }
+
             function renderTuModal(data) {
                 var title = data.title || 'Details';
-                var rows = data.rows || [];
-                document.getElementById('tu-modal-title').textContent = title;
                 var emptyEl = document.getElementById('tu-empty');
                 var wrap = document.getElementById('tu-table-wrap');
                 var thead = document.getElementById('tu-thead');
                 var tbody = document.getElementById('tu-tbody');
+                var chartWrap = document.getElementById('tu-drilldown-chart-wrap');
+                var chartEl = document.getElementById('tu-drilldown-chart');
+
+                if (data.student_breakdown && Array.isArray(data.student_breakdown)) {
+                    destroyTuModalChart();
+                    document.getElementById('tu-modal-title').textContent = title;
+                    chartWrap.style.display = 'block';
+                    var students = data.student_breakdown;
+                    var names = students.map(function (s) {
+                        return (s.first_name || '') + ' ' + (s.last_name || '');
+                    }).map(function (n) { return n.trim() || 'Student'; });
+                    var values = students.map(function (s) { return Number(s.total_points) || 0; });
+
+                    if (!students.length) {
+                        chartWrap.style.display = 'none';
+                        emptyEl.textContent = 'No student point data in this range.';
+                        emptyEl.style.display = 'block';
+                        wrap.style.display = 'none';
+                        thead.innerHTML = '';
+                        tbody.innerHTML = '';
+                    } else {
+                        chartWrap.style.display = 'block';
+                        emptyEl.style.display = 'none';
+                        wrap.style.display = 'block';
+                        thead.innerHTML =
+                            '<th style="text-align:left;padding:8px 10px;border-bottom:2px solid #334155;">Student</th>' +
+                            '<th style="text-align:right;padding:8px 10px;border-bottom:2px solid #334155;">Total points</th>';
+                        tbody.innerHTML = students
+                            .map(function (s) {
+                                var nm = ((s.first_name || '') + ' ' + (s.last_name || '')).trim() || '—';
+                                var pts = Number(s.total_points) || 0;
+                                return (
+                                    '<tr style="border-bottom:1px solid #334155;">' +
+                                    '<td style="padding:8px 10px;">' + escapeHtml(nm) + '</td>' +
+                                    '<td style="padding:8px 10px;text-align:right;">' + escapeHtml(String(pts)) + '</td>' +
+                                    '</tr>'
+                                );
+                            })
+                            .join('');
+
+                        var common = { fontFamily: 'Arial, sans-serif', foreColor: '#e2e8f0' };
+                        tuModalChart = new ApexCharts(chartEl, {
+                            chart: {
+                                type: 'bar',
+                                height: Math.max(280, names.length * 28),
+                                fontFamily: common.fontFamily,
+                                foreColor: common.foreColor,
+                                toolbar: { show: false }
+                            },
+                            series: [{ name: 'Total points', data: values }],
+                            plotOptions: { bar: { horizontal: true, borderRadius: 4 } },
+                            xaxis: { categories: names, labels: { style: { fontSize: '12px' } } },
+                            yaxis: { labels: { maxWidth: 220, style: { fontSize: '11px' } } },
+                            colors: ['#3b82f6'],
+                            grid: { borderColor: '#334155' },
+                            dataLabels: { enabled: true },
+                            tooltip: { theme: 'dark' }
+                        });
+                        tuModalChart.render();
+                    }
+                    document.getElementById('tu-modal-backdrop').style.display = 'flex';
+                    return;
+                }
+
+                destroyTuModalChart();
+                chartWrap.style.display = 'none';
+
+                var rows = data.rows || [];
+                document.getElementById('tu-modal-title').textContent = title;
                 if (!rows.length) {
+                    emptyEl.textContent = 'No rows.';
                     emptyEl.style.display = 'block';
                     wrap.style.display = 'none';
                     thead.innerHTML = '';
@@ -398,8 +481,17 @@
             }
 
             function drillDownTeacher(teacher) {
-                var label = '__TU_T__' + teacher;
-                fetch(drillUrl + '?' + drillQueryString(label), {
+                var p = new URLSearchParams();
+                p.set('teacher', teacher);
+                p.set('house', filters.house);
+                if (filters.start_date) {
+                    p.set('start_date', filters.start_date);
+                }
+                if (filters.end_date) {
+                    p.set('end_date', filters.end_date);
+                }
+                p.set('year', filters.year || 'All');
+                fetch(drillUrl + '?' + p.toString(), {
                     headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
                 })
                     .then(function (r) { return r.json(); })
@@ -442,10 +534,12 @@
                 fetchTeacherData();
             });
             document.getElementById('tu-modal-close').addEventListener('click', function () {
+                destroyTuModalChart();
                 document.getElementById('tu-modal-backdrop').style.display = 'none';
             });
             document.getElementById('tu-modal-backdrop').addEventListener('click', function (e) {
                 if (e.target.id === 'tu-modal-backdrop') {
+                    destroyTuModalChart();
                     document.getElementById('tu-modal-backdrop').style.display = 'none';
                 }
             });
