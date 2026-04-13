@@ -122,17 +122,13 @@
             var commonFont = { fontFamily: 'Arial, sans-serif', foreColor: '#e2e8f0' };
 
             function trendAxisLabelFormatter(value) {
-                if (value == null || value === '') {
-                    return '';
-                }
-                var str = String(value);
-                var d = new Date(str.indexOf('T') === -1 ? str + 'T12:00:00' : str);
-                if (isNaN(d.getTime())) {
-                    return str;
-                }
-                var day = d.getDate();
-                var month = d.toLocaleString('en-AU', { month: 'short' });
-                return day + ' ' + month;
+                // Ensure we always parse correctly
+                const d = new Date(value + 'T00:00:00');
+
+                const day = d.getDate();
+                const month = d.toLocaleString('en-AU', { month: 'short' });
+
+                return `${day} ${month}`; // e.g. "10 Apr"
             }
 
             function trendRawDateFromConfig(config) {
