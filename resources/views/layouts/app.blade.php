@@ -12,7 +12,7 @@
         body {
             margin: 0;
             font-family: Arial, sans-serif;
-            background: #0f172a;
+            background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
             color: white;
         }
 
@@ -106,6 +106,30 @@
         .page-content {
             padding: 20px;
         }
+
+        .page-content .card {
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border: none;
+            border-radius: 12px;
+            color: #e2e8f0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .page-content .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .page-content .card h5 {
+            color: #f8fafc;
+            font-weight: 600;
+        }
+
+        .page-content .card p,
+        .page-content .card .text-muted,
+        .page-content .card .small {
+            color: #94a3b8 !important;
+        }
     </style>
 </head>
 
@@ -163,6 +187,11 @@
         if (typeof ApexCharts === 'undefined') {
             console.error('ApexCharts failed to load');
         }
+        window.Apex = {
+            chart: {
+                background: 'transparent'
+            }
+        };
     </script>
     @stack('scripts')
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
