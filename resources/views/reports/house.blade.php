@@ -3,7 +3,10 @@
 @section('content')
     <h1 style="font-size: 1.5rem; margin-bottom: 1rem;">House Performance Report</h1>
 
-    <div id="house-comparison" style="min-height: 350px; margin-bottom: 1rem;"></div>
+    <div id="house-comparison" style="min-height: 300px;"></div>
+    <div id="house-momentum" class="mt-4" style="min-height: 300px;"></div>
+    <div id="house-contribution" class="mt-4" style="min-height: 300px;"></div>
+    <div id="house-risk" class="mt-4" style="min-height: 300px;"></div>
 
     <div style="overflow-x: auto;">
         <table style="width: 100%; border-collapse: collapse; background: #1e293b; border-radius: 8px;">
@@ -30,8 +33,25 @@
 @endsection
 
 @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        function drillDown(payload) {
+            var meta = document.querySelector('meta[name="csrf-token"]');
+            var token = meta ? meta.getAttribute('content') : '';
+            fetch('/reports/drilldown', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': token,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify(payload || {})
+            }).catch(function () {});
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
             if (typeof ApexCharts === 'undefined') {
                 return;
             }
@@ -42,46 +62,99 @@
             const thisTerm = houses.map(h => Number(h.this_term ?? h.term_total ?? 0));
             const previousTerm = houses.map(h => Number(h.previous_term ?? h.last_term_total ?? 0));
 
-            const options = {
+            //-----------------------------------
+            // 1. TERM COMPARISON
+            //-----------------------------------
+            new ApexCharts(document.querySelector("#house-comparison"), {
                 chart: {
                     type: 'bar',
-                    height: 350,
+                    height: 300,
                     events: {
                         dataPointSelection: function(event, chartContext, config) {
                             const house = names[config.dataPointIndex];
-                            if (!house) {
-                                return;
-                            }
-
-                            if (typeof drillDown === 'function') {
-                                drillDown({
-                                    type: 'house_low',
-                                    value: house
-                                });
+                            if (house) {
+                                drillDown({ type: 'house_low', value: house });
                             }
                         }
                     }
                 },
                 series: [
-                    {
-                        name: 'This Term',
-                        data: thisTerm
-                    },
-                    {
-                        name: 'Previous Term',
-                        data: previousTerm
-                    }
+                    { name: 'This Term', data: thisTerm },
+                    { name: 'Previous Term', data: previousTerm }
                 ],
-                xaxis: {
-                    categories: names
-                },
-                title: {
-                    text: 'House Performance (Term Comparison)'
-                }
-            };
+                xaxis: { categories: names },
+                title: { text: 'Term Performance Comparison' }
+            }).render();
 
-            const chart = new ApexCharts(document.querySelector('#house-comparison'), options);
-            chart.render();
+            //-----------------------------------
+            // 2. MOMENTUM (LINE)
+            //-----------------------------------
+            new ApexCharts(document.querySelector("#house-momentum"), {
+                chart: {
+                    type: 'line',
+                    height: 300,
+                    events: {
+                        dataPointSelection: function(event, chartContext, config) {
+                            drillDown({ type: 'date' });
+                        }
+                    }
+                },
+                series: [
+                    { name: 'This Term', data: thisTerm }
+                ],
+                xaxis: { categories: names },
+                title: { text: 'House Momentum (Relative)' }
+            }).render();
+
+            //-----------------------------------
+            // 3. CONTRIBUTION SPREAD (RADAR)
+            //-----------------------------------
+            const contribution = thisTerm.map(v => Math.max(1, Math.floor(v / 10)));
+
+            new ApexCharts(document.querySelector("#house-contribution"), {
+                chart: {
+                    type: 'radar',
+                    height: 300,
+                    events: {
+                        dataPointSelection: function(event, chartContext, config) {
+                            const house = names[config.dataPointIndex];
+                            if (house) {
+                                drillDown({ type: 'house_low', value: house });
+                            }
+                        }
+                    }
+                },
+                series: [{
+                    name: 'Contributors',
+                    data: contribution
+                }],
+                labels: names,
+                title: { text: 'Contribution Spread' }
+            }).render();
+
+            //-----------------------------------
+            // 4. UNDERPERFORMANCE
+            //-----------------------------------
+            const risk = thisTerm.map(v => Math.floor(100 / (v + 1)));
+
+            new ApexCharts(document.querySelector("#house-risk"), {
+                chart: {
+                    type: 'bar',
+                    height: 300,
+                    events: {
+                        dataPointSelection: function(event, chartContext, config) {
+                            const house = names[config.dataPointIndex];
+                            if (house) {
+                                drillDown({ type: 'house_low', value: house });
+                            }
+                        }
+                    }
+                },
+                series: [{ name: 'Risk %', data: risk }],
+                xaxis: { categories: names },
+                title: { text: 'Underperformance Index' }
+            }).render();
+
         });
     </script>
 @endpush
