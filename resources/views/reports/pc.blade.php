@@ -119,27 +119,29 @@
                 year: null
             };
 
+            /** Raw Y-m-d strings from API; xaxis shows formatted labels only. */
+            var pcTrendRawCategories = [];
+
             var commonFont = { fontFamily: 'Arial, sans-serif', foreColor: '#e2e8f0' };
 
-            function trendAxisLabelFormatter(value) {
-                // Ensure we always parse correctly
-                const d = new Date(value + 'T00:00:00');
-
-                const day = d.getDate();
-                const month = d.toLocaleString('en-AU', { month: 'short' });
-
-                return `${day} ${month}`; // e.g. "10 Apr"
+            function formatTrendAxisDayLabel(d) {
+                if (d == null || d === '') {
+                    return '';
+                }
+                const date = new Date(d + 'T00:00:00');
+                const day = date.getDate();
+                const month = date.toLocaleString('en-AU', { month: 'short' });
+                return `${day} ${month}`;
             }
 
             function trendRawDateFromConfig(config) {
                 if (!config || config.dataPointIndex == null) {
                     return null;
                 }
-                var cats = config.w && config.w.config && config.w.config.xaxis && config.w.config.xaxis.categories;
-                if (!cats || !cats.length) {
+                if (!pcTrendRawCategories || !pcTrendRawCategories.length) {
                     return null;
                 }
-                return cats[config.dataPointIndex];
+                return pcTrendRawCategories[config.dataPointIndex];
             }
 
             function escapeHtml(s) {
@@ -370,17 +372,66 @@
                     charts.donut.updateSeries(data.donut.series);
                 }
                 if (charts.trend && data.trend) {
+                    var rawCats = data.trend.categories || [];
+                    var values = (data.trend.series || []).map(function (v) {
+                        return Number(v) || 0;
+                    });
+                    pcTrendRawCategories = rawCats.slice();
+                    var formattedCats = rawCats.map(function (d) {
+                        return formatTrendAxisDayLabel(d);
+                    });
+                    var worstIndex = 0;
+                    var minValue = 0;
+                    var markerSizes = 4;
+                    var annotations = { points: [] };
+                    if (values.length) {
+                        minValue = Math.min.apply(null, values);
+                        worstIndex = values.indexOf(minValue);
+                        markerSizes = values.map(function (v, i) {
+                            return i === worstIndex ? 8 : 4;
+                        });
+                        annotations = {
+                            points: [
+                                {
+                                    x: formattedCats[worstIndex],
+                                    y: minValue,
+                                    seriesIndex: 0,
+                                    marker: {
+                                        size: 8,
+                                        fillColor: '#ff4d4f'
+                                    },
+                                    label: {
+                                        borderColor: '#ff4d4f',
+                                        style: {
+                                            color: '#fff',
+                                            background: '#ff4d4f'
+                                        },
+                                        text: 'Lowest Day'
+                                    }
+                                }
+                            ]
+                        };
+                    }
                     charts.trend.updateOptions({
                         xaxis: {
                             type: 'category',
-                            categories: data.trend.categories,
+                            categories: formattedCats,
                             labels: {
-                                rotate: -45,
-                                formatter: trendAxisLabelFormatter
+                                rotate: -45
                             }
+                        },
+                        markers: {
+                            size: markerSizes,
+                            strokeWidth: 2,
+                            hover: { size: 9 }
+                        },
+                        annotations: annotations,
+                        stroke: {
+                            width: 3,
+                            curve: 'smooth'
                         }
                     });
-                    charts.trend.updateSeries([{ name: 'Points', data: data.trend.series }]);
+                    charts.trend.updateSeries([{ name: 'Points', data: values }]);
                 }
                 if (charts.house && data.house_breakdown) {
                     charts.house.updateOptions({ xaxis: { categories: data.house_breakdown.categories } });
@@ -415,19 +466,9 @@
                                     }
                                 }
                                 const label = config.w.config.labels[config.dataPointIndex];
-                                let mappedLabel = '';
                                 const lower = String(label || '').toLowerCase();
-                                if (lower.includes('low')) {
-                                    mappedLabel = 'Low';
-                                } else if (lower.includes('medium')) {
-                                    mappedLabel = 'Medium';
-                                } else if (lower.includes('high')) {
-                                    mappedLabel = 'High';
-                                } else {
-                                    mappedLabel = label;
-                                }
-                                if (mappedLabel) {
-                                    drillDown(mappedLabel);
+                                if (lower.includes('low') || lower.includes('risk')) {
+                                    drillDown('Low');
                                 }
                             }
                         }
@@ -492,13 +533,13 @@
                         }
                     },
                     stroke: { curve: 'smooth', width: 3 },
-                    markers: { size: 6, hover: { size: 9 } },
+                    markers: { size: 4, strokeWidth: 2, hover: { size: 9 } },
+                    annotations: { points: [] },
                     xaxis: {
                         type: 'category',
                         categories: [],
                         labels: {
-                            rotate: -45,
-                            formatter: trendAxisLabelFormatter
+                            rotate: -45
                         }
                     },
                     yaxis: { labels: { style: { fontSize: '13px' } } },
