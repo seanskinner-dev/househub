@@ -232,11 +232,15 @@ document.addEventListener("DOMContentLoaded", function () {
         if (donutSeries.length === 0) {
             console.error('Donut data missing or empty', data.donut);
         }
-        const houseSeries = data?.house_breakdown?.series || [];
+        const trendSeries = data?.trend?.series?.[0]?.data || [];
+        const trendCategories = data?.trend?.categories || [];
+        const houseSeries = data?.house_breakdown?.series?.[0]?.data || [];
         const houseCategories = data?.house_breakdown?.categories || [];
         if (houseSeries.length === 0) {
             console.error('House breakdown missing', data.house_breakdown);
         }
+        console.log('TREND:', trendSeries, trendCategories);
+        console.log('HOUSE:', houseSeries, houseCategories);
 
         ['engagement-health', 'risk-distribution', 'engagement-trend', 'points-by-house'].forEach(id => {
             const el = document.getElementById(id);
@@ -327,7 +331,9 @@ document.addEventListener("DOMContentLoaded", function () {
             console.error('Trend data missing');
         }
         try {
-            if (data.trend && data.trend.series && data.trend.categories) {
+            if (trendSeries.length === 0) {
+                console.error('Trend empty');
+            }
             new ApexCharts(document.querySelector("#engagement-trend"), {
                 chart: {
                     type: 'line',
@@ -342,29 +348,25 @@ document.addEventListener("DOMContentLoaded", function () {
                         }
                     }
                 },
-                series: data.trend.series,
+                series: [{ data: trendSeries }],
                 xaxis: {
-                    categories: data.trend.categories.map(d => {
-                        const date = new Date(d + 'T00:00:00');
-                        return `${date.getDate()}/${date.getMonth()+1}`;
-                    })
+                    categories: trendCategories
                 },
                 tooltip: {
                     theme: 'dark'
                 }
             }).render();
-            } else {
-                console.error('Trend missing', data.trend);
-            }
         } catch (e) {
-            console.error('engagement-trend failed', e);
+            console.error('trend failed', e);
         }
 
         if (!data.house_breakdown || !data.house_breakdown.series) {
             console.error('House data missing');
         }
         try {
-            if (data.house_breakdown && data.house_breakdown.series && data.house_breakdown.categories) {
+            if (houseSeries.length === 0) {
+                console.error('House empty');
+            }
             new ApexCharts(document.querySelector("#points-by-house"), {
                 chart: {
                     type: 'bar',
@@ -379,7 +381,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         }
                     }
                 },
-                series: houseSeries,
+                series: [{ data: houseSeries }],
                 xaxis: {
                     categories: houseCategories
                 },
@@ -387,11 +389,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     theme: 'dark'
                 }
             }).render();
-            } else {
-                console.error('House breakdown missing', data.house_breakdown);
-            }
         } catch (e) {
-            console.error('points-by-house failed', e);
+            console.error('house failed', e);
         }
     }
     try {
