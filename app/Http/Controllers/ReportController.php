@@ -71,6 +71,13 @@ class ReportController extends Controller
         ]);
     }
 
+    public function leadership()
+    {
+        $houses = DB::table('houses')->orderBy('name')->get();
+
+        return view('reports.leadership', compact('houses'));
+    }
+
     public function reportChartData(Request $request)
     {
         [$start, $end, $house, $yearFilter] = $this->pcParseFilters($request);

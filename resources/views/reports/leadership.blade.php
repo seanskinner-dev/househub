@@ -1,0 +1,554 @@
+@extends('layouts.app')
+
+@section('content')
+    <h1 style="font-size: 2rem; margin-bottom: 0.75rem; font-weight: 700;">Leadership Report</h1>
+    <p style="font-size: 1.125rem; opacity: 0.9; margin-bottom: 1.25rem; max-width: 52rem;">
+        Snapshot views over the same filters as pastoral care — chart types here are different from the PC dashboard. Click any chart for drill-down (no page reload).
+    </p>
+
+    <div id="lr-filter-bar" style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; margin-bottom: 2rem; padding: 18px; background: #1e293b; border-radius: 8px;">
+        <div>
+            <label for="lr-house" style="display: block; font-size: 0.85rem; opacity: 0.85; margin-bottom: 6px;">House</label>
+            <select id="lr-house" style="min-width: 180px; padding: 10px 12px; font-size: 1rem; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff;">
+                <option value="All">All Houses</option>
+                @foreach ($houses as $house)
+                    <option value="{{ $house->name }}">{{ $house->name }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div>
+            <label for="lr-start" style="display: block; font-size: 0.85rem; opacity: 0.85; margin-bottom: 6px;">Start date</label>
+            <input type="date" id="lr-start" style="padding: 10px 12px; font-size: 1rem; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff;">
+        </div>
+        <div>
+            <label for="lr-end" style="display: block; font-size: 0.85rem; opacity: 0.85; margin-bottom: 6px;">End date</label>
+            <input type="date" id="lr-end" style="padding: 10px 12px; font-size: 1rem; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff;">
+        </div>
+        <div>
+            <label for="lr-year" style="display: block; font-size: 0.85rem; opacity: 0.85; margin-bottom: 6px;">Year</label>
+            <select id="lr-year" style="min-width: 140px; padding: 10px 12px; font-size: 1rem; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff;">
+                <option value="All">All Years</option>
+                <option value="7">Year 7</option>
+                <option value="8">Year 8</option>
+                <option value="9">Year 9</option>
+                <option value="10">Year 10</option>
+                <option value="11">Year 11</option>
+                <option value="12">Year 12</option>
+            </select>
+        </div>
+        <div>
+            <button type="button" id="lr-apply" style="padding: 11px 22px; font-size: 1rem; font-weight: 600; border: none; border-radius: 6px; background: #3b82f6; color: #fff; cursor: pointer;">
+                Apply
+            </button>
+        </div>
+    </div>
+
+    <section style="margin-bottom: 2.5rem;">
+        <h2 style="font-size: 1.25rem; margin-bottom: 0.75rem; font-weight: 600;">Engagement health</h2>
+        <p style="font-size: 0.9rem; opacity: 0.85; margin-bottom: 0.75rem;">Share of students with weekday points in range (same cohort as risk donut).</p>
+        <div id="lr-health" style="max-width: 420px; min-height: 320px;"></div>
+    </section>
+
+    <section style="margin-bottom: 2.5rem;">
+        <h2 style="font-size: 1.25rem; margin-bottom: 0.75rem; font-weight: 600;">Weekday activity heatmap</h2>
+        <p style="font-size: 0.9rem; opacity: 0.85; margin-bottom: 0.75rem;">Same trend series as PC — heatmap layout. Click a cell for transactions that day.</p>
+        <div id="lr-heatmap" style="min-height: 380px;"></div>
+    </section>
+
+    <section style="margin-bottom: 2.5rem;">
+        <h2 style="font-size: 1.25rem; margin-bottom: 0.75rem; font-weight: 600;">Points by year level (area)</h2>
+        <p style="font-size: 0.9rem; opacity: 0.85; margin-bottom: 0.75rem;">Same data as the PC year-level bar — shown as an area series. Click a point for that year.</p>
+        <div id="lr-year-trend" style="min-height: 400px;"></div>
+    </section>
+
+    <section style="margin-bottom: 2.5rem;">
+        <h2 style="font-size: 1.25rem; margin-bottom: 0.75rem; font-weight: 600;">Risk mix (polar)</h2>
+        <p style="font-size: 0.9rem; opacity: 0.85; margin-bottom: 0.75rem;">Same counts as the PC donut — polar layout. Click a segment for that risk group.</p>
+        <div id="lr-distribution" style="max-width: 520px; min-height: 420px;"></div>
+    </section>
+
+    <section style="margin-bottom: 2rem;">
+        <h2 style="font-size: 1.25rem; margin-bottom: 0.75rem; font-weight: 600;">Students without weekday points (in range)</h2>
+        <p style="font-size: 0.9rem; opacity: 0.85; margin-bottom: 0.75rem;">Count matches High + Medium risk from the donut; drill opens the same “Low engagement” list.</p>
+        <div id="lr-dropoff" style="min-height: 360px;"></div>
+    </section>
+
+    <div id="lr-modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 1000; align-items: center; justify-content: center; padding: 20px;">
+        <div id="lr-modal" role="dialog" aria-modal="true" style="background: #1e293b; color: #f1f5f9; max-width: 900px; width: 100%; max-height: 85vh; overflow: auto; border-radius: 10px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #334155;">
+                <h3 id="lr-modal-title" style="margin: 0; font-size: 1.2rem;">Details</h3>
+                <button type="button" id="lr-modal-close" style="background: transparent; border: none; color: #fff; font-size: 1.5rem; line-height: 1; cursor: pointer;" aria-label="Close">&times;</button>
+            </div>
+            <div id="lr-modal-body" style="padding: 16px 20px;">
+                <p id="lr-drilldown-empty" style="opacity:0.9;margin:0;display:none;">No rows for this selection.</p>
+                <div id="lr-drilldown-wrap" style="display:none; overflow-x: auto;">
+                    <table id="lr-drilldown-table" style="width:100%;border-collapse:collapse;font-size:0.95rem;">
+                        <thead><tr id="lr-drilldown-thead-row"></tr></thead>
+                        <tbody id="lr-drilldown-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection
+
+@push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.54.1/dist/apexcharts.min.js"></script>
+    <script>
+        (function () {
+            var dataUrl = @json(route('reports.data'));
+            var drillUrl = @json(route('reports.drilldown'));
+
+            var lrCharts = {
+                health: null,
+                heatmap: null,
+                yearTrend: null,
+                distribution: null,
+                dropoff: null
+            };
+
+            var commonFont = { fontFamily: 'Arial, sans-serif', foreColor: '#e2e8f0' };
+
+            function ymd(d) {
+                var y = d.getFullYear();
+                var m = String(d.getMonth() + 1).padStart(2, '0');
+                var day = String(d.getDate()).padStart(2, '0');
+                return y + '-' + m + '-' + day;
+            }
+
+            var end = new Date();
+            var start = new Date();
+            start.setDate(start.getDate() - 29);
+
+            var filters = {
+                house: 'All',
+                start_date: ymd(start),
+                end_date: ymd(end),
+                year: 'All'
+            };
+
+            var lrDrilldownData = [];
+            var lrDrilldownSortDir = {};
+
+            function escapeHtml(s) {
+                var d = document.createElement('div');
+                d.textContent = s;
+                return d.innerHTML;
+            }
+
+            function syncDomFromFilters() {
+                document.getElementById('lr-house').value = filters.house;
+                document.getElementById('lr-start').value = filters.start_date || '';
+                document.getElementById('lr-end').value = filters.end_date || '';
+                document.getElementById('lr-year').value = filters.year || 'All';
+            }
+
+            function chartsQueryString() {
+                var p = new URLSearchParams();
+                p.set('house', filters.house);
+                if (filters.start_date) {
+                    p.set('start_date', filters.start_date);
+                }
+                if (filters.end_date) {
+                    p.set('end_date', filters.end_date);
+                }
+                p.set('year', filters.year || 'All');
+                return p.toString();
+            }
+
+            function drillQueryString(label) {
+                var p = new URLSearchParams();
+                p.set('label', label);
+                p.set('house', filters.house);
+                if (filters.start_date) {
+                    p.set('start_date', filters.start_date);
+                }
+                if (filters.end_date) {
+                    p.set('end_date', filters.end_date);
+                }
+                p.set('year', filters.year || 'All');
+                return p.toString();
+            }
+
+            function drillDown(label) {
+                if (label == null || label === '') {
+                    return;
+                }
+                fetch(drillUrl + '?' + drillQueryString(String(label)), {
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                    .then(function (res) { return res.json(); })
+                    .then(function (data) {
+                        renderDrillDownModal(data);
+                    })
+                    .catch(function () {});
+            }
+
+            function lrDrilldownIsDateKey(key) {
+                return key === 'created_at' || key === 'when' || /_at$/i.test(String(key));
+            }
+
+            function lrDrilldownCompare(a, b, key, ascending) {
+                var valA = a[key];
+                var valB = b[key];
+                var mul = ascending ? 1 : -1;
+                if (lrDrilldownIsDateKey(key)) {
+                    var ta = new Date(valA).getTime();
+                    var tb = new Date(valB).getTime();
+                    if (isNaN(ta) || isNaN(tb)) {
+                        return mul * String(valA == null ? '' : valA).localeCompare(String(valB == null ? '' : valB));
+                    }
+                    return mul * (ta - tb);
+                }
+                var na = Number(valA);
+                var nb = Number(valB);
+                if (!isNaN(na) && !isNaN(nb) && String(valA).trim() !== '' && String(valB).trim() !== '') {
+                    return mul * (na - nb);
+                }
+                return mul * String(valA == null ? '' : valA).localeCompare(String(valB == null ? '' : valB), undefined, { sensitivity: 'base' });
+            }
+
+            function renderLrDrilldownTableBody(rows) {
+                var keys = rows.length ? Object.keys(rows[0]) : [];
+                var tbody = document.getElementById('lr-drilldown-tbody');
+                var html = '';
+                rows.forEach(function (row) {
+                    html += '<tr style="border-bottom:1px solid #334155;">';
+                    keys.forEach(function (k) {
+                        var v = row[k];
+                        html += '<td style="padding:10px 12px;">' + escapeHtml(v == null ? '' : String(v)) + '</td>';
+                    });
+                    html += '</tr>';
+                });
+                tbody.innerHTML = html;
+            }
+
+            function renderDrillDownModal(data) {
+                var title = data.title || 'Details';
+                var rows = data.rows || [];
+                document.getElementById('lr-modal-title').textContent = title;
+                var emptyEl = document.getElementById('lr-drilldown-empty');
+                var wrapEl = document.getElementById('lr-drilldown-wrap');
+                var theadRow = document.getElementById('lr-drilldown-thead-row');
+                if (!rows.length) {
+                    lrDrilldownData = [];
+                    emptyEl.style.display = 'block';
+                    wrapEl.style.display = 'none';
+                    theadRow.innerHTML = '';
+                    document.getElementById('lr-drilldown-tbody').innerHTML = '';
+                } else {
+                    emptyEl.style.display = 'none';
+                    wrapEl.style.display = 'block';
+                    lrDrilldownData = rows.map(function (r) {
+                        return Object.assign({}, r);
+                    });
+                    var keys = Object.keys(rows[0]);
+                    var headHtml = '';
+                    keys.forEach(function (k) {
+                        headHtml +=
+                            '<th data-sort="' +
+                            escapeHtml(k) +
+                            '" style="text-align:left;padding:10px 12px;border-bottom:2px solid #334155;cursor:pointer;user-select:none;" title="Sort">' +
+                            escapeHtml(k) +
+                            '</th>';
+                    });
+                    theadRow.innerHTML = headHtml;
+                    renderLrDrilldownTableBody(lrDrilldownData);
+                }
+                document.getElementById('lr-modal-backdrop').style.display = 'flex';
+            }
+
+            function closeModal() {
+                document.getElementById('lr-modal-backdrop').style.display = 'none';
+            }
+
+            document.getElementById('lr-modal-body').addEventListener('click', function (e) {
+                var th = e.target.closest('th[data-sort]');
+                if (!th || !document.getElementById('lr-drilldown-table').contains(th)) {
+                    return;
+                }
+                var key = th.getAttribute('data-sort');
+                if (!key || !lrDrilldownData.length) {
+                    return;
+                }
+                lrDrilldownSortDir[key] = !lrDrilldownSortDir[key];
+                var ascending = !!lrDrilldownSortDir[key];
+                var sorted = lrDrilldownData.slice().sort(function (a, b) {
+                    return lrDrilldownCompare(a, b, key, ascending);
+                });
+                renderLrDrilldownTableBody(sorted);
+            });
+
+            function destroyLrCharts() {
+                Object.keys(lrCharts).forEach(function (k) {
+                    if (lrCharts[k]) {
+                        lrCharts[k].destroy();
+                        lrCharts[k] = null;
+                    }
+                });
+            }
+
+            function stopEvent(event) {
+                if (event) {
+                    if (event.preventDefault) {
+                        event.preventDefault();
+                    }
+                    if (event.stopPropagation) {
+                        event.stopPropagation();
+                    }
+                }
+            }
+
+            function donutCounts(data) {
+                var s = (data.donut && data.donut.series) ? data.donut.series : [0, 0, 0];
+                var high = Number(s[0]) || 0;
+                var medium = Number(s[1]) || 0;
+                var active = Number(s[2]) || 0;
+                var total = high + medium + active;
+                return { high: high, medium: medium, active: active, total: total };
+            }
+
+            function renderHealth(data) {
+                var d = donutCounts(data);
+                var total = d.total > 0 ? d.total : 1;
+                var percent = Math.round((d.active / total) * 100);
+
+                var options = {
+                    series: [percent],
+                    chart: {
+                        type: 'radialBar',
+                        height: 320,
+                        fontFamily: commonFont.fontFamily,
+                        foreColor: commonFont.foreColor,
+                        toolbar: { show: false },
+                        events: {
+                            click: function (event) {
+                                stopEvent(event);
+                                drillDown('Active');
+                            }
+                        }
+                    },
+                    plotOptions: {
+                        radialBar: {
+                            hollow: { size: '62%' },
+                            dataLabels: {
+                                name: { show: true, fontSize: '15px', color: '#94a3b8' },
+                                value: {
+                                    fontSize: '28px',
+                                    fontWeight: 700,
+                                    formatter: function (val) {
+                                        return val + '%';
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    labels: ['Engagement'],
+                    colors: ['#22c55e']
+                };
+
+                lrCharts.health = new ApexCharts(document.querySelector('#lr-health'), options);
+                lrCharts.health.render();
+            }
+
+            function renderHeatmap(data) {
+                var cats = (data.trend && data.trend.categories) ? data.trend.categories : [];
+                var ser = (data.trend && data.trend.series) ? data.trend.series : [];
+                var points = cats.map(function (c, i) {
+                    return { x: c, y: Number(ser[i]) || 0 };
+                });
+
+                var options = {
+                    series: [{ name: 'Weekday points', data: points }],
+                    chart: {
+                        type: 'heatmap',
+                        height: 380,
+                        fontFamily: commonFont.fontFamily,
+                        foreColor: commonFont.foreColor,
+                        toolbar: { show: false },
+                        events: {
+                            dataPointSelection: function (event, chartContext, config) {
+                                stopEvent(event);
+                                var si = config.seriesIndex;
+                                var di = config.dataPointIndex;
+                                var row = chartContext.w.config.series[si].data[di];
+                                var label = row && row.x != null ? row.x : null;
+                                if (label) {
+                                    drillDown(label);
+                                }
+                            }
+                        }
+                    },
+                    dataLabels: { enabled: true },
+                    colors: ['#0ea5e9'],
+                    xaxis: { type: 'category', labels: { rotate: -45 } },
+                    tooltip: { theme: 'dark' },
+                    grid: { borderColor: '#334155' }
+                };
+
+                lrCharts.heatmap = new ApexCharts(document.querySelector('#lr-heatmap'), options);
+                lrCharts.heatmap.render();
+            }
+
+            function renderYearTrend(data) {
+                var cats = (data.year_level && data.year_level.categories) ? data.year_level.categories : [];
+                var ser = (data.year_level && data.year_level.series) ? data.year_level.series : [];
+                var xcats = cats.map(function (y) {
+                    return 'Year ' + y;
+                });
+
+                var options = {
+                    series: [{ name: 'Points', data: ser.map(function (v) { return Number(v) || 0; }) }],
+                    chart: {
+                        type: 'area',
+                        height: 400,
+                        fontFamily: commonFont.fontFamily,
+                        foreColor: commonFont.foreColor,
+                        toolbar: { show: false },
+                        zoom: { enabled: false },
+                        events: {
+                            dataPointSelection: function (event, chartContext, config) {
+                                stopEvent(event);
+                                var catsInner = config.w.config.xaxis.categories;
+                                var label = catsInner[config.dataPointIndex];
+                                if (label) {
+                                    drillDown(label);
+                                }
+                            },
+                            markerClick: function (event, chartContext, config) {
+                                stopEvent(event);
+                                var catsInner = config.w.config.xaxis.categories;
+                                var label = catsInner[config.dataPointIndex];
+                                if (label) {
+                                    drillDown(label);
+                                }
+                            }
+                        }
+                    },
+                    stroke: { curve: 'smooth', width: 2 },
+                    fill: {
+                        type: 'gradient',
+                        gradient: { shadeIntensity: 1, opacityFrom: 0.45, opacityTo: 0.05 }
+                    },
+                    xaxis: { categories: xcats, labels: { style: { fontSize: '13px' } } },
+                    yaxis: { labels: { style: { fontSize: '13px' } }, min: 0 },
+                    grid: { borderColor: '#334155' },
+                    colors: ['#a855f7'],
+                    tooltip: { theme: 'dark' }
+                };
+
+                lrCharts.yearTrend = new ApexCharts(document.querySelector('#lr-year-trend'), options);
+                lrCharts.yearTrend.render();
+            }
+
+            function renderDistribution(data) {
+                var labels = (data.donut && data.donut.labels) ? data.donut.labels : ['High Risk', 'Medium Risk', 'Active'];
+                var series = (data.donut && data.donut.series) ? data.donut.series.map(function (v) { return Number(v) || 0; }) : [0, 0, 0];
+
+                var options = {
+                    series: series,
+                    labels: labels,
+                    chart: {
+                        type: 'polarArea',
+                        height: 420,
+                        fontFamily: commonFont.fontFamily,
+                        foreColor: commonFont.foreColor,
+                        toolbar: { show: false },
+                        events: {
+                            dataPointSelection: function (event, chartContext, config) {
+                                stopEvent(event);
+                                var idx = config.dataPointIndex;
+                                var lbl = labels[idx];
+                                if (lbl) {
+                                    drillDown(lbl);
+                                }
+                            }
+                        }
+                    },
+                    stroke: { colors: ['#0f172a'] },
+                    fill: { opacity: 0.85 },
+                    colors: ['#b91c1c', '#d97706', '#15803d'],
+                    legend: { position: 'bottom', fontSize: '14px' },
+                    tooltip: { theme: 'dark' },
+                    yaxis: { show: false }
+                };
+
+                lrCharts.distribution = new ApexCharts(document.querySelector('#lr-distribution'), options);
+                lrCharts.distribution.render();
+            }
+
+            function renderDropoff(data) {
+                var d = donutCounts(data);
+                var count = d.high + d.medium;
+
+                var options = {
+                    series: [{ name: 'Students', data: [count] }],
+                    chart: {
+                        type: 'bar',
+                        height: 340,
+                        fontFamily: commonFont.fontFamily,
+                        foreColor: commonFont.foreColor,
+                        toolbar: { show: false },
+                        events: {
+                            dataPointSelection: function (event) {
+                                stopEvent(event);
+                                drillDown('Low');
+                            }
+                        }
+                    },
+                    plotOptions: { bar: { borderRadius: 6, columnWidth: '38%' } },
+                    colors: ['#f97316'],
+                    xaxis: {
+                        categories: ['No weekday points (in range)'],
+                        labels: { style: { fontSize: '13px' } }
+                    },
+                    yaxis: { labels: { style: { fontSize: '13px' } }, min: 0, tickAmount: 4 },
+                    grid: { borderColor: '#334155' },
+                    dataLabels: { enabled: true },
+                    tooltip: { theme: 'dark' }
+                };
+
+                lrCharts.dropoff = new ApexCharts(document.querySelector('#lr-dropoff'), options);
+                lrCharts.dropoff.render();
+            }
+
+            function renderLeadership(data) {
+                destroyLrCharts();
+                renderHealth(data);
+                renderHeatmap(data);
+                renderYearTrend(data);
+                renderDistribution(data);
+                renderDropoff(data);
+            }
+
+            function fetchLeadership() {
+                fetch(dataUrl + '?' + chartsQueryString(), {
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                    .then(function (res) { return res.json(); })
+                    .then(function (data) {
+                        renderLeadership(data);
+                    })
+                    .catch(function () {});
+            }
+
+            document.getElementById('lr-apply').addEventListener('click', function () {
+                filters.house = document.getElementById('lr-house').value || 'All';
+                filters.start_date = document.getElementById('lr-start').value || null;
+                filters.end_date = document.getElementById('lr-end').value || null;
+                filters.year = document.getElementById('lr-year').value || 'All';
+                fetchLeadership();
+            });
+
+            document.getElementById('lr-modal-close').addEventListener('click', closeModal);
+            document.getElementById('lr-modal-backdrop').addEventListener('click', function (e) {
+                if (e.target.id === 'lr-modal-backdrop') {
+                    closeModal();
+                }
+            });
+
+            syncDomFromFilters();
+            fetchLeadership();
+        })();
+    </script>
+@endpush
