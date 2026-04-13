@@ -17,6 +17,18 @@
             </select>
         </div>
         <div>
+            <label for="pc-year" style="display: block; font-size: 0.85rem; opacity: 0.85; margin-bottom: 6px;">Year</label>
+            <select id="pc-year" name="year" style="min-width: 140px; padding: 10px 12px; font-size: 1rem; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff;">
+                <option value="All">All</option>
+                <option value="7">Year 7</option>
+                <option value="8">Year 8</option>
+                <option value="9">Year 9</option>
+                <option value="10">Year 10</option>
+                <option value="11">Year 11</option>
+                <option value="12">Year 12</option>
+            </select>
+        </div>
+        <div>
             <label for="pc-start" style="display: block; font-size: 0.85rem; opacity: 0.85; margin-bottom: 6px;">Start date</label>
             <input type="date" id="pc-start" name="start_date" style="padding: 10px 12px; font-size: 1rem; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff;">
         </div>
@@ -59,7 +71,15 @@
                 <h3 id="pc-modal-title" style="margin: 0; font-size: 1.2rem;">Details</h3>
                 <button type="button" id="pc-modal-close" style="background: transparent; border: none; color: #fff; font-size: 1.5rem; line-height: 1; cursor: pointer;" aria-label="Close">&times;</button>
             </div>
-            <div id="pc-modal-body" style="padding: 16px 20px;"></div>
+            <div id="pc-modal-body" style="padding: 16px 20px;">
+                <p id="pc-drilldown-empty" style="opacity:0.9;margin:0;display:none;">No rows for this selection.</p>
+                <div id="pc-drilldown-wrap" style="display:none; overflow-x: auto;">
+                    <table id="pc-drilldown-table" style="width:100%;border-collapse:collapse;font-size:0.95rem;">
+                        <thead><tr id="pc-drilldown-thead-row"></tr></thead>
+                        <tbody id="pc-drilldown-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 @endsection
@@ -85,8 +105,12 @@
             let filters = {
                 house: 'All',
                 start_date: ymd(start),
-                end_date: ymd(end)
+                end_date: ymd(end),
+                year: 'All'
             };
+
+            var drilldownData = [];
+            var drilldownSortDir = {};
 
             var charts = {
                 donut: null,
@@ -190,12 +214,14 @@
                 filters.house = document.getElementById('pc-house').value || 'All';
                 filters.start_date = document.getElementById('pc-start').value || null;
                 filters.end_date = document.getElementById('pc-end').value || null;
+                filters.year = document.getElementById('pc-year').value || 'All';
             }
 
             function syncDomFromFilters() {
                 document.getElementById('pc-house').value = filters.house;
                 document.getElementById('pc-start').value = filters.start_date || '';
                 document.getElementById('pc-end').value = filters.end_date || '';
+                document.getElementById('pc-year').value = filters.year || 'All';
             }
 
             function chartsQueryString() {
@@ -207,6 +233,7 @@
                 if (filters.end_date) {
                     p.set('end_date', filters.end_date);
                 }
+                p.set('year', filters.year || 'All');
                 return p.toString();
             }
 
@@ -220,6 +247,7 @@
                 if (filters.end_date) {
                     p.set('end_date', filters.end_date);
                 }
+                p.set('year', filters.year || 'All');
                 return p.toString();
             }
 
@@ -245,30 +273,76 @@
                     .catch(function () {});
             }
 
+            function drilldownIsDateKey(key) {
+                return key === 'created_at' || key === 'when' || /_at$/i.test(String(key));
+            }
+
+            function drilldownCompare(a, b, key, ascending) {
+                var valA = a[key];
+                var valB = b[key];
+                var mul = ascending ? 1 : -1;
+                if (drilldownIsDateKey(key)) {
+                    var ta = new Date(valA).getTime();
+                    var tb = new Date(valB).getTime();
+                    if (isNaN(ta) || isNaN(tb)) {
+                        return mul * String(valA == null ? '' : valA).localeCompare(String(valB == null ? '' : valB));
+                    }
+                    return mul * (ta - tb);
+                }
+                var na = Number(valA);
+                var nb = Number(valB);
+                if (!isNaN(na) && !isNaN(nb) && String(valA).trim() !== '' && String(valB).trim() !== '') {
+                    return mul * (na - nb);
+                }
+                return mul * String(valA == null ? '' : valA).localeCompare(String(valB == null ? '' : valB), undefined, { sensitivity: 'base' });
+            }
+
+            function renderDrilldownTableBody(rows) {
+                var keys = rows.length ? Object.keys(rows[0]) : [];
+                var tbody = document.getElementById('pc-drilldown-tbody');
+                var html = '';
+                rows.forEach(function (row) {
+                    html += '<tr style="border-bottom:1px solid #334155;">';
+                    keys.forEach(function (k) {
+                        var v = row[k];
+                        html += '<td style="padding:10px 12px;">' + escapeHtml(v == null ? '' : String(v)) + '</td>';
+                    });
+                    html += '</tr>';
+                });
+                tbody.innerHTML = html;
+            }
+
             function renderDrillDownModal(data) {
                 var title = data.title || 'Details';
                 var rows = data.rows || [];
                 document.getElementById('pc-modal-title').textContent = title;
-                var body = document.getElementById('pc-modal-body');
+                var emptyEl = document.getElementById('pc-drilldown-empty');
+                var wrapEl = document.getElementById('pc-drilldown-wrap');
+                var theadRow = document.getElementById('pc-drilldown-thead-row');
                 if (!rows.length) {
-                    body.innerHTML = '<p style="opacity:0.9;margin:0;">No rows for this selection.</p>';
+                    drilldownData = [];
+                    emptyEl.style.display = 'block';
+                    wrapEl.style.display = 'none';
+                    theadRow.innerHTML = '';
+                    document.getElementById('pc-drilldown-tbody').innerHTML = '';
                 } else {
+                    emptyEl.style.display = 'none';
+                    wrapEl.style.display = 'block';
+                    drilldownData = rows.map(function (r) {
+                        return Object.assign({}, r);
+                    });
                     var keys = Object.keys(rows[0]);
-                    var html = '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:0.95rem;"><thead><tr>';
+                    var headHtml = '';
                     keys.forEach(function (k) {
-                        html += '<th style="text-align:left;padding:10px 12px;border-bottom:2px solid #334155;">' + escapeHtml(k) + '</th>';
+                        headHtml +=
+                            '<th data-sort="' +
+                            escapeHtml(k) +
+                            '" style="text-align:left;padding:10px 12px;border-bottom:2px solid #334155;cursor:pointer;user-select:none;" title="Sort">' +
+                            escapeHtml(k) +
+                            '</th>';
                     });
-                    html += '</tr></thead><tbody>';
-                    rows.forEach(function (row) {
-                        html += '<tr style="border-bottom:1px solid #334155;">';
-                        keys.forEach(function (k) {
-                            var v = row[k];
-                            html += '<td style="padding:10px 12px;">' + escapeHtml(v == null ? '' : String(v)) + '</td>';
-                        });
-                        html += '</tr>';
-                    });
-                    html += '</tbody></table></div>';
-                    body.innerHTML = html;
+                    theadRow.innerHTML = headHtml;
+                    renderDrilldownTableBody(drilldownData);
                 }
                 document.getElementById('pc-modal-backdrop').style.display = 'flex';
             }
@@ -276,6 +350,23 @@
             function closeModal() {
                 document.getElementById('pc-modal-backdrop').style.display = 'none';
             }
+
+            document.getElementById('pc-modal-body').addEventListener('click', function (e) {
+                var th = e.target.closest('th[data-sort]');
+                if (!th || !document.getElementById('pc-drilldown-table').contains(th)) {
+                    return;
+                }
+                var key = th.getAttribute('data-sort');
+                if (!key || !drilldownData.length) {
+                    return;
+                }
+                drilldownSortDir[key] = !drilldownSortDir[key];
+                var ascending = !!drilldownSortDir[key];
+                var sorted = drilldownData.slice().sort(function (a, b) {
+                    return drilldownCompare(a, b, key, ascending);
+                });
+                renderDrilldownTableBody(sorted);
+            });
 
             function updateAllCharts(data) {
                 if (charts.donut && data.donut) {

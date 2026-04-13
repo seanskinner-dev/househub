@@ -73,43 +73,43 @@ class ReportController extends Controller
 
     public function reportChartData(Request $request)
     {
-        [$start, $end, $house] = $this->pcParseFilters($request);
+        [$start, $end, $house, $yearFilter] = $this->pcParseFilters($request);
 
         return response()->json([
-            'donut' => $this->pcChartDonut($house, $start, $end),
-            'trend' => $this->pcChartTrend($house, $start, $end),
-            'house_breakdown' => $this->pcChartHousePoints($house, $start, $end),
-            'year_level' => $this->pcChartYearLevel($house, $start, $end),
+            'donut' => $this->pcChartDonut($house, $start, $end, $yearFilter),
+            'trend' => $this->pcChartTrend($house, $start, $end, $yearFilter),
+            'house_breakdown' => $this->pcChartHousePoints($house, $start, $end, $yearFilter),
+            'year_level' => $this->pcChartYearLevel($house, $start, $end, $yearFilter),
         ]);
     }
 
     public function reportDrilldown(Request $request)
     {
         $label = trim((string) $request->query('label', ''));
-        [$start, $end, $house] = $this->pcParseFilters($request);
+        [$start, $end, $house, $yearFilter] = $this->pcParseFilters($request);
 
         if ($label === '') {
             return response()->json(['title' => 'Drill-down', 'rows' => []]);
         }
 
         if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $label)) {
-            return response()->json($this->pcDrilldownDate($label, $house, $start, $end));
+            return response()->json($this->pcDrilldownDate($label, $house, $start, $end, $yearFilter));
         }
 
         if ($label === 'High Risk') {
-            return response()->json($this->pcDrilldownRiskHigh($house));
+            return response()->json($this->pcDrilldownRiskHigh($house, $yearFilter));
         }
 
         if ($label === 'Medium Risk') {
-            return response()->json($this->pcDrilldownRiskMedium($house, $start, $end));
+            return response()->json($this->pcDrilldownRiskMedium($house, $start, $end, $yearFilter));
         }
 
         if ($label === 'Active') {
-            return response()->json($this->pcDrilldownRiskActive($house, $start, $end));
+            return response()->json($this->pcDrilldownRiskActive($house, $start, $end, $yearFilter));
         }
 
         if ($label === 'Low') {
-            return response()->json($this->pcDrilldownLowEngagement($house, $start, $end));
+            return response()->json($this->pcDrilldownLowEngagement($house, $start, $end, $yearFilter));
         }
 
         // ===== YEAR LEVEL DRILLDOWN (FIX) — matches chart categories "Year N"; before house matching
@@ -131,6 +131,10 @@ class ReportController extends Controller
             $query->whereRaw('EXTRACT(DOW FROM point_transactions.created_at::timestamp) BETWEEN 1 AND 5')
                 ->where('students.year_level', $year);
 
+            if ($yearFilter !== 'All') {
+                $query->where('students.year_level', (int) $yearFilter);
+            }
+
             $rows = $query
                 ->select(
                     'students.first_name',
@@ -149,20 +153,25 @@ class ReportController extends Controller
         }
 
         if (DB::table('houses')->where('name', $label)->exists()) {
-            return response()->json($this->pcDrilldownHouseBar($label, $start, $end));
+            return response()->json($this->pcDrilldownHouseBar($label, $start, $end, $yearFilter));
         }
 
         return response()->json(['title' => $label, 'rows' => []]);
     }
 
     /**
-     * @return array{0: Carbon, 1: Carbon, 2: string}
+     * @return array{0: Carbon, 1: Carbon, 2: string, 3: string}
      */
     private function pcParseFilters(Request $request): array
     {
         $house = (string) $request->query('house', 'All');
         if ($house !== 'All' && ! DB::table('houses')->where('name', $house)->exists()) {
             $house = 'All';
+        }
+
+        $yearFilter = (string) $request->query('year', 'All');
+        if ($yearFilter !== 'All' && ! in_array($yearFilter, ['7', '8', '9', '10', '11', '12'], true)) {
+            $yearFilter = 'All';
         }
 
         $endIn = $this->pcParseDateParam($request->query('end_date'));
@@ -177,7 +186,7 @@ class ReportController extends Controller
             $end = $tmp->copy()->endOfDay();
         }
 
-        return [$start, $end, $house];
+        return [$start, $end, $house, $yearFilter];
     }
 
     private function pcParseDateParam(mixed $value): ?Carbon
@@ -226,9 +235,12 @@ class ReportController extends Controller
     /**
      * @return array{labels: list<string>, series: list<int>}
      */
-    private function pcChartDonut(string $house, Carbon $start, Carbon $end): array
+    private function pcChartDonut(string $house, Carbon $start, Carbon $end, string $yearFilter = 'All'): array
     {
         $rows = $this->pcStudentBaseForHouse($house)
+            ->when($yearFilter !== 'All', function ($q) use ($yearFilter) {
+                $q->where('students.year_level', (int) $yearFilter);
+            })
             ->leftJoin('point_transactions as pw', function ($join) use ($start, $end) {
                 $join->on('students.id', '=', 'pw.student_id');
                 $this->pcTransactionsInRangeWeekday($join, $start, $end, 'pw');
@@ -252,7 +264,7 @@ class ReportController extends Controller
     /**
      * @return array{categories: list<string>, series: list<int>}
      */
-    private function pcChartTrend(string $house, Carbon $start, Carbon $end): array
+    private function pcChartTrend(string $house, Carbon $start, Carbon $end, string $yearFilter = 'All'): array
     {
         $categories = [];
         $series = [];
@@ -268,9 +280,14 @@ class ReportController extends Controller
                 ->whereBetween('pt.created_at', [$start, $end])
                 ->whereRaw('EXTRACT(DOW FROM pt.created_at::timestamp) BETWEEN 1 AND 5');
 
+            if ($house !== 'All' || $yearFilter !== 'All') {
+                $q->join('students as s', 'pt.student_id', '=', 's.id');
+            }
+            if ($yearFilter !== 'All') {
+                $q->where('s.year_level', (int) $yearFilter);
+            }
             if ($house !== 'All') {
-                $q->join('students as s', 'pt.student_id', '=', 's.id')
-                    ->join('houses as h', 's.house_id', '=', 'h.id')
+                $q->join('houses as h', 's.house_id', '=', 'h.id')
                     ->where('h.name', $house);
             }
 
@@ -287,10 +304,13 @@ class ReportController extends Controller
     /**
      * @return array{categories: list<string>, series: list<int>}
      */
-    private function pcChartHousePoints(string $house, Carbon $start, Carbon $end): array
+    private function pcChartHousePoints(string $house, Carbon $start, Carbon $end, string $yearFilter = 'All'): array
     {
         $q = DB::table('houses')
             ->leftJoin('students as s', 's.house_id', '=', 'houses.id')
+            ->when($yearFilter !== 'All', function ($q) use ($yearFilter) {
+                $q->where('s.year_level', (int) $yearFilter);
+            })
             ->leftJoin('point_transactions as pt', function ($join) use ($start, $end) {
                 $join->on('pt.student_id', '=', 's.id')
                     ->whereBetween('pt.created_at', [$start, $end])
@@ -316,12 +336,15 @@ class ReportController extends Controller
     /**
      * @return array{categories: list<string>, series: list<int>}
      */
-    private function pcChartYearLevel(string $house, Carbon $start, Carbon $end): array
+    private function pcChartYearLevel(string $house, Carbon $start, Carbon $end, string $yearFilter = 'All'): array
     {
         $q = DB::table('point_transactions')
             ->join('students', 'students.id', '=', 'point_transactions.student_id')
             ->whereBetween('point_transactions.created_at', [$start, $end])
             ->whereRaw('EXTRACT(DOW FROM point_transactions.created_at::timestamp) BETWEEN 1 AND 5')
+            ->when($yearFilter !== 'All', function ($q) use ($yearFilter) {
+                $q->where('students.year_level', (int) $yearFilter);
+            })
             ->select('students.year_level')
             ->selectRaw('SUM(point_transactions.amount) as total')
             ->groupBy('students.year_level')
@@ -343,9 +366,12 @@ class ReportController extends Controller
     /**
      * @return array{title: string, rows: list<array<string, mixed>>}
      */
-    private function pcDrilldownLowEngagement(string $house, Carbon $start, Carbon $end): array
+    private function pcDrilldownLowEngagement(string $house, Carbon $start, Carbon $end, string $yearFilter = 'All'): array
     {
         $q = $this->pcStudentWithHouseQuery($house)
+            ->when($yearFilter !== 'All', function ($q) use ($yearFilter) {
+                $q->where('students.year_level', (int) $yearFilter);
+            })
             ->leftJoin('point_transactions as pw', function ($join) use ($start, $end) {
                 $join->on('students.id', '=', 'pw.student_id');
                 $this->pcTransactionsInRangeWeekday($join, $start, $end, 'pw');
@@ -367,9 +393,12 @@ class ReportController extends Controller
     /**
      * @return array{title: string, rows: list<array<string, mixed>>}
      */
-    private function pcDrilldownRiskHigh(string $house): array
+    private function pcDrilldownRiskHigh(string $house, string $yearFilter = 'All'): array
     {
         $q = $this->pcStudentWithHouseQuery($house)
+            ->when($yearFilter !== 'All', function ($q) use ($yearFilter) {
+                $q->where('students.year_level', (int) $yearFilter);
+            })
             ->selectRaw('TRIM(CONCAT(students.first_name, \' \', students.last_name)) as name')
             ->selectRaw('h.name as house_name')
             ->whereRaw('(SELECT COUNT(*) FROM point_transactions t WHERE t.student_id = students.id) = 0')
@@ -386,9 +415,12 @@ class ReportController extends Controller
     /**
      * @return array{title: string, rows: list<array<string, mixed>>}
      */
-    private function pcDrilldownRiskMedium(string $house, Carbon $start, Carbon $end): array
+    private function pcDrilldownRiskMedium(string $house, Carbon $start, Carbon $end, string $yearFilter = 'All'): array
     {
         $q = $this->pcStudentWithHouseQuery($house)
+            ->when($yearFilter !== 'All', function ($q) use ($yearFilter) {
+                $q->where('students.year_level', (int) $yearFilter);
+            })
             ->leftJoin('point_transactions as pw', function ($join) use ($start, $end) {
                 $join->on('students.id', '=', 'pw.student_id');
                 $this->pcTransactionsInRangeWeekday($join, $start, $end, 'pw');
@@ -410,9 +442,12 @@ class ReportController extends Controller
     /**
      * @return array{title: string, rows: list<array<string, mixed>>}
      */
-    private function pcDrilldownRiskActive(string $house, Carbon $start, Carbon $end): array
+    private function pcDrilldownRiskActive(string $house, Carbon $start, Carbon $end, string $yearFilter = 'All'): array
     {
         $q = $this->pcStudentWithHouseQuery($house)
+            ->when($yearFilter !== 'All', function ($q) use ($yearFilter) {
+                $q->where('students.year_level', (int) $yearFilter);
+            })
             ->join('point_transactions as pw', function ($join) use ($start, $end) {
                 $join->on('students.id', '=', 'pw.student_id');
                 $this->pcTransactionsInRangeWeekday($join, $start, $end, 'pw');
@@ -435,7 +470,7 @@ class ReportController extends Controller
     /**
      * @return array{title: string, rows: list<array<string, mixed>>}
      */
-    private function pcDrilldownDate(string $dateStr, string $house, Carbon $start, Carbon $end): array
+    private function pcDrilldownDate(string $dateStr, string $house, Carbon $start, Carbon $end, string $yearFilter = 'All'): array
     {
         $day = Carbon::createFromFormat('Y-m-d', $dateStr)->startOfDay();
 
@@ -462,6 +497,10 @@ class ReportController extends Controller
             $q->where('h.name', $house);
         }
 
+        if ($yearFilter !== 'All') {
+            $q->where('s.year_level', (int) $yearFilter);
+        }
+
         $rows = $q->get()->map(fn ($r) => [
             'student' => $r->student,
             'house' => $r->house ?? '—',
@@ -476,12 +515,15 @@ class ReportController extends Controller
     /**
      * @return array{title: string, rows: list<array<string, mixed>>}
      */
-    private function pcDrilldownHouseBar(string $houseName, Carbon $start, Carbon $end): array
+    private function pcDrilldownHouseBar(string $houseName, Carbon $start, Carbon $end, string $yearFilter = 'All'): array
     {
         $q = DB::table('point_transactions as pt')
             ->join('students as s', 'pt.student_id', '=', 's.id')
             ->join('houses as h', 's.house_id', '=', 'h.id')
             ->where('h.name', $houseName)
+            ->when($yearFilter !== 'All', function ($q) use ($yearFilter) {
+                $q->where('s.year_level', (int) $yearFilter);
+            })
             ->whereBetween('pt.created_at', [$start, $end])
             ->whereRaw('EXTRACT(DOW FROM pt.created_at::timestamp) BETWEEN 1 AND 5')
             ->selectRaw('TRIM(CONCAT(s.first_name, \' \', s.last_name)) as name')

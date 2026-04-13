@@ -1111,7 +1111,16 @@
 document.addEventListener("DOMContentLoaded", function () {
 
     let currentScreen = 0;
-    const screens = document.querySelectorAll('.tv-screen');
+
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    const screens = Array.from(document.querySelectorAll('.tv-screen'));
+    shuffle(screens);
     console.log('TV screens found:', screens.length);
     const broadcastUrl = @json(route('broadcast-messages.latest'));
     const broadcastBanner = document.getElementById('broadcastBanner');
@@ -1123,7 +1132,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function nextScreen() {
-        currentScreen = (currentScreen + 1) % screens.length;
+        currentScreen++;
+        if (currentScreen >= screens.length) {
+            shuffle(screens);
+            currentScreen = 0;
+        }
         showScreen(currentScreen);
     }
 
