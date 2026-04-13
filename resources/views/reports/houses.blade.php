@@ -7,7 +7,7 @@
     </p>
 
     <section style="margin-bottom: 2.25rem;">
-        <div id="house-rank" style="min-height: 380px;"></div>
+        <div id="house-comparison" style="min-height: 380px;"></div>
     </section>
 
     <section style="margin-bottom: 2.25rem;">
@@ -42,7 +42,6 @@
 @endsection
 
 @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.54.1/dist/apexcharts.min.js"></script>
     <script>
         (function () {
             var dataUrl = @json(route('reports.data'));
@@ -128,7 +127,7 @@
                     return b.value - a.value;
                 });
 
-                charts.rank = new ApexCharts(document.querySelector('#house-rank'), {
+                charts.rank = new ApexCharts(document.querySelector('#house-comparison'), {
                     chart: {
                         type: 'bar',
                         height: 380,
@@ -260,11 +259,15 @@
             }
 
             function renderHouseCharts(data) {
-                destroyCharts();
-                renderRank(data);
-                renderContribution(data);
-                renderRisk(data);
-                renderMomentum(data);
+                try {
+                    destroyCharts();
+                    renderRank(data);
+                    renderContribution(data);
+                    renderRisk(data);
+                    renderMomentum(data);
+                } catch (e) {
+                    console.error('Chart render failed:', e);
+                }
             }
 
             function fetchHouseData() {
@@ -272,7 +275,10 @@
                     headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
                 })
                     .then(function (res) { return res.json(); })
-                    .then(renderHouseCharts)
+                    .then(function (data) {
+                        console.log('Chart data:', data);
+                        renderHouseCharts(data);
+                    })
                     .catch(function () {});
             }
 

@@ -161,6 +161,11 @@
     @stack('scripts')
 
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script>
+        if (typeof ApexCharts === 'undefined') {
+            console.error('ApexCharts failed to load');
+        }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>

@@ -46,25 +46,25 @@
     <section style="margin-bottom: 2.5rem;">
         <h2 style="font-size: 1.25rem; margin-bottom: 0.75rem; font-weight: 600;">Engagement health</h2>
         <p style="font-size: 0.9rem; opacity: 0.85; margin-bottom: 0.75rem;">Share of students with weekday points in range (same cohort as risk donut).</p>
-        <div id="lr-health" style="max-width: 420px; min-height: 320px;"></div>
+        <div id="engagement-health" style="max-width: 420px; min-height: 320px;"></div>
     </section>
 
     <section style="margin-bottom: 2.5rem;">
         <h2 style="font-size: 1.25rem; margin-bottom: 0.75rem; font-weight: 600;">Weekday activity heatmap</h2>
         <p style="font-size: 0.9rem; opacity: 0.85; margin-bottom: 0.75rem;">Same trend series as PC — heatmap layout. Click a cell for transactions that day.</p>
-        <div id="lr-heatmap" style="min-height: 380px;"></div>
+        <div id="heatmap" style="min-height: 380px;"></div>
     </section>
 
     <section style="margin-bottom: 2.5rem;">
         <h2 style="font-size: 1.25rem; margin-bottom: 0.75rem; font-weight: 600;">Points by year level (area)</h2>
         <p style="font-size: 0.9rem; opacity: 0.85; margin-bottom: 0.75rem;">Same data as the PC year-level bar — shown as an area series. Click a point for that year.</p>
-        <div id="lr-year-trend" style="min-height: 400px;"></div>
+        <div id="year-level" style="min-height: 400px;"></div>
     </section>
 
     <section style="margin-bottom: 2.5rem;">
         <h2 style="font-size: 1.25rem; margin-bottom: 0.75rem; font-weight: 600;">Risk mix (polar)</h2>
         <p style="font-size: 0.9rem; opacity: 0.85; margin-bottom: 0.75rem;">Same counts as the PC donut — polar layout. Click a segment for that risk group.</p>
-        <div id="lr-distribution" style="max-width: 520px; min-height: 420px;"></div>
+        <div id="risk-mix" style="max-width: 520px; min-height: 420px;"></div>
     </section>
 
     <section style="margin-bottom: 2rem;">
@@ -93,7 +93,6 @@
 @endsection
 
 @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.54.1/dist/apexcharts.min.js"></script>
     <script>
         (function () {
             var dataUrl = @json(route('reports.data'));
@@ -345,7 +344,7 @@
                     colors: ['#22c55e']
                 };
 
-                lrCharts.health = new ApexCharts(document.querySelector('#lr-health'), options);
+                lrCharts.health = new ApexCharts(document.querySelector('#engagement-health'), options);
                 lrCharts.health.render();
             }
 
@@ -384,7 +383,7 @@
                     grid: { borderColor: '#334155' }
                 };
 
-                lrCharts.heatmap = new ApexCharts(document.querySelector('#lr-heatmap'), options);
+                lrCharts.heatmap = new ApexCharts(document.querySelector('#heatmap'), options);
                 lrCharts.heatmap.render();
             }
 
@@ -435,7 +434,7 @@
                     tooltip: { theme: 'dark' }
                 };
 
-                lrCharts.yearTrend = new ApexCharts(document.querySelector('#lr-year-trend'), options);
+                lrCharts.yearTrend = new ApexCharts(document.querySelector('#year-level'), options);
                 lrCharts.yearTrend.render();
             }
 
@@ -471,7 +470,7 @@
                     yaxis: { show: false }
                 };
 
-                lrCharts.distribution = new ApexCharts(document.querySelector('#lr-distribution'), options);
+                lrCharts.distribution = new ApexCharts(document.querySelector('#risk-mix'), options);
                 lrCharts.distribution.render();
             }
 
@@ -511,12 +510,16 @@
             }
 
             function renderLeadership(data) {
-                destroyLrCharts();
-                renderHealth(data);
-                renderHeatmap(data);
-                renderYearTrend(data);
-                renderDistribution(data);
-                renderDropoff(data);
+                try {
+                    destroyLrCharts();
+                    renderHealth(data);
+                    renderHeatmap(data);
+                    renderYearTrend(data);
+                    renderDistribution(data);
+                    renderDropoff(data);
+                } catch (e) {
+                    console.error('Chart render failed:', e);
+                }
             }
 
             function fetchLeadership() {
@@ -525,6 +528,7 @@
                 })
                     .then(function (res) { return res.json(); })
                     .then(function (data) {
+                        console.log('Chart data:', data);
                         renderLeadership(data);
                     })
                     .catch(function () {});

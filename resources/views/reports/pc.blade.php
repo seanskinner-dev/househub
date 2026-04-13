@@ -85,7 +85,6 @@
 @endsection
 
 @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.54.1/dist/apexcharts.min.js"></script>
     <script>
         (function () {
             var dataUrl = @json(route('reports.data'));
@@ -224,6 +223,7 @@
                 })
                     .then(function (res) { return res.json(); })
                     .then(function (data) {
+                        console.log('Chart data:', data);
                         updateAllCharts(data);
                     })
                     .catch(function () {});
@@ -351,11 +351,12 @@
             });
 
             function updateAllCharts(data) {
-                if (charts.donut && data.donut) {
-                    charts.donut.updateOptions({ labels: data.donut.labels });
-                    charts.donut.updateSeries(data.donut.series);
-                }
-                if (charts.trend && data.trend) {
+                try {
+                    if (charts.donut && data.donut) {
+                        charts.donut.updateOptions({ labels: data.donut.labels });
+                        charts.donut.updateSeries(data.donut.series);
+                    }
+                    if (charts.trend && data.trend) {
                     const rawDates = data.trend.categories || [];
                     const seriesPayload = data.trend.series;
                     var values;
@@ -432,16 +433,19 @@
                             curve: 'smooth'
                         }
                     });
-                    charts.trend.updateSeries([{ name: 'Points', data: values }]);
-                }
-                if (charts.house && data.house_breakdown) {
-                    charts.house.updateOptions({ xaxis: { categories: data.house_breakdown.categories } });
-                    charts.house.updateSeries([{ name: 'Points', data: data.house_breakdown.series }]);
-                }
-                if (charts.year && data.year_level) {
-                    var ycats = (data.year_level.categories || []).map((y) => `Year ${y}`);
-                    charts.year.updateOptions({ xaxis: { categories: ycats } });
-                    charts.year.updateSeries([{ name: 'Points', data: data.year_level.series }]);
+                        charts.trend.updateSeries([{ name: 'Points', data: values }]);
+                    }
+                    if (charts.house && data.house_breakdown) {
+                        charts.house.updateOptions({ xaxis: { categories: data.house_breakdown.categories } });
+                        charts.house.updateSeries([{ name: 'Points', data: data.house_breakdown.series }]);
+                    }
+                    if (charts.year && data.year_level) {
+                        var ycats = (data.year_level.categories || []).map((y) => `Year ${y}`);
+                        charts.year.updateOptions({ xaxis: { categories: ycats } });
+                        charts.year.updateSeries([{ name: 'Points', data: data.year_level.series }]);
+                    }
+                } catch (e) {
+                    console.error('Chart render failed:', e);
                 }
             }
 

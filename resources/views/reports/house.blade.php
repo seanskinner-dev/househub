@@ -40,6 +40,7 @@
             }
 
             const data = @json($housePerformance);
+            console.log('Chart data:', data);
 
             const names = data.map(h => h.house);
             const thisTerm = data.map(h => Number(h.this_term ?? h.term_total ?? 0));
@@ -67,10 +68,11 @@
             document.querySelectorAll('#house-comparison, #house-momentum, #house-contribution, #house-risk')
                 .forEach(el => el.innerHTML = '');
 
-            //-----------------------------------
-            // 1. TERM COMPARISON
-            //-----------------------------------
-            new ApexCharts(document.querySelector("#house-comparison"), {
+            try {
+                //-----------------------------------
+                // 1. TERM COMPARISON
+                //-----------------------------------
+                new ApexCharts(document.querySelector("#house-comparison"), {
                 chart: {
                     type: 'bar',
                     height: 300,
@@ -89,12 +91,12 @@
                 ],
                 xaxis: { categories: names },
                 title: { text: 'Term Comparison' }
-            }).render();
+                }).render();
 
-            //-----------------------------------
-            // 2. MOMENTUM
-            //-----------------------------------
-            new ApexCharts(document.querySelector("#house-momentum"), {
+                //-----------------------------------
+                // 2. MOMENTUM
+                //-----------------------------------
+                new ApexCharts(document.querySelector("#house-momentum"), {
                 chart: {
                     type: 'line',
                     height: 300,
@@ -110,14 +112,14 @@
                 series: [{ name: 'Momentum', data: thisTerm }],
                 xaxis: { categories: names },
                 title: { text: 'Momentum' }
-            }).render();
+                }).render();
 
-            //-----------------------------------
-            // 3. CONTRIBUTION
-            //-----------------------------------
-            const contribution = thisTerm.map(v => Math.max(1, Math.floor(v / 10)));
+                //-----------------------------------
+                // 3. CONTRIBUTION
+                //-----------------------------------
+                const contribution = thisTerm.map(v => Math.max(1, Math.floor(v / 10)));
 
-            new ApexCharts(document.querySelector("#house-contribution"), {
+                new ApexCharts(document.querySelector("#house-contribution"), {
                 chart: {
                     type: 'radar',
                     height: 300,
@@ -136,14 +138,14 @@
                 }],
                 labels: names,
                 title: { text: 'Contribution Spread' }
-            }).render();
+                }).render();
 
-            //-----------------------------------
-            // 4. RISK
-            //-----------------------------------
-            const risk = thisTerm.map(v => Math.floor(100 / (v + 1)));
+                //-----------------------------------
+                // 4. RISK
+                //-----------------------------------
+                const risk = thisTerm.map(v => Math.floor(100 / (v + 1)));
 
-            new ApexCharts(document.querySelector("#house-risk"), {
+                new ApexCharts(document.querySelector("#house-risk"), {
                 chart: {
                     type: 'bar',
                     height: 300,
@@ -159,7 +161,10 @@
                 series: [{ name: 'Risk', data: risk }],
                 xaxis: { categories: names },
                 title: { text: 'Underperformance' }
-            }).render();
+                }).render();
+            } catch (e) {
+                console.error('Chart render failed:', e);
+            }
         });
     </script>
 @endpush

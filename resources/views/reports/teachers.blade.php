@@ -40,13 +40,13 @@
 
     <section style="margin-bottom: 2.5rem;">
         <h2 style="font-size: 1.2rem; margin-bottom: 0.75rem; font-weight: 600;">Top 10 Staff Usage</h2>
-        <div id="tu-low-usage" style="min-height: 380px;"></div>
+        <div id="teacher-bias" style="min-height: 380px;"></div>
     </section>
 
     <section style="margin-bottom: 2.5rem;">
         <h2 style="font-size: 1.2rem; margin-bottom: 0.75rem; font-weight: 600;">Staff usage frequency (by teacher)</h2>
         <p style="font-size: 0.9rem; opacity: 0.85; margin-bottom: 0.5rem;">Click a bucket to list <strong>teachers</strong> in that usage band (same date/house/year filters).</p>
-        <div id="tu-frequency" style="min-height: 340px;"></div>
+        <div id="teacher-frequency" style="min-height: 340px;"></div>
     </section>
 
     <section style="margin-bottom: 2rem;">
@@ -78,7 +78,6 @@
 @endsection
 
 @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.54.1/dist/apexcharts.min.js"></script>
     <script>
         (function () {
             var dataUrl = @json(route('reports.data'));
@@ -340,7 +339,7 @@
                 }
 
                 var common = { fontFamily: 'Arial, sans-serif', foreColor: '#e2e8f0' };
-                tuCharts.low = new ApexCharts(document.querySelector('#tu-low-usage'), {
+                tuCharts.low = new ApexCharts(document.querySelector('#teacher-bias'), {
                     chart: {
                         type: 'bar',
                         height: 380,
@@ -418,7 +417,7 @@
                     return buckets[k].length;
                 });
                 var common = { fontFamily: 'Arial, sans-serif', foreColor: '#e2e8f0' };
-                tuCharts.freq = new ApexCharts(document.querySelector('#tu-frequency'), {
+                tuCharts.freq = new ApexCharts(document.querySelector('#teacher-frequency'), {
                     chart: {
                         type: 'bar',
                         height: 340,
@@ -537,10 +536,14 @@
             }
 
             function renderTeacherCharts(data) {
-                destroyTuCharts();
-                renderLowUsage(data);
-                renderFrequency(data);
-                renderTrend(data);
+                try {
+                    destroyTuCharts();
+                    renderLowUsage(data);
+                    renderFrequency(data);
+                    renderTrend(data);
+                } catch (e) {
+                    console.error('Chart render failed:', e);
+                }
             }
 
             function fetchTeacherData() {
@@ -548,7 +551,10 @@
                     headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
                 })
                     .then(function (res) { return res.json(); })
-                    .then(renderTeacherCharts)
+                    .then(function (data) {
+                        console.log('Chart data:', data);
+                        renderTeacherCharts(data);
+                    })
                     .catch(function () {});
             }
 
