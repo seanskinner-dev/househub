@@ -222,70 +222,83 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
         console.log('Risk labels:', payload.donut.labels);
-        const riskColors = payload.donut.labels.map(label => {
-            const l = String(label).toLowerCase();
-            if (l.includes('high')) return '#ef4444';
-            if (l.includes('medium')) return '#eab308';
-            return '#22c55e';
-        });
+        const data = payload;
 
         ['engagement-health', 'risk-distribution', 'engagement-trend', 'points-by-house'].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.innerHTML = '';
         });
 
-        if (!data || !data.trend || !data.house_breakdown) {
-            console.error('Missing required data', data);
-            return;
-        }
-        new ApexCharts(document.querySelector("#engagement-health"), {
-            chart: {
-                type: 'donut',
-                height: 320,
-                events: {
-                    dataPointSelection: function(event, chartContext, config) {
-                        const label = config.w.config.labels[config.dataPointIndex];
-                        drillDown({
-                            type: 'risk',
-                            value: label
-                        });
-                    }
-                }
-            },
-            series: payload.donut.series,
-            labels: payload.donut.labels,
-            colors: riskColors,
-            plotOptions: {
-                pie: {
-                    donut: {
-                        size: '65%'
-                    }
-                }
-            }
-        }).render();
+        if (!data.donut || !data.donut.series || !data.donut.labels) {
+            console.error('Donut data invalid:', data.donut);
+        } else {
+            try {
+                const riskColors = data.donut.labels.map(label => {
+                    const l = label.toLowerCase();
+                    if (l.includes('high')) return '#ef4444';
+                    if (l.includes('medium')) return '#eab308';
+                    return '#22c55e';
+                });
 
-        if (!data || !data.trend || !data.house_breakdown) {
-            console.error('Missing required data', data);
-            return;
-        }
-        new ApexCharts(document.querySelector("#risk-distribution"), {
-            chart: {
-                type: 'polarArea',
-                height: 320,
-                events: {
-                    dataPointSelection: function(event, chartContext, config) {
-                        const label = config.w.config.labels[config.dataPointIndex];
-                        drillDown({
-                            type: 'risk',
-                            value: label
-                        });
+                new ApexCharts(document.querySelector("#engagement-health"), {
+                    chart: {
+                        type: 'donut',
+                        height: 320,
+                        events: {
+                            dataPointSelection: function(event, chartContext, config) {
+                                const label = config.w.config.labels[config.dataPointIndex];
+                                drillDown({
+                                    type: 'risk',
+                                    value: label
+                                });
+                            }
+                        }
+                    },
+                    series: data.donut.series,
+                    labels: data.donut.labels,
+                    colors: riskColors,
+                    plotOptions: {
+                        pie: {
+                            donut: {
+                                size: '65%'
+                            }
+                        }
                     }
-                }
-            },
-            series: payload.donut.series,
-            labels: payload.donut.labels,
-            colors: riskColors
-        }).render();
+                }).render();
+            } catch (e) {
+                console.error('engagement-health failed', e);
+            }
+
+            try {
+                const riskColors = data.donut.labels.map(label => {
+                    const l = label.toLowerCase();
+                    if (l.includes('high')) return '#ef4444';
+                    if (l.includes('medium')) return '#eab308';
+                    return '#22c55e';
+                });
+
+                new ApexCharts(document.querySelector("#risk-distribution"), {
+                    chart: {
+                        type: 'polarArea',
+                        height: 320,
+                        events: {
+                            dataPointSelection: function(event, chartContext, config) {
+                                const label = config.w.config.labels[config.dataPointIndex];
+                                drillDown({
+                                    type: 'risk',
+                                    value: label
+                                });
+                            }
+                        }
+                    },
+                    series: data.donut.series,
+                    labels: data.donut.labels,
+                    colors: riskColors
+                }).render();
+            } catch (e) {
+                console.error('risk-distribution failed', e);
+            }
+        }
 
         if (!data || !data.trend || !data.house_breakdown) {
             console.error('Missing required data', data);
