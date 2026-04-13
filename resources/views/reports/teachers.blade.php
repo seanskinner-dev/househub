@@ -39,7 +39,7 @@
     </div>
 
     <section style="margin-bottom: 2.5rem;">
-        <h2 style="font-size: 1.2rem; margin-bottom: 0.75rem; font-weight: 600;">Top 10 staff</h2>
+        <h2 style="font-size: 1.2rem; margin-bottom: 0.75rem; font-weight: 600;">Top 10 Staff Usage</h2>
         <div id="tu-low-usage" style="min-height: 380px;"></div>
     </section>
 
@@ -326,6 +326,11 @@
                                 drillDownTeacher(row.name);
                             }
                         }
+                    },
+                    title: {
+                        text: 'Top 10 Staff Usage',
+                        align: 'left',
+                        style: { color: '#e2e8f0', fontSize: '16px', fontWeight: 600 }
                     },
                     series: [{ name: 'Awards', data: top.map(function (t) { return t.count; }) }],
                     xaxis: {
