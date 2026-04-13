@@ -5,6 +5,7 @@ use App\Http\Controllers\BroadcastMessageController;
 use App\Http\Controllers\OfficeMessageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PointController;
+use App\Http\Controllers\ReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -63,6 +64,11 @@ Route::middleware(['auth'])->group(function () {
     // TV MODE (DISPLAY SCREENS)
     // =============================
     Route::get('/tv', [PointController::class, 'tv'])->name('tv');
+
+    // =============================
+    // REPORTS
+    // =============================
+    Route::get('/reports/house-performance', [ReportController::class, 'housePerformance'])->name('reports.house');
 
     // =============================
     // DASHBOARD (OPTIONAL / FUTURE)
