@@ -129,11 +129,9 @@
 @push('scripts')
 <script>
 document.addEventListener("DOMContentLoaded", async function () {
-    const dataUrl = @json(route('reports.data'));
     const drillUrl = @json(route('reports.drilldown'));
     const modalBackdrop = document.getElementById('pc-modal-backdrop');
     const modalClose = document.getElementById('pc-modal-close');
-    const charts = { health: null, risk: null, trend: null, house: null };
 
     function queryStringFromFilters() {
         const params = new URLSearchParams();
@@ -144,15 +142,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (start) params.set('start_date', start);
         if (end) params.set('end_date', end);
         return params.toString();
-    }
-
-    function escapeHtml(value) {
-        return String(value ?? '')
-            .replaceAll('&', '&amp;')
-            .replaceAll('<', '&lt;')
-            .replaceAll('>', '&gt;')
-            .replaceAll('"', '&quot;')
-            .replaceAll("'", '&#39;');
     }
 
     function renderDrillDownModal(data) {
@@ -174,10 +163,10 @@ document.addEventListener("DOMContentLoaded", async function () {
             emptyEl.style.display = 'none';
             wrapEl.style.display = 'block';
             theadRow.innerHTML = keys
-                .map(k => `<th style="text-align:left;padding:10px 12px;border-bottom:2px solid #334155;">${escapeHtml(k)}</th>`)
+                .map(k => `<th style="text-align:left;padding:10px 12px;border-bottom:2px solid #334155;">${String(k)}</th>`)
                 .join('');
             tbody.innerHTML = rows
-                .map(row => `<tr style="border-bottom:1px solid #334155;">${keys.map(k => `<td style="padding:10px 12px;">${escapeHtml(row[k])}</td>`).join('')}</tr>`)
+                .map(row => `<tr style="border-bottom:1px solid #334155;">${keys.map(k => `<td style="padding:10px 12px;">${String(row[k] ?? '')}</td>`).join('')}</tr>`)
                 .join('');
         }
         modalBackdrop.style.display = 'flex';
@@ -202,47 +191,38 @@ document.addEventListener("DOMContentLoaded", async function () {
             .catch(() => {});
     }
 
+    //-----------------------------------
+    // FETCH DATA
+    //-----------------------------------
+    const res = await fetch('/reports/data?' + queryStringFromFilters(), {
+        headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+    });
+    const data = await res.json();
+
+    console.log('PC DATA:', data);
+
     function handleDrill(label) {
-        let type = 'low';
         if (!label) return;
+        let type = 'low';
         const l = label.toLowerCase();
         if (l.includes('high')) type = 'high';
         else if (l.includes('medium')) type = 'medium';
         else if (l.includes('low')) type = 'low';
 
-        // Keep payload compatible with backend drilldown mapping.
         if (type === 'high' || type === 'medium') {
             drillDown({ type: 'risk_segment', value: label });
         } else {
-            drillDown({ type: 'engagement_low', value: label });
+            drillDown({ type: 'engagement_active', value: label });
         }
     }
 
-    function destroyCharts() {
-        Object.keys(charts).forEach(key => {
-            if (charts[key]) {
-                charts[key].destroy();
-                charts[key] = null;
-            }
+    function renderCharts(payload) {
+        ['engagement-health', 'risk-distribution', 'engagement-trend', 'points-by-house'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = '';
         });
-    }
 
-    async function renderWithBackendData() {
-        const res = await fetch(dataUrl + '?' + queryStringFromFilters(), {
-            headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
-        });
-        const data = await res.json();
-
-        console.log('PC DATA:', data);
-
-        if (!data || !data.donut || !data.trend || !data.house_breakdown) {
-            console.error('Missing data for charts');
-            return;
-        }
-
-        destroyCharts();
-
-        charts.health = new ApexCharts(document.querySelector("#engagement-health"), {
+        new ApexCharts(document.querySelector("#engagement-health"), {
             chart: {
                 type: 'donut',
                 height: 320,
@@ -253,13 +233,19 @@ document.addEventListener("DOMContentLoaded", async function () {
                     }
                 }
             },
-            series: data.donut.series,
-            labels: data.donut.labels,
-            colors: ['#ef4444', '#eab308', '#22c55e']
-        });
-        charts.health.render();
+            series: payload.donut.series,
+            labels: payload.donut.labels,
+            colors: ['#22c55e', '#eab308', '#ef4444'],
+            plotOptions: {
+                pie: {
+                    donut: {
+                        size: '65%'
+                    }
+                }
+            }
+        }).render();
 
-        charts.risk = new ApexCharts(document.querySelector("#risk-distribution"), {
+        new ApexCharts(document.querySelector("#risk-distribution"), {
             chart: {
                 type: 'polarArea',
                 height: 320,
@@ -270,57 +256,56 @@ document.addEventListener("DOMContentLoaded", async function () {
                     }
                 }
             },
-            series: data.donut.series,
-            labels: data.donut.labels,
-            colors: ['#ef4444', '#eab308', '#22c55e']
-        });
-        charts.risk.render();
+            series: payload.donut.series,
+            labels: payload.donut.labels,
+            colors: ['#22c55e', '#eab308', '#ef4444']
+        }).render();
 
-        charts.trend = new ApexCharts(document.querySelector("#engagement-trend"), {
+        new ApexCharts(document.querySelector("#engagement-trend"), {
             chart: {
                 type: 'line',
                 height: 320,
                 events: {
                     dataPointSelection: (e, ctx, config) => {
-                        const rawDate = (data.trend.categories || [])[config.dataPointIndex];
-                        if (rawDate) {
-                            drillDown({ type: 'date', value: rawDate });
-                        }
+                        const rawDate = payload.trend.categories[config.dataPointIndex];
+                        drillDown({
+                            type: 'date',
+                            value: rawDate
+                        });
                     }
                 }
             },
-            series: data.trend.series,
+            series: payload.trend.series,
             xaxis: {
-                categories: data.trend.categories.map(d => {
+                categories: payload.trend.categories.map(d => {
                     const date = new Date(d + 'T00:00:00');
-                    return `${date.getDate()}/${date.getMonth() + 1}`;
+                    return `${date.getDate()}/${date.getMonth()+1}`;
                 })
-            },
-            colors: ['#60a5fa']
-        });
-        charts.trend.render();
+            }
+        }).render();
 
-        charts.house = new ApexCharts(document.querySelector("#points-by-house"), {
+        new ApexCharts(document.querySelector("#points-by-house"), {
             chart: {
                 type: 'bar',
                 height: 320,
                 events: {
                     dataPointSelection: (e, ctx, config) => {
-                        const label = (data.house_breakdown.categories || [])[config.dataPointIndex];
-                        if (label) {
-                            drillDown({ type: 'house_low', value: label });
-                        }
+                        const house = payload.house_breakdown.categories[config.dataPointIndex];
+                        drillDown({
+                            type: 'house_low',
+                            value: house
+                        });
                     }
                 }
             },
-            series: data.house_breakdown.series,
+            series: payload.house_breakdown.series,
             xaxis: {
-                categories: data.house_breakdown.categories
-            },
-            colors: ['#38bdf8']
-        });
-        charts.house.render();
+                categories: payload.house_breakdown.categories
+            }
+        }).render();
     }
+
+    renderCharts(data);
 
     modalClose.addEventListener('click', function () {
         modalBackdrop.style.display = 'none';
@@ -330,11 +315,14 @@ document.addEventListener("DOMContentLoaded", async function () {
             modalBackdrop.style.display = 'none';
         }
     });
-    document.getElementById('pc-apply').addEventListener('click', function () {
-        renderWithBackendData().catch(() => {});
+    document.getElementById('pc-apply').addEventListener('click', async function () {
+        const refreshed = await fetch('/reports/data?' + queryStringFromFilters(), {
+            headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const refreshedData = await refreshed.json();
+        console.log('PC DATA:', refreshedData);
+        renderCharts(refreshedData);
     });
-
-    renderWithBackendData().catch(() => {});
 });
 </script>
 @endpush
