@@ -43,6 +43,12 @@
             text-decoration: underline;
         }
 
+        .nav-right a.active {
+            text-decoration: underline;
+            border-bottom: 2px solid #fff;
+            padding-bottom: 2px;
+        }
+
         /* PAGE CONTENT */
         .page-content {
             padding: 20px;
@@ -58,6 +64,7 @@
 
         <div class="nav-right">
             <a href="/points">Points</a>
+            <a href="{{ route('reports.house') }}" class="{{ request()->routeIs('reports.house') ? 'active' : '' }}">Reports</a>
             <a href="/tv">TV</a>
             <a href="/admin">Admin</a>
         </div>
