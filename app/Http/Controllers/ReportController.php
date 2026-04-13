@@ -125,10 +125,12 @@ class ReportController extends Controller
             'categories' => $trend->pluck('date')->toArray(),
         ];
 
-        $houses = DB::table('point_transactions')
-            ->selectRaw('house_name, SUM(amount) as total')
-            ->whereNotNull('house_name')
-            ->groupBy('house_name')
+        $houses = DB::table('point_transactions as pt')
+            ->join('students as s', 'pt.student_id', '=', 's.id')
+            ->join('houses as h', 's.house_id', '=', 'h.id')
+            ->selectRaw('h.name as house_name, SUM(pt.amount) as total')
+            ->whereNotNull('h.name')
+            ->groupBy('h.name')
             ->get();
 
         $houseData = [
