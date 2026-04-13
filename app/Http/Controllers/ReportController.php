@@ -66,9 +66,26 @@ class ReportController extends Controller
     {
         $houses = DB::table('houses')->orderBy('name')->pluck('name')->values()->all();
 
-        return view('reports.pc', [
+        [$start, $end, $house, $yearFilter] = $this->pcParseFilters(request());
+
+        $viewData = [
             'houses' => $houses,
-        ]);
+            'donut' => $this->pcChartDonut($house, $start, $end, $yearFilter),
+            'trend' => $this->pcChartTrend($house, $start, $end, $yearFilter),
+            'house_breakdown' => $this->pcChartHousePoints($house, $start, $end, $yearFilter),
+            'year_level' => $this->pcChartYearLevel($house, $start, $end, $yearFilter),
+            'recent' => $this->pcTeacherRecentRows($house, $start, $end, $yearFilter),
+            'filters' => [
+                'house' => $house,
+                'year' => $yearFilter,
+                'start_date' => $start->toDateString(),
+                'end_date' => $end->toDateString(),
+            ],
+        ];
+
+        dd($viewData);
+
+        return view('reports.pc', $viewData);
     }
 
     public function leadership()
