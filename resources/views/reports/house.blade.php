@@ -3,10 +3,45 @@
 @section('content')
     <h1 style="font-size: 1.5rem; margin-bottom: 1rem;">House Performance Report</h1>
 
-    <div id="house-comparison" style="min-height: 300px;"></div>
-    <div id="house-momentum" class="mt-4" style="min-height: 300px;"></div>
-    <div id="house-contribution" class="mt-4" style="min-height: 300px;"></div>
-    <div id="house-risk" class="mt-4" style="min-height: 300px;"></div>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>Term Performance Comparison</h5>
+            <p class="text-muted small mb-3">
+                Compares current term performance against the previous term.
+            </p>
+            <div id="house-comparison" style="min-height: 300px;"></div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>House Momentum</h5>
+            <p class="text-muted small mb-3">
+                Shows relative performance trends across houses.
+            </p>
+            <div id="house-momentum" style="min-height: 300px;"></div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>Contribution Spread</h5>
+            <p class="text-muted small mb-3">
+                Indicates how widely students contribute within each house.
+            </p>
+            <div id="house-contribution" style="min-height: 300px;"></div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>Underperformance Index</h5>
+            <p class="text-muted small mb-3">
+                Highlights houses with higher proportions of low-engagement students.
+            </p>
+            <div id="house-risk" style="min-height: 300px;"></div>
+        </div>
+    </div>
 
     <div style="overflow-x: auto;">
         <table style="width: 100%; border-collapse: collapse; background: #1e293b; border-radius: 8px;">

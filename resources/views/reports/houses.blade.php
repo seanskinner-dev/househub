@@ -6,21 +6,45 @@
         House-focused insights emphasizing low or weakening outcomes. Click any chart element to drill into problem areas.
     </p>
 
-    <section style="margin-bottom: 2.25rem;">
-        <div id="house-comparison" style="min-height: 380px;"></div>
-    </section>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>Term Performance Comparison</h5>
+            <p class="text-muted small mb-3">
+                Compares current term performance against the previous term.
+            </p>
+            <div id="house-comparison" style="min-height: 380px;"></div>
+        </div>
+    </div>
 
-    <section style="margin-bottom: 2.25rem;">
-        <div id="house-contribution" style="min-height: 380px;"></div>
-    </section>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>House Momentum</h5>
+            <p class="text-muted small mb-3">
+                Shows relative performance trends across houses.
+            </p>
+            <div id="house-momentum" style="min-height: 420px;"></div>
+        </div>
+    </div>
 
-    <section style="margin-bottom: 2.25rem;">
-        <div id="house-risk" style="min-height: 360px;"></div>
-    </section>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>Contribution Spread</h5>
+            <p class="text-muted small mb-3">
+                Indicates how widely students contribute within each house.
+            </p>
+            <div id="house-contribution" style="min-height: 380px;"></div>
+        </div>
+    </div>
 
-    <section style="margin-bottom: 2rem;">
-        <div id="house-momentum" style="min-height: 420px;"></div>
-    </section>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>Underperformance Index</h5>
+            <p class="text-muted small mb-3">
+                Highlights houses with higher proportions of low-engagement students.
+            </p>
+            <div id="house-risk" style="min-height: 360px;"></div>
+        </div>
+    </div>
 
     <div id="hr-modal-backdrop" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:1000;align-items:center;justify-content:center;padding:20px;">
         <div style="background:#1e293b;color:#f1f5f9;max-width:920px;width:100%;max-height:86vh;overflow:auto;border-radius:10px;box-shadow:0 20px 50px rgba(0,0,0,0.5);">

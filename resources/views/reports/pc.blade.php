@@ -43,27 +43,45 @@
         </div>
     </div>
 
-    <section style="margin-bottom: 3rem;">
-        <h2 style="font-size: 1.35rem; margin-bottom: 1rem; font-weight: 600;">Risk distribution</h2>
-        <div style="max-width: 460px;">
-            <div id="risk-distribution"></div>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>Engagement Health</h5>
+            <p class="text-muted small mb-3">
+                Shows the proportion of students actively receiving points during the selected period.
+            </p>
+            <div id="engagement-health" style="min-height: 420px;"></div>
         </div>
-    </section>
+    </div>
 
-    <section style="margin-bottom: 3rem;">
-        <h2 style="font-size: 1.35rem; margin-bottom: 1rem; font-weight: 600;">Engagement trend (weekdays in range)</h2>
-        <div id="engagement-trend" style="min-height: 400px;"></div>
-    </section>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>Engagement Trend</h5>
+            <p class="text-muted small mb-3">
+                Displays points awarded across weekdays. Click a day to view activity.
+            </p>
+            <div id="engagement-trend" style="min-height: 400px;"></div>
+        </div>
+    </div>
 
-    <section style="margin-bottom: 3rem;">
-        <h2 style="font-size: 1.35rem; margin-bottom: 1rem; font-weight: 600;">Points by house</h2>
-        <div id="points-by-house" style="min-height: 420px;"></div>
-    </section>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>Points by House</h5>
+            <p class="text-muted small mb-3">
+                Breakdown of total points awarded per house within the selected filters.
+            </p>
+            <div id="points-by-house" style="min-height: 420px;"></div>
+        </div>
+    </div>
 
-    <section style="margin-bottom: 2rem;">
-        <h2 style="font-size: 1.35rem; margin-bottom: 1rem; font-weight: 600;">Points by year level</h2>
-        <div id="engagement-health" style="min-height: 420px;"></div>
-    </section>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>Risk Distribution</h5>
+            <p class="text-muted small mb-3">
+                Shows how students are grouped by engagement risk level.
+            </p>
+            <div id="risk-distribution" style="min-height: 360px; max-width: 460px;"></div>
+        </div>
+    </div>
 
     <div id="pc-modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 1000; align-items: center; justify-content: center; padding: 20px;">
         <div id="pc-modal" role="dialog" aria-modal="true" style="background: #1e293b; color: #f1f5f9; max-width: 900px; width: 100%; max-height: 85vh; overflow: auto; border-radius: 10px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">

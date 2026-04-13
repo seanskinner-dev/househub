@@ -38,22 +38,35 @@
         </div>
     </div>
 
-    <section style="margin-bottom: 2.5rem;">
-        <h2 style="font-size: 1.2rem; margin-bottom: 0.75rem; font-weight: 600;">Top 10 Staff Usage</h2>
-        <div id="teacher-bias" style="min-height: 380px;"></div>
-    </section>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>Student Distribution by Teacher</h5>
+            <p class="text-muted small mb-3">
+                Highlights how each teacher distributes points across students.
+            </p>
+            <div id="teacher-bias" style="min-height: 380px;"></div>
+        </div>
+    </div>
 
-    <section style="margin-bottom: 2.5rem;">
-        <h2 style="font-size: 1.2rem; margin-bottom: 0.75rem; font-weight: 600;">Staff usage frequency (by teacher)</h2>
-        <p style="font-size: 0.9rem; opacity: 0.85; margin-bottom: 0.5rem;">Click a bucket to list <strong>teachers</strong> in that usage band (same date/house/year filters).</p>
-        <div id="teacher-frequency" style="min-height: 340px;"></div>
-    </section>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>Staff Usage Frequency</h5>
+            <p class="text-muted small mb-3">
+                Shows how frequently staff award points. Lower values may indicate underuse.
+            </p>
+            <div id="teacher-frequency" style="min-height: 340px;"></div>
+        </div>
+    </div>
 
-    <section style="margin-bottom: 2rem;">
-        <h2 style="font-size: 1.2rem; margin-bottom: 0.75rem; font-weight: 600;">Weekday points trend (same as PC filters)</h2>
-        <p style="font-size: 0.9rem; opacity: 0.85; margin-bottom: 0.5rem;">Click a day for staff activity on that date (not student drilldown).</p>
-        <div id="tu-trend" style="min-height: 400px;"></div>
-    </section>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>Weekday Points Trend</h5>
+            <p class="text-muted small mb-3">
+                Displays staff awarding activity over time. Click a day to inspect low-activity staff events.
+            </p>
+            <div id="tu-trend" style="min-height: 400px;"></div>
+        </div>
+    </div>
 
     <div id="tu-modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 1000; align-items: center; justify-content: center; padding: 20px;">
         <div id="tu-modal" role="dialog" aria-modal="true" style="background: #1e293b; color: #f1f5f9; max-width: 900px; width: 100%; max-height: 85vh; overflow: auto; border-radius: 10px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">

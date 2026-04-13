@@ -43,35 +43,55 @@
         </div>
     </div>
 
-    <section style="margin-bottom: 2.5rem;">
-        <h2 style="font-size: 1.25rem; margin-bottom: 0.75rem; font-weight: 600;">Engagement health</h2>
-        <p style="font-size: 0.9rem; opacity: 0.85; margin-bottom: 0.75rem;">Share of students with weekday points in range (same cohort as risk donut).</p>
-        <div id="engagement-health" style="max-width: 420px; min-height: 320px;"></div>
-    </section>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>Engagement Health</h5>
+            <p class="text-muted small mb-3">
+                Shows the proportion of students actively receiving points during the selected period.
+            </p>
+            <div id="engagement-health" style="max-width: 420px; min-height: 320px;"></div>
+        </div>
+    </div>
 
-    <section style="margin-bottom: 2.5rem;">
-        <h2 style="font-size: 1.25rem; margin-bottom: 0.75rem; font-weight: 600;">Weekday activity heatmap</h2>
-        <p style="font-size: 0.9rem; opacity: 0.85; margin-bottom: 0.75rem;">Same trend series as PC — heatmap layout. Click a cell for transactions that day.</p>
-        <div id="heatmap" style="min-height: 380px;"></div>
-    </section>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>Weekday Activity Heatmap</h5>
+            <p class="text-muted small mb-3">
+                Visualises engagement intensity across days. Darker areas indicate higher activity.
+            </p>
+            <div id="heatmap" style="min-height: 380px;"></div>
+        </div>
+    </div>
 
-    <section style="margin-bottom: 2.5rem;">
-        <h2 style="font-size: 1.25rem; margin-bottom: 0.75rem; font-weight: 600;">Points by year level (area)</h2>
-        <p style="font-size: 0.9rem; opacity: 0.85; margin-bottom: 0.75rem;">Same data as the PC year-level bar — shown as an area series. Click a point for that year.</p>
-        <div id="year-level" style="min-height: 400px;"></div>
-    </section>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>Points by Year Level</h5>
+            <p class="text-muted small mb-3">
+                Shows how engagement varies across different year levels.
+            </p>
+            <div id="year-level" style="min-height: 400px;"></div>
+        </div>
+    </div>
 
-    <section style="margin-bottom: 2.5rem;">
-        <h2 style="font-size: 1.25rem; margin-bottom: 0.75rem; font-weight: 600;">Risk mix (polar)</h2>
-        <p style="font-size: 0.9rem; opacity: 0.85; margin-bottom: 0.75rem;">Same counts as the PC donut — polar layout. Click a segment for that risk group.</p>
-        <div id="risk-mix" style="max-width: 520px; min-height: 420px;"></div>
-    </section>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>Risk Mix</h5>
+            <p class="text-muted small mb-3">
+                Breakdown of student engagement levels across the cohort.
+            </p>
+            <div id="risk-mix" style="max-width: 520px; min-height: 420px;"></div>
+        </div>
+    </div>
 
-    <section style="margin-bottom: 2rem;">
-        <h2 style="font-size: 1.25rem; margin-bottom: 0.75rem; font-weight: 600;">Students without weekday points (in range)</h2>
-        <p style="font-size: 0.9rem; opacity: 0.85; margin-bottom: 0.75rem;">Count matches High + Medium risk from the donut; drill opens the same “Low engagement” list.</p>
-        <div id="lr-dropoff" style="min-height: 360px;"></div>
-    </section>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>Students Without Weekday Points</h5>
+            <p class="text-muted small mb-3">
+                Highlights students with no weekday points in the selected range.
+            </p>
+            <div id="lr-dropoff" style="min-height: 360px;"></div>
+        </div>
+    </div>
 
     <div id="lr-modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 1000; align-items: center; justify-content: center; padding: 20px;">
         <div id="lr-modal" role="dialog" aria-modal="true" style="background: #1e293b; color: #f1f5f9; max-width: 900px; width: 100%; max-height: 85vh; overflow: auto; border-radius: 10px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
