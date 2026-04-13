@@ -130,19 +130,19 @@
                     </li>
                     <li>
                         <a class="dropdown-item {{ request()->routeIs('reports.pc') ? 'active' : '' }}"
-                           href="{{ route('reports.pc') }}">PC Report</a>
+                           href="{{ route('reports.pc') }}">Pastoral Insights</a>
                     </li>
                     <li>
                         <a class="dropdown-item {{ request()->routeIs('reports.leadership') ? 'active' : '' }}"
-                           href="{{ route('reports.leadership') }}">Leadership Report</a>
+                           href="{{ route('reports.leadership') }}">Leadership Overview</a>
                     </li>
                     <li>
                         <a class="dropdown-item {{ request()->routeIs('reports.teachers') ? 'active' : '' }}"
-                           href="{{ route('reports.teachers') }}">Teacher Usage</a>
+                           href="{{ route('reports.teachers') }}">Staff Engagement</a>
                     </li>
                     <li>
                         <a class="dropdown-item {{ request()->routeIs('reports.houses') ? 'active' : '' }}"
-                           href="{{ route('reports.houses') }}">House Insights</a>
+                           href="{{ route('reports.houses') }}">House Performance</a>
                     </li>
                 </ul>
             </div>

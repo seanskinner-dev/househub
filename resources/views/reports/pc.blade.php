@@ -46,23 +46,23 @@
     <section style="margin-bottom: 3rem;">
         <h2 style="font-size: 1.35rem; margin-bottom: 1rem; font-weight: 600;">Risk distribution</h2>
         <div style="max-width: 460px;">
-            <div id="pc-risk-chart"></div>
+            <div id="risk-distribution"></div>
         </div>
     </section>
 
     <section style="margin-bottom: 3rem;">
         <h2 style="font-size: 1.35rem; margin-bottom: 1rem; font-weight: 600;">Engagement trend (weekdays in range)</h2>
-        <div id="pc-trend-chart" style="min-height: 400px;"></div>
+        <div id="engagement-trend" style="min-height: 400px;"></div>
     </section>
 
     <section style="margin-bottom: 3rem;">
         <h2 style="font-size: 1.35rem; margin-bottom: 1rem; font-weight: 600;">Points by house</h2>
-        <div id="pc-house-chart" style="min-height: 420px;"></div>
+        <div id="points-by-house" style="min-height: 420px;"></div>
     </section>
 
     <section style="margin-bottom: 2rem;">
         <h2 style="font-size: 1.35rem; margin-bottom: 1rem; font-weight: 600;">Points by year level</h2>
-        <div id="pc-year-chart" style="min-height: 420px;"></div>
+        <div id="engagement-health" style="min-height: 420px;"></div>
     </section>
 
     <div id="pc-modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 1000; align-items: center; justify-content: center; padding: 20px;">
@@ -223,6 +223,7 @@
                 })
                     .then(function (res) { return res.json(); })
                     .then(function (data) {
+                        console.log('PC DATA:', data);
                         console.log('Chart data:', data);
                         updateAllCharts(data);
                     })
@@ -450,7 +451,8 @@
             }
 
             function createCharts() {
-                charts.donut = new ApexCharts(document.querySelector('#pc-risk-chart'), {
+                try {
+                    charts.donut = new ApexCharts(document.querySelector('#risk-distribution'), {
                     series: [0, 0, 0],
                     labels: ['High Risk', 'Medium Risk', 'Active'],
                     chart: {
@@ -492,7 +494,7 @@
                 });
                 charts.donut.render();
 
-                charts.trend = new ApexCharts(document.querySelector('#pc-trend-chart'), {
+                charts.trend = new ApexCharts(document.querySelector('#engagement-trend'), {
                     series: [{ name: 'Points', data: [] }],
                     chart: {
                         type: 'line',
@@ -597,10 +599,13 @@
                     });
                 };
 
-                charts.house = barChartFactory('#pc-house-chart', 'Points', 'house');
-                charts.year = barChartFactory('#pc-year-chart', 'Points', 'year');
+                charts.house = barChartFactory('#points-by-house', 'Points', 'house');
+                charts.year = barChartFactory('#engagement-health', 'Points', 'year');
                 charts.house.render();
                 charts.year.render();
+                } catch (e) {
+                    console.error('PC chart error:', e);
+                }
             }
 
             document.getElementById('pc-apply').addEventListener('click', function () {
