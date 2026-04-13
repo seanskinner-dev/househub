@@ -996,6 +996,31 @@
 
     </div>
 
+    <div class="tv-screen" id="screen-house-points-this-year">
+
+        <div class="tv-this-term-screen">
+
+            <div class="tv-this-term-title">
+                House Points - This Year
+            </div>
+
+            <div class="tv-this-term-grid">
+                @foreach(collect($housePointsThisYear)->take(4) as $entry)
+                    <div
+                        class="house-card this-term-card"
+                        style="background-color: {{ $entry['colour_hex'] }};"
+                    >
+                        <div class="rank">#{{ $loop->iteration }}</div>
+                        <div class="house-name">{{ strtoupper($entry['house']) }}</div>
+                        <div class="points" data-points="{{ $entry['total'] }}">0</div>
+                    </div>
+                @endforeach
+            </div>
+
+        </div>
+
+    </div>
+
     <div class="tv-screen" id="screen-weather">
 
         <div class="weather-container">
