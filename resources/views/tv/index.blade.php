@@ -774,6 +774,65 @@
             height: 100%;
             min-height: 320px;
         }
+
+        .tv-this-term-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 0;
+            width: 100%;
+            padding: 20px 24px 28px;
+            box-sizing: border-box;
+        }
+
+        .tv-this-term-title {
+            flex-shrink: 0;
+            font-size: clamp(36px, 5vw, 72px);
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 20px;
+            letter-spacing: 0.02em;
+        }
+
+        .tv-this-term-grid {
+            flex: 1;
+            min-height: 0;
+            width: 100%;
+            max-width: 1280px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .this-term-card {
+            animation: none;
+            color: #fff !important;
+            justify-content: center;
+            padding: clamp(16px, 2.5vw, 28px);
+            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.55);
+        }
+
+        .this-term-card .rank {
+            font-size: clamp(24px, 3.2vw, 40px);
+            font-weight: 700;
+            opacity: 0.85;
+            margin-bottom: 10px;
+        }
+
+        .this-term-card .house-name {
+            font-size: clamp(32px, 5vw, 64px);
+            font-weight: 800;
+            letter-spacing: 0.08em;
+        }
+
+        .this-term-card .points {
+            font-size: clamp(72px, 14vw, 160px);
+            font-weight: 900;
+            margin-top: 16px;
+            line-height: 1;
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.45.2"></script>
 </head>
@@ -957,6 +1016,31 @@
 
             <div class="tv-term-chart-wrap">
                 <div id="housePointsByTermChart" role="img" aria-label="Line chart of house points per term"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="tv-screen" id="screen-house-points-this-term">
+
+        <div class="tv-this-term-screen">
+
+            <div class="tv-this-term-title">
+                House Points - This Term
+            </div>
+
+            <div class="tv-this-term-grid">
+                @foreach($housePointsThisTerm as $entry)
+                    <div
+                        class="house-card this-term-card"
+                        style="background-color: {{ $entry['colour_hex'] }};"
+                    >
+                        <div class="rank">#{{ $loop->iteration }}</div>
+                        <div class="house-name">{{ strtoupper($entry['house']) }}</div>
+                        <div class="points" data-points="{{ $entry['total'] }}">0</div>
+                    </div>
+                @endforeach
             </div>
 
         </div>
