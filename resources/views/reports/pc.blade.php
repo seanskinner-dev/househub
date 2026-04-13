@@ -119,30 +119,13 @@
                 year: null
             };
 
-            /** Raw Y-m-d strings from API; xaxis shows formatted labels only. */
+            /**
+             * Raw Y-m-d from API (same order as trend series). Updated in updateAllCharts.
+             * Click handlers use pcTrendRawCategories[config.dataPointIndex] for drilldown.
+             */
             var pcTrendRawCategories = [];
 
             var commonFont = { fontFamily: 'Arial, sans-serif', foreColor: '#e2e8f0' };
-
-            function formatTrendAxisDayLabel(d) {
-                if (d == null || d === '') {
-                    return '';
-                }
-                const date = new Date(d + 'T00:00:00');
-                const day = date.getDate();
-                const month = date.toLocaleString('en-AU', { month: 'short' });
-                return `${day} ${month}`;
-            }
-
-            function trendRawDateFromConfig(config) {
-                if (!config || config.dataPointIndex == null) {
-                    return null;
-                }
-                if (!pcTrendRawCategories || !pcTrendRawCategories.length) {
-                    return null;
-                }
-                return pcTrendRawCategories[config.dataPointIndex];
-            }
 
             function escapeHtml(s) {
                 var d = document.createElement('div');
@@ -372,13 +355,17 @@
                     charts.donut.updateSeries(data.donut.series);
                 }
                 if (charts.trend && data.trend) {
-                    var rawCats = data.trend.categories || [];
+                    const rawDates = data.trend.categories || [];
+                    const displayDates = rawDates.map(function (d) {
+                        const date = new Date(d + 'T00:00:00');
+                        const day = date.getDate();
+                        const month = date.toLocaleString('en-AU', { month: 'short' });
+                        return `${day} ${month}`;
+                    });
+                    pcTrendRawCategories = rawDates.slice();
+
                     var values = (data.trend.series || []).map(function (v) {
                         return Number(v) || 0;
-                    });
-                    pcTrendRawCategories = rawCats.slice();
-                    var formattedCats = rawCats.map(function (d) {
-                        return formatTrendAxisDayLabel(d);
                     });
                     var worstIndex = 0;
                     var minValue = 0;
@@ -393,7 +380,7 @@
                         annotations = {
                             points: [
                                 {
-                                    x: formattedCats[worstIndex],
+                                    x: displayDates[worstIndex],
                                     y: minValue,
                                     seriesIndex: 0,
                                     marker: {
@@ -415,7 +402,7 @@
                     charts.trend.updateOptions({
                         xaxis: {
                             type: 'category',
-                            categories: formattedCats,
+                            categories: displayDates,
                             labels: {
                                 rotate: -45
                             }
@@ -511,9 +498,9 @@
                                         event.stopPropagation();
                                     }
                                 }
-                                var rawDate = trendRawDateFromConfig(config);
+                                const rawDate = pcTrendRawCategories[config.dataPointIndex];
                                 if (rawDate) {
-                                    drillDown(String(rawDate));
+                                    drillDown(rawDate);
                                 }
                             },
                             markerClick: function (event, chartContext, config) {
@@ -525,9 +512,9 @@
                                         event.stopPropagation();
                                     }
                                 }
-                                var rawDate = trendRawDateFromConfig(config);
+                                const rawDate = pcTrendRawCategories[config.dataPointIndex];
                                 if (rawDate) {
-                                    drillDown(String(rawDate));
+                                    drillDown(rawDate);
                                 }
                             }
                         }
