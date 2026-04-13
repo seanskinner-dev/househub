@@ -319,6 +319,32 @@ class PointController extends Controller
             ];
         })->values()->all();
 
+        $yearStart = Carbon::create((int) $now->year, 1, 1)->startOfDay();
+
+        $thisYearRows = DB::table('houses')
+            ->leftJoin('point_transactions', function ($join) use ($yearStart) {
+                $join->on('houses.id', '=', 'point_transactions.house_id')
+                    ->where('point_transactions.created_at', '>=', $yearStart);
+            })
+            ->select(
+                'houses.name as house',
+                'houses.colour_hex',
+                DB::raw('COALESCE(SUM(point_transactions.amount), 0) as total')
+            )
+            ->groupBy('houses.id', 'houses.name', 'houses.colour_hex')
+            ->orderByDesc('total')
+            ->get();
+
+        $housePointsThisYear = $thisYearRows->map(function ($row) use ($houseMap) {
+            $hex = $row->colour_hex ?: ($houseMap[$row->house] ?? '#334155');
+
+            return [
+                'house' => $row->house,
+                'total' => (int) $row->total,
+                'colour_hex' => $hex,
+            ];
+        })->values()->all();
+
         $weather = Cache::remember('tv_weather', 600, function () {
             $fallback = [
                 ['label' => '8AM', 'temp' => 14, 'rain' => 20, 'code' => 1],
@@ -380,6 +406,7 @@ class PointController extends Controller
             'weather' => $weather,
             'housePointsByTerm' => $housePointsByTerm,
             'housePointsThisTerm' => $housePointsThisTerm,
+            'housePointsThisYear' => $housePointsThisYear,
         ]);
     }
 }
