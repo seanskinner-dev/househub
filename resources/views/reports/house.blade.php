@@ -1,36 +1,33 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            House Performance Report
-        </h2>
-    </x-slot>
+@extends('layouts.app')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead>
-                            <tr>
-                                <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">House</th>
-                                <th class="px-4 py-2 text-right text-sm font-semibold text-gray-700">Year total</th>
-                                <th class="px-4 py-2 text-right text-sm font-semibold text-gray-700">This term</th>
-                                <th class="px-4 py-2 text-right text-sm font-semibold text-gray-700">Previous term</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100">
-                            @foreach($housePerformance as $row)
-                                <tr>
-                                    <td class="px-4 py-2 font-medium">{{ $row['house'] }}</td>
-                                    <td class="px-4 py-2 text-right tabular-nums">{{ number_format($row['year_total']) }}</td>
-                                    <td class="px-4 py-2 text-right tabular-nums">{{ number_format($row['term_total']) }}</td>
-                                    <td class="px-4 py-2 text-right tabular-nums">{{ number_format($row['last_term_total']) }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+@section('content')
+    <h1 style="font-size: 1.5rem; margin-bottom: 1rem;">House Performance Report</h1>
+
+    <details style="margin-bottom: 1rem; opacity: 0.85;">
+        <summary style="cursor: pointer;">Raw <code>$housePerformance</code> (debug)</summary>
+        <pre style="background: #1e293b; padding: 12px; overflow: auto; max-height: 240px; font-size: 12px;">{{ print_r($housePerformance, true) }}</pre>
+    </details>
+
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; background: #1e293b; border-radius: 8px;">
+            <thead>
+                <tr style="border-bottom: 1px solid #334155;">
+                    <th style="text-align: left; padding: 10px 12px;">House</th>
+                    <th style="text-align: right; padding: 10px 12px;">Year total</th>
+                    <th style="text-align: right; padding: 10px 12px;">This term</th>
+                    <th style="text-align: right; padding: 10px 12px;">Previous term</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($housePerformance as $house)
+                    <tr style="border-bottom: 1px solid #334155;">
+                        <td style="padding: 10px 12px; font-weight: 600;">{{ $house['house'] }}</td>
+                        <td style="padding: 10px 12px; text-align: right;">{{ number_format($house['year_total']) }}</td>
+                        <td style="padding: 10px 12px; text-align: right;">{{ number_format($house['term_total']) }}</td>
+                        <td style="padding: 10px 12px; text-align: right;">{{ number_format($house['last_term_total']) }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
     </div>
-</x-app-layout>
+@endsection

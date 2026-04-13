@@ -70,9 +70,10 @@
         </div>
     </div>
 
-    <!-- PAGE CONTENT -->
+    {{-- @yield for @extends; $slot for <x-app-layout> (both may be empty; only one is used) --}}
     <div class="page-content">
         @yield('content')
+        {{ $slot ?? '' }}
     </div>
 
     @stack('scripts')
