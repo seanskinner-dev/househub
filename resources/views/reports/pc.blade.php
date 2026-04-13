@@ -128,8 +128,9 @@
 
 @push('scripts')
 <script>
-    window.pcData = @json($data ?? null);
-    console.log('DATA FROM BLADE:', window.pcData);
+    const data = @json($data ?? null);
+    window.pcData = data;
+    console.log('DATA FROM BACKEND:', data);
 </script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {

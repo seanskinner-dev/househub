@@ -62,12 +62,14 @@ class ReportController extends Controller
         ]);
     }
 
-    public function atRiskStudents()
+    public function atRiskStudents(Request $request)
     {
         $houses = DB::table('houses')->orderBy('name')->pluck('name')->values()->all();
+        $data = $this->getReportData($request);
 
         return view('reports.pc', [
             'houses' => $houses,
+            'data' => $data,
         ]);
     }
 
@@ -92,15 +94,20 @@ class ReportController extends Controller
 
     public function reportChartData(Request $request)
     {
+        return response()->json($this->getReportData($request));
+    }
+
+    private function getReportData(Request $request): array
+    {
         [$start, $end, $house, $yearFilter] = $this->pcParseFilters($request);
 
-        return response()->json([
+        return [
             'donut' => $this->pcChartDonut($house, $start, $end, $yearFilter),
             'trend' => $this->pcChartTrend($house, $start, $end, $yearFilter),
             'house_breakdown' => $this->pcChartHousePoints($house, $start, $end, $yearFilter),
             'year_level' => $this->pcChartYearLevel($house, $start, $end, $yearFilter),
             'recent' => $this->pcTeacherRecentRows($house, $start, $end, $yearFilter),
-        ]);
+        ];
     }
 
     public function reportDrilldown(Request $request)
