@@ -127,14 +127,14 @@
 
     <div id="pc-modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 1000; align-items: center; justify-content: center; padding: 20px;">
         <div id="pc-modal" role="dialog" aria-modal="true" style="background: #1e293b; color: #f1f5f9; max-width: 900px; width: 100%; max-height: 85vh; overflow: auto; border-radius: 10px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #334155;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px;">
                 <h3 id="pc-modal-title" style="margin: 0; font-size: 1.2rem;">Details</h3>
                 <button type="button" id="pc-modal-close" style="background: transparent; border: none; color: #fff; font-size: 1.5rem; line-height: 1; cursor: pointer;" aria-label="Close">&times;</button>
             </div>
             <div id="pc-modal-body" style="padding: 16px 20px;">
                 <p id="pc-drilldown-empty" style="opacity:0.9;margin:0;display:none;">No rows for this selection.</p>
                 <div id="pc-drilldown-wrap" style="display:none; overflow-x: auto;">
-                    <table id="pc-drilldown-table" style="width:100%;border-collapse:collapse;font-size:0.95rem;">
+                    <table id="pc-drilldown-table" class="report-drilldown-table" style="font-size:0.95rem;">
                         <thead><tr id="pc-drilldown-thead-row"></tr></thead>
                         <tbody id="pc-drilldown-tbody"></tbody>
                     </table>
@@ -191,6 +191,10 @@ document.addEventListener("DOMContentLoaded", function () {
             .replaceAll("'", '&#39;');
     }
 
+    let pcDrilldownData = [];
+    let pcDrilldownMode = 'generic';
+    let pcCurrentSort = { key: null, direction: 'asc' };
+
     function friendlyLabel(key) {
         const map = {
             first_name: 'First Name',
@@ -198,9 +202,13 @@ document.addEventListener("DOMContentLoaded", function () {
             year_level: 'Year Level',
             activity_count: 'Activity',
             name: 'Name',
-            house_name: 'House'
+            house_name: 'House',
+            weekday_awards: 'Activity',
+            total_points: 'Total Points',
+            teacher: 'Teacher',
+            total_actions: 'Awards in range'
         };
-        return map[key] || key.replaceAll('_', ' ').replace(/\b\w/g, s => s.toUpperCase());
+        return map[key] || String(key).replaceAll('_', ' ').replace(/\b\w/g, s => s.toUpperCase());
     }
 
     function normalizedRows(rows) {
@@ -211,8 +219,129 @@ document.addEventListener("DOMContentLoaded", function () {
                 delete clone.first_name;
                 delete clone.last_name;
             }
+            if (clone.activity_count == null && clone.weekday_awards != null) {
+                clone.activity_count = clone.weekday_awards;
+                delete clone.weekday_awards;
+            }
             return clone;
         });
+    }
+
+    function isStudentDrilldownTable(row) {
+        if (!row) return false;
+        return Object.prototype.hasOwnProperty.call(row, 'name')
+            && (Object.prototype.hasOwnProperty.call(row, 'year_level') || Object.prototype.hasOwnProperty.call(row, 'activity_count'));
+    }
+
+    function buildStudentDisplayRows(normalized) {
+        return normalized.map(function (row) {
+            const sid = row.id;
+            const out = {
+                _studentId: sid,
+                name: row.name || '—',
+                year_level: row.year_level != null ? row.year_level : '',
+                activity_count: row.activity_count != null ? row.activity_count : (row.weekday_awards != null ? row.weekday_awards : '')
+            };
+            return out;
+        });
+    }
+
+    function sortPcRows(data, key) {
+        if (pcCurrentSort.key === key) {
+            pcCurrentSort.direction = pcCurrentSort.direction === 'asc' ? 'desc' : 'asc';
+        } else {
+            pcCurrentSort.key = key;
+            pcCurrentSort.direction = 'asc';
+        }
+        return [...data].sort(function (a, b) {
+            let valA = a[key];
+            let valB = b[key];
+            if (valA == null) valA = '';
+            if (valB == null) valB = '';
+            if (typeof valA === 'string') valA = valA.toLowerCase();
+            if (typeof valB === 'string') valB = valB.toLowerCase();
+            const na = Number(valA);
+            const nb = Number(valB);
+            if (!isNaN(na) && !isNaN(nb) && String(valA).trim() !== '' && String(valB).trim() !== '') {
+                return pcCurrentSort.direction === 'asc' ? na - nb : nb - na;
+            }
+            if (valA < valB) return pcCurrentSort.direction === 'asc' ? -1 : 1;
+            if (valA > valB) return pcCurrentSort.direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+    }
+
+    function renderPcTableBody(rows) {
+        const tbody = document.getElementById('pc-drilldown-tbody');
+        const title = document.getElementById('pc-modal-title').textContent || '';
+        const isAtRisk = String(title).toLowerCase().includes('at risk');
+
+        if (pcDrilldownMode === 'student') {
+            tbody.innerHTML = rows.map(function (row) {
+                const sid = row._studentId;
+                const nm = escapeHtml(String(row.name ?? ''));
+                const yl = escapeHtml(String(row.year_level ?? ''));
+                const ac = escapeHtml(String(row.activity_count ?? ''));
+                const nameCell = sid != null
+                    ? '<td class="td-name" style="text-align:left;"><a href="/students/' + encodeURIComponent(String(sid)) + '" class="student-link">' + nm + '</a></td>'
+                    : '<td class="td-name" style="text-align:left;">' + nm + '</td>';
+                let actions = '';
+                if (isAtRisk && sid != null) {
+                    actions =
+                        '<td class="td-actions">' +
+                        '<div class="d-flex gap-2 justify-content-end">' +
+                        '<button type="button" class="btn-sub btn btn-sm" data-id="' + escapeHtml(String(sid)) + '">-1</button>' +
+                        '<button type="button" class="btn-add btn btn-sm" data-id="' + escapeHtml(String(sid)) + '">+1</button>' +
+                        '<button type="button" class="btn-award btn btn-sm" data-id="' + escapeHtml(String(sid)) + '">🏆</button>' +
+                        '<button type="button" class="btn-commend btn btn-sm" data-id="' + escapeHtml(String(sid)) + '">⭐</button>' +
+                        '</div></td>';
+                }
+                return '<tr class="report-drilldown-row">' + nameCell +
+                    '<td style="text-align:left;">' + yl + '</td>' +
+                    '<td style="text-align:left;">' + ac + '</td>' +
+                    (actions || '') +
+                    '</tr>';
+            }).join('');
+            return;
+        }
+
+        const keys = rows.length ? Object.keys(rows[0]).filter(function (k) { return k !== 'id' && !k.startsWith('_'); }) : [];
+        tbody.innerHTML = rows.map(function (row) {
+            return '<tr class="report-drilldown-row">' + keys.map(function (k) {
+                const v = row[k];
+                if (k === 'name' && row._studentId != null) {
+                    return '<td class="td-name" style="text-align:left;"><a href="/students/' + encodeURIComponent(String(row._studentId)) + '" class="student-link">' + escapeHtml(String(v ?? '')) + '</a></td>';
+                }
+                return '<td style="text-align:left;">' + escapeHtml(v == null ? '' : String(v)) + '</td>';
+            }).join('') + '</tr>';
+        }).join('');
+    }
+
+    function renderPcTableHeader() {
+        const theadRow = document.getElementById('pc-drilldown-thead-row');
+        const title = document.getElementById('pc-modal-title').textContent || '';
+        const isAtRisk = String(title).toLowerCase().includes('at risk');
+
+        if (pcDrilldownMode === 'student') {
+            let th = '';
+            th += '<th data-sort-key="name" style="text-align:left;padding:10px 14px;border-bottom:2px solid #334155;">' + escapeHtml(friendlyLabel('name')) + '</th>';
+            th += '<th data-sort-key="year_level" style="text-align:left;padding:10px 14px;border-bottom:2px solid #334155;">' + escapeHtml(friendlyLabel('year_level')) + '</th>';
+            th += '<th data-sort-key="activity_count" style="text-align:left;padding:10px 14px;border-bottom:2px solid #334155;">' + escapeHtml(friendlyLabel('activity_count')) + '</th>';
+            if (isAtRisk) {
+                th += '<th style="text-align:right;padding:10px 14px;border-bottom:2px solid #334155;">Actions</th>';
+            }
+            theadRow.innerHTML = th;
+            return;
+        }
+
+        if (!pcDrilldownData.length) {
+            theadRow.innerHTML = '';
+            return;
+        }
+        const keys = Object.keys(pcDrilldownData[0]).filter(function (k) { return k !== 'id' && !k.startsWith('_'); });
+        theadRow.innerHTML = keys.map(function (k) {
+            return '<th data-sort-key="' + escapeHtml(k) + '" style="text-align:left;padding:10px 14px;border-bottom:2px solid #334155;">' + escapeHtml(friendlyLabel(k)) + '</th>';
+        }).join('');
     }
 
     function showToast(message) {
@@ -255,46 +384,56 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById('pc-modal-title').textContent = title;
         const emptyEl = document.getElementById('pc-drilldown-empty');
         const wrapEl = document.getElementById('pc-drilldown-wrap');
-        const theadRow = document.getElementById('pc-drilldown-thead-row');
         const tbody = document.getElementById('pc-drilldown-tbody');
+        pcCurrentSort = { key: null, direction: 'asc' };
+
         if (!rows.length) {
+            pcDrilldownData = [];
             emptyEl.style.display = 'block';
             wrapEl.style.display = 'none';
-            theadRow.innerHTML = '';
+            document.getElementById('pc-drilldown-thead-row').innerHTML = '';
             tbody.innerHTML = '';
-        } else {
-            const normalized = normalizedRows(rows);
-            const keys = Object.keys(normalized[0]);
-            const hasStudentRows = keys.includes('name') && normalized.some(r => r.id != null);
-            const isAtRisk = String(title).toLowerCase().includes('at risk');
-            const headers = isAtRisk && hasStudentRows ? [...keys, 'actions'] : keys;
-            emptyEl.style.display = 'none';
-            wrapEl.style.display = 'block';
-            theadRow.innerHTML = headers.map(k => `<th style="text-align:left;padding:10px 12px;border-bottom:2px solid #334155;">${escapeHtml(friendlyLabel(String(k)))}</th>`).join('');
-            tbody.innerHTML = normalized.map(function (row) {
-                const cells = keys.map(function (k) {
-                    if (k === 'name' && row.id != null) {
-                        return `<td style="padding:10px 12px;"><a href="/students/${encodeURIComponent(String(row.id))}" class="student-link">${escapeHtml(row[k] ?? '')}</a></td>`;
-                    }
-                    return `<td style="padding:10px 12px;">${escapeHtml(row[k] ?? '')}</td>`;
-                });
-                if (isAtRisk && hasStudentRows) {
-                    cells.push(
-                        `<td style="padding:10px 12px;">
-                            <div class="d-flex gap-2">
-                              <button class="btn-add btn btn-sm" data-id="${escapeHtml(String(row.id ?? ''))}">+1</button>
-                              <button class="btn-sub btn btn-sm" data-id="${escapeHtml(String(row.id ?? ''))}">-1</button>
-                              <button class="btn-award btn btn-sm" data-id="${escapeHtml(String(row.id ?? ''))}">🏆</button>
-                              <button class="btn-commend btn btn-sm" data-id="${escapeHtml(String(row.id ?? ''))}">⭐</button>
-                            </div>
-                        </td>`
-                    );
-                }
-                return `<tr style="border-bottom:1px solid #334155;">${cells.join('')}</tr>`;
-            }).join('');
+            modalBackdrop.style.display = 'flex';
+            return;
         }
+
+        const normalized = normalizedRows(rows);
+        const sample = normalized[0];
+        if (isStudentDrilldownTable(sample)) {
+            pcDrilldownMode = 'student';
+            pcDrilldownData = buildStudentDisplayRows(normalized);
+        } else {
+            pcDrilldownMode = 'generic';
+            pcDrilldownData = normalized.map(function (r) {
+                const o = { ...r };
+                if (o.id != null) {
+                    o._studentId = o.id;
+                    delete o.id;
+                }
+                return o;
+            });
+        }
+
+        emptyEl.style.display = 'none';
+        wrapEl.style.display = 'block';
+        renderPcTableHeader();
+        renderPcTableBody(pcDrilldownData);
         modalBackdrop.style.display = 'flex';
     }
+
+    document.getElementById('pc-modal-body').addEventListener('click', function (e) {
+        const th = e.target.closest('th[data-sort-key]');
+        if (!th || !document.getElementById('pc-drilldown-table').contains(th)) {
+            return;
+        }
+        const key = th.getAttribute('data-sort-key');
+        if (!key || !pcDrilldownData.length) {
+            return;
+        }
+        const sorted = sortPcRows(pcDrilldownData, key);
+        pcDrilldownData = sorted;
+        renderPcTableBody(sorted);
+    });
 
     function drillDown(payload) {
         const meta = document.querySelector('meta[name="csrf-token"]');
@@ -430,7 +569,13 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log('FULL DATA OBJECT:', data);
 
         const risk = payload.risk_distribution || { type: 'breakdown', categories: [], series: [] };
-        const trend = payload.engagement_trend || { type: 'trend', categories: [], series: [] };
+        const trendRaw = payload.engagement_trend || { type: 'trend', categories: [], series: [] };
+        const trend = {
+            ...trendRaw,
+            categories: (trendRaw.categories || []).map(function (c) {
+                return typeof window.formatReportChartDate === 'function' ? window.formatReportChartDate(c) : String(c);
+            })
+        };
         const yearSeries = data?.year_level?.series?.[0]?.data || data?.year_level_distribution?.series?.[0]?.data || [];
         const yearCategories = data?.year_level?.categories || data?.year_level_distribution?.categories || [];
         const houseSeries = data?.house_breakdown?.series?.[0]?.data || data?.points_by_house?.series?.[0]?.data || [];

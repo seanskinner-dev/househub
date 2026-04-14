@@ -90,7 +90,7 @@
 
     <div id="tu-modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 1000; align-items: center; justify-content: center; padding: 20px;">
         <div id="tu-modal" role="dialog" aria-modal="true" style="background: #1e293b; color: #f1f5f9; max-width: 900px; width: 100%; max-height: 85vh; overflow: auto; border-radius: 10px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 1px solid #334155;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px;">
                 <h3 id="tu-modal-title" style="margin: 0; font-size: 1.15rem;">Details</h3>
                 <button type="button" id="tu-modal-close" style="background: transparent; border: none; color: #fff; font-size: 1.5rem; line-height: 1; cursor: pointer;" aria-label="Close">&times;</button>
             </div>
@@ -100,7 +100,7 @@
                 </div>
                 <p id="tu-empty" style="opacity:0.9;margin:0;display:none;">No rows.</p>
                 <div id="tu-table-wrap" style="display:none; overflow-x: auto;">
-                    <table id="tu-table" style="width:100%;border-collapse:collapse;font-size:0.95rem;">
+                    <table id="tu-table" class="report-drilldown-table" style="font-size:0.95rem;">
                         <thead><tr id="tu-thead"></tr></thead>
                         <tbody id="tu-tbody"></tbody>
                     </table>
@@ -119,6 +119,8 @@
             var tuCharts = { low: null, freq: null, trend: null, lowStaff: null };
             var tuModalChart = null;
             var tuTrendRawDates = [];
+            var tuTableData = [];
+            var tuCurrentSort = { key: null, direction: 'asc' };
 
             var filters = {
                 house: 'All',
@@ -157,6 +159,93 @@
                 }
                 p.set('year', filters.year || 'All');
                 return p.toString();
+            }
+
+            function tuFriendlyKey(k) {
+                var map = { name: 'Name', total_points: 'Total Points', teacher: 'Teacher', total_actions: 'Awards in range' };
+                return map[k] || String(k).replace(/_/g, ' ').replace(/\b\w/g, function (s) { return s.toUpperCase(); });
+            }
+
+            function tuSortRows(data, key) {
+                if (tuCurrentSort.key === key) {
+                    tuCurrentSort.direction = tuCurrentSort.direction === 'asc' ? 'desc' : 'asc';
+                } else {
+                    tuCurrentSort.key = key;
+                    tuCurrentSort.direction = 'asc';
+                }
+                return data.slice().sort(function (a, b) {
+                    var valA = a[key];
+                    var valB = b[key];
+                    if (valA == null) valA = '';
+                    if (valB == null) valB = '';
+                    if (typeof valA === 'string') valA = valA.toLowerCase();
+                    if (typeof valB === 'string') valB = valB.toLowerCase();
+                    var na = Number(valA);
+                    var nb = Number(valB);
+                    if (!isNaN(na) && !isNaN(nb) && String(valA).trim() !== '' && String(valB).trim() !== '') {
+                        return tuCurrentSort.direction === 'asc' ? na - nb : nb - na;
+                    }
+                    if (valA < valB) return tuCurrentSort.direction === 'asc' ? -1 : 1;
+                    if (valA > valB) return tuCurrentSort.direction === 'asc' ? 1 : -1;
+                    return 0;
+                });
+            }
+
+            function renderTuStudentTableBody(rows) {
+                var tbody = document.getElementById('tu-tbody');
+                tbody.innerHTML = rows
+                    .map(function (s) {
+                        var nm = escapeHtml(s.name || '');
+                        var pts = parseInt(s.total_points, 10) || 0;
+                        var link = s._studentId != null
+                            ? '<td class="td-name" style="text-align:left;"><a href="/students/' + encodeURIComponent(String(s._studentId)) + '" class="student-link">' + nm + '</a></td>'
+                            : '<td class="td-name" style="text-align:left;">' + nm + '</td>';
+                        return (
+                            '<tr class="report-drilldown-row">' +
+                            link +
+                            '<td style="text-align:right;padding:12px 14px;vertical-align:middle;">' + escapeHtml(String(pts)) + '</td>' +
+                            '</tr>'
+                        );
+                    })
+                    .join('');
+            }
+
+            function renderTuGenericTableBody(rows, keys) {
+                var tbody = document.getElementById('tu-tbody');
+                tbody.innerHTML = rows
+                    .map(function (row) {
+                        return (
+                            '<tr class="report-drilldown-row">' +
+                            keys
+                                .map(function (k) {
+                                    var v = row[k];
+                                    var align = (k === 'total_actions' || k === 'total_points') ? 'right' : 'left';
+                                    if (k === 'name' && row._studentId != null) {
+                                        return '<td class="td-name" style="text-align:left;padding:12px 14px;vertical-align:middle;"><a href="/students/' + encodeURIComponent(String(row._studentId)) + '" class="student-link">' + escapeHtml(v == null ? '' : String(v)) + '</a></td>';
+                                    }
+                                    return '<td style="padding:12px 14px;vertical-align:middle;text-align:' + align + ';">' + escapeHtml(v == null ? '' : String(v)) + '</td>';
+                                })
+                                .join('') +
+                            '</tr>'
+                        );
+                    })
+                    .join('');
+            }
+
+            function tuNormalizeGenericRows(rows) {
+                return rows.map(function (r) {
+                    var o = Object.assign({}, r);
+                    if (o.id != null) {
+                        o._studentId = o.id;
+                        delete o.id;
+                    }
+                    if (Object.prototype.hasOwnProperty.call(o, 'first_name') && Object.prototype.hasOwnProperty.call(o, 'last_name')) {
+                        o.name = ((o.first_name || '') + ' ' + (o.last_name || '')).trim() || '—';
+                        delete o.first_name;
+                        delete o.last_name;
+                    }
+                    return o;
+                });
             }
 
             function drillDown(payload) {
@@ -250,21 +339,18 @@
 
                     emptyEl.style.display = 'none';
                     wrap.style.display = 'block';
+                    tuCurrentSort = { key: null, direction: 'asc' };
+                    tuTableData = students.map(function (s) {
+                        return {
+                            _studentId: s.id,
+                            name: ((s.first_name || '') + ' ' + (s.last_name || '')).trim() || '—',
+                            total_points: parseInt(s.total_points, 10) || 0
+                        };
+                    });
                     thead.innerHTML =
-                        '<th style="text-align:left;padding:8px 10px;border-bottom:2px solid #334155;">Student</th>' +
-                        '<th style="text-align:right;padding:8px 10px;border-bottom:2px solid #334155;">Total points</th>';
-                    tbody.innerHTML = students
-                        .map(function (s) {
-                            var nm = ((s.first_name || '') + ' ' + (s.last_name || '')).trim() || '—';
-                            var pts = parseInt(s.total_points, 10) || 0;
-                            return (
-                                '<tr style="border-bottom:1px solid #334155;">' +
-                                '<td style="padding:8px 10px;">' + escapeHtml(nm) + '</td>' +
-                                '<td style="padding:8px 10px;text-align:right;">' + escapeHtml(String(pts)) + '</td>' +
-                                '</tr>'
-                            );
-                        })
-                        .join('');
+                        '<th data-sort-key="name" style="text-align:left;padding:10px 14px;border-bottom:2px solid #334155;cursor:pointer;">' + escapeHtml('Name') + '</th>' +
+                        '<th data-sort-key="total_points" style="text-align:right;padding:10px 14px;border-bottom:2px solid #334155;cursor:pointer;">' + escapeHtml('Total Points') + '</th>';
+                    renderTuStudentTableBody(tuTableData);
 
                     document.getElementById('tu-modal-backdrop').style.display = 'flex';
                     return;
@@ -298,47 +384,25 @@
                 } else {
                     emptyEl.style.display = 'none';
                     wrap.style.display = 'block';
-                    var th = ' style="text-align:left;padding:8px 10px;border-bottom:2px solid #334155;"';
-                    var thR = ' style="text-align:right;padding:8px 10px;border-bottom:2px solid #334155;"';
                     var isTeacherBucket =
                         rows.length &&
                         Object.prototype.hasOwnProperty.call(rows[0], 'teacher') &&
                         Object.prototype.hasOwnProperty.call(rows[0], 'total_actions');
                     if (isTeacherBucket) {
+                        tuCurrentSort = { key: null, direction: 'asc' };
+                        tuTableData = rows.map(function (r) { return { teacher: r.teacher, total_actions: parseInt(r.total_actions, 10) || 0 }; });
                         thead.innerHTML =
-                            '<th' + th + '>Teacher</th>' +
-                            '<th' + thR + '>Awards in range</th>';
-                        tbody.innerHTML = rows
-                            .map(function (row) {
-                                return (
-                                    '<tr style="border-bottom:1px solid #334155;">' +
-                                    '<td style="padding:8px 10px;">' +
-                                    escapeHtml(row.teacher == null ? '' : String(row.teacher)) +
-                                    '</td>' +
-                                    '<td style="padding:8px 10px;text-align:right;">' +
-                                    escapeHtml(String(parseInt(row.total_actions, 10) || 0)) +
-                                    '</td>' +
-                                    '</tr>'
-                                );
-                            })
-                            .join('');
+                            '<th data-sort-key="teacher" style="text-align:left;padding:10px 14px;border-bottom:2px solid #334155;cursor:pointer;">Teacher</th>' +
+                            '<th data-sort-key="total_actions" style="text-align:right;padding:10px 14px;border-bottom:2px solid #334155;cursor:pointer;">Awards in range</th>';
+                        renderTuGenericTableBody(tuTableData, ['teacher', 'total_actions']);
                     } else {
-                        var keys = Object.keys(rows[0]);
-                        thead.innerHTML = keys.map(function (k) {
-                            return '<th' + th + '>' + escapeHtml(k) + '</th>';
+                        tuCurrentSort = { key: null, direction: 'asc' };
+                        tuTableData = tuNormalizeGenericRows(rows.map(function (r) { return Object.assign({}, r); }));
+                        var gKeys = Object.keys(tuTableData[0]).filter(function (k) { return k.indexOf('_') !== 0; });
+                        thead.innerHTML = gKeys.map(function (k) {
+                            return '<th data-sort-key="' + escapeHtml(k) + '" style="text-align:left;padding:10px 14px;border-bottom:2px solid #334155;cursor:pointer;">' + escapeHtml(tuFriendlyKey(k)) + '</th>';
                         }).join('');
-                        tbody.innerHTML = rows.map(function (row) {
-                            return (
-                                '<tr style="border-bottom:1px solid #334155;">' +
-                                keys
-                                    .map(function (k) {
-                                        var v = row[k];
-                                        return '<td style="padding:8px 10px;">' + escapeHtml(v == null ? '' : String(v)) + '</td>';
-                                    })
-                                    .join('') +
-                                '</tr>'
-                            );
-                        }).join('');
+                        renderTuGenericTableBody(tuTableData, gKeys);
                     }
                 }
                 document.getElementById('tu-modal-backdrop').style.display = 'flex';
@@ -503,10 +567,7 @@
                 }
                 tuTrendRawDates = rawDates.slice();
                 var displayDates = rawDates.map(function (d) {
-                    var date = new Date(d + 'T00:00:00');
-                    var day = date.getDate();
-                    var month = date.toLocaleString('en-AU', { month: 'short' });
-                    return `${day} ${month}`;
+                    return typeof window.formatReportChartDate === 'function' ? window.formatReportChartDate(d) : String(d);
                 });
                 var minValue = values.length ? Math.min.apply(null, values) : 0;
                 var worstIndex = values.length ? values.indexOf(minValue) : 0;
@@ -672,6 +733,25 @@
                 syncFiltersFromDom();
                 fetchTeacherData();
             });
+            document.getElementById('tu-modal-body').addEventListener('click', function (e) {
+                var th = e.target.closest('th[data-sort-key]');
+                if (!th || !document.getElementById('tu-table').contains(th)) {
+                    return;
+                }
+                var key = th.getAttribute('data-sort-key');
+                if (!key || !tuTableData.length) {
+                    return;
+                }
+                var sorted = tuSortRows(tuTableData, key);
+                tuTableData = sorted;
+                var keys = Object.keys(sorted[0]).filter(function (k) { return k.indexOf('_') !== 0; });
+                if (keys.length === 2 && keys.indexOf('name') !== -1) {
+                    renderTuStudentTableBody(sorted);
+                } else {
+                    renderTuGenericTableBody(sorted, keys);
+                }
+            });
+
             document.getElementById('tu-modal-close').addEventListener('click', function () {
                 destroyTuModalChart();
                 document.getElementById('tu-modal-backdrop').style.display = 'none';

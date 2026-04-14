@@ -109,14 +109,14 @@
 
     <div id="lr-modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 1000; align-items: center; justify-content: center; padding: 20px;">
         <div id="lr-modal" role="dialog" aria-modal="true" style="background: #1e293b; color: #f1f5f9; max-width: 900px; width: 100%; max-height: 85vh; overflow: auto; border-radius: 10px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #334155;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px;">
                 <h3 id="lr-modal-title" style="margin: 0; font-size: 1.2rem;">Details</h3>
                 <button type="button" id="lr-modal-close" style="background: transparent; border: none; color: #fff; font-size: 1.5rem; line-height: 1; cursor: pointer;" aria-label="Close">&times;</button>
             </div>
             <div id="lr-modal-body" style="padding: 16px 20px;">
                 <p id="lr-drilldown-empty" style="opacity:0.9;margin:0;display:none;">No rows for this selection.</p>
                 <div id="lr-drilldown-wrap" style="display:none; overflow-x: auto;">
-                    <table id="lr-drilldown-table" style="width:100%;border-collapse:collapse;font-size:0.95rem;">
+                    <table id="lr-drilldown-table" class="report-drilldown-table" style="font-size:0.95rem;">
                         <thead><tr id="lr-drilldown-thead-row"></tr></thead>
                         <tbody id="lr-drilldown-tbody"></tbody>
                     </table>
@@ -161,7 +161,7 @@
             };
 
             var lrDrilldownData = [];
-            var lrDrilldownSortDir = {};
+            var lrCurrentSort = { key: null, direction: 'asc' };
 
             function escapeHtml(s) {
                 var d = document.createElement('div');
@@ -239,15 +239,40 @@
                 return mul * String(valA == null ? '' : valA).localeCompare(String(valB == null ? '' : valB), undefined, { sensitivity: 'base' });
             }
 
+            function lrFriendlyKey(k) {
+                var map = { first_name: 'First Name', last_name: 'Last Name', year_level: 'Year Level', activity_count: 'Activity', name: 'Name', house_name: 'House' };
+                return map[k] || String(k).replace(/_/g, ' ').replace(/\b\w/g, function (s) { return s.toUpperCase(); });
+            }
+
+            function lrNormalizeRows(rows) {
+                return rows.map(function (r) {
+                    var o = Object.assign({}, r);
+                    if (o.id != null) {
+                        o._studentId = o.id;
+                        delete o.id;
+                    }
+                    if (Object.prototype.hasOwnProperty.call(o, 'first_name') && Object.prototype.hasOwnProperty.call(o, 'last_name')) {
+                        o.name = ((o.first_name || '') + ' ' + (o.last_name || '')).trim() || '—';
+                        delete o.first_name;
+                        delete o.last_name;
+                    }
+                    return o;
+                });
+            }
+
             function renderLrDrilldownTableBody(rows) {
-                var keys = rows.length ? Object.keys(rows[0]) : [];
+                var keys = rows.length ? Object.keys(rows[0]).filter(function (k) { return k.indexOf('_') !== 0; }) : [];
                 var tbody = document.getElementById('lr-drilldown-tbody');
                 var html = '';
                 rows.forEach(function (row) {
-                    html += '<tr style="border-bottom:1px solid #334155;">';
+                    html += '<tr class="report-drilldown-row">';
                     keys.forEach(function (k) {
                         var v = row[k];
-                        html += '<td style="padding:10px 12px;">' + escapeHtml(v == null ? '' : String(v)) + '</td>';
+                        if (k === 'name' && row._studentId != null) {
+                            html += '<td class="td-name" style="text-align:left;"><a href="/students/' + encodeURIComponent(String(row._studentId)) + '" class="student-link">' + escapeHtml(v == null ? '' : String(v)) + '</a></td>';
+                        } else {
+                            html += '<td style="padding:12px 14px;vertical-align:middle;">' + escapeHtml(v == null ? '' : String(v)) + '</td>';
+                        }
                     });
                     html += '</tr>';
                 });
@@ -270,17 +295,16 @@
                 } else {
                     emptyEl.style.display = 'none';
                     wrapEl.style.display = 'block';
-                    lrDrilldownData = rows.map(function (r) {
-                        return Object.assign({}, r);
-                    });
-                    var keys = Object.keys(rows[0]);
+                    lrCurrentSort = { key: null, direction: 'asc' };
+                    lrDrilldownData = lrNormalizeRows(rows.map(function (r) { return Object.assign({}, r); }));
+                    var keys = Object.keys(lrDrilldownData[0]).filter(function (k) { return k.indexOf('_') !== 0; });
                     var headHtml = '';
                     keys.forEach(function (k) {
                         headHtml +=
-                            '<th data-sort="' +
+                            '<th data-sort-key="' +
                             escapeHtml(k) +
-                            '" style="text-align:left;padding:10px 12px;border-bottom:2px solid #334155;cursor:pointer;user-select:none;" title="Sort">' +
-                            escapeHtml(k) +
+                            '" style="text-align:left;padding:10px 14px;border-bottom:2px solid #334155;cursor:pointer;user-select:none;" title="Sort">' +
+                            escapeHtml(lrFriendlyKey(k)) +
                             '</th>';
                     });
                     theadRow.innerHTML = headHtml;
@@ -294,19 +318,25 @@
             }
 
             document.getElementById('lr-modal-body').addEventListener('click', function (e) {
-                var th = e.target.closest('th[data-sort]');
+                var th = e.target.closest('th[data-sort-key]');
                 if (!th || !document.getElementById('lr-drilldown-table').contains(th)) {
                     return;
                 }
-                var key = th.getAttribute('data-sort');
+                var key = th.getAttribute('data-sort-key');
                 if (!key || !lrDrilldownData.length) {
                     return;
                 }
-                lrDrilldownSortDir[key] = !lrDrilldownSortDir[key];
-                var ascending = !!lrDrilldownSortDir[key];
+                if (lrCurrentSort.key === key) {
+                    lrCurrentSort.direction = lrCurrentSort.direction === 'asc' ? 'desc' : 'asc';
+                } else {
+                    lrCurrentSort.key = key;
+                    lrCurrentSort.direction = 'asc';
+                }
+                var ascending = lrCurrentSort.direction === 'asc';
                 var sorted = lrDrilldownData.slice().sort(function (a, b) {
                     return lrDrilldownCompare(a, b, key, ascending);
                 });
+                lrDrilldownData = sorted;
                 renderLrDrilldownTableBody(sorted);
             });
 
@@ -385,8 +415,10 @@
             function renderHeatmap(data) {
                 var cats = (data.trend && data.trend.categories) ? data.trend.categories : [];
                 var ser = (data.trend && data.trend.series) ? data.trend.series : [];
+                window.lrHeatmapRawDates = cats.slice();
                 var points = cats.map(function (c, i) {
-                    return { x: c, y: Number(ser[i]) || 0 };
+                    var disp = typeof window.formatReportChartDate === 'function' ? window.formatReportChartDate(c) : String(c);
+                    return { x: disp, y: Number(ser[i]) || 0 };
                 });
 
                 var options = {
@@ -400,12 +432,12 @@
                         events: {
                             dataPointSelection: function (event, chartContext, config) {
                                 stopEvent(event);
-                                var si = config.seriesIndex;
                                 var di = config.dataPointIndex;
-                                var row = chartContext.w.config.series[si].data[di];
-                                var label = row && row.x != null ? row.x : null;
-                                if (label) {
-                                    drillDown({ type: 'date', value: String(label) });
+                                var raw = window.lrHeatmapRawDates && window.lrHeatmapRawDates[di] != null
+                                    ? window.lrHeatmapRawDates[di]
+                                    : null;
+                                if (raw) {
+                                    drillDown({ type: 'date', value: String(raw) });
                                 }
                             }
                         }

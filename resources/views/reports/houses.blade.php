@@ -58,14 +58,14 @@
 
     <div id="hr-modal-backdrop" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:1000;align-items:center;justify-content:center;padding:20px;">
         <div style="background:#1e293b;color:#f1f5f9;max-width:920px;width:100%;max-height:86vh;overflow:auto;border-radius:10px;box-shadow:0 20px 50px rgba(0,0,0,0.5);">
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid #334155;">
+            <div class="modal-header" style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;">
                 <h3 id="hr-modal-title" style="margin:0;font-size:1.1rem;">Details</h3>
                 <button id="hr-modal-close" type="button" style="background:transparent;border:none;color:#fff;font-size:1.4rem;cursor:pointer;" aria-label="Close">&times;</button>
             </div>
-            <div style="padding:16px 18px;">
+            <div id="hr-modal-body" style="padding:16px 18px;">
                 <p id="hr-empty" style="margin:0;opacity:0.9;display:none;">No rows.</p>
                 <div id="hr-wrap" style="display:none;overflow-x:auto;">
-                    <table style="width:100%;border-collapse:collapse;font-size:0.95rem;">
+                    <table id="hr-drilldown-table" class="report-drilldown-table" style="font-size:0.95rem;">
                         <thead><tr id="hr-thead"></tr></thead>
                         <tbody id="hr-tbody"></tbody>
                     </table>
@@ -81,6 +81,8 @@
             var dataUrl = @json(route('reports.data'));
             var drillUrl = @json(route('reports.drilldown'));
             var charts = { rank: null, contribution: null, risk: null, momentum: null };
+            var hrTableData = [];
+            var hrCurrentSort = { key: null, direction: 'asc' };
 
             function chartDataSeries(rawSeries) {
                 if (Array.isArray(rawSeries) && rawSeries.length && typeof rawSeries[0] === 'object' && rawSeries[0] && Array.isArray(rawSeries[0].data)) {
@@ -98,6 +100,44 @@
             function friendlyLabel(key) {
                 var map = { first_name: 'First Name', last_name: 'Last Name', year_level: 'Year Level', activity_count: 'Activity', name: 'Name' };
                 return map[key] || String(key).replace(/_/g, ' ').replace(/\b\w/g, function (s) { return s.toUpperCase(); });
+            }
+
+            function hrSortRows(data, key) {
+                if (hrCurrentSort.key === key) {
+                    hrCurrentSort.direction = hrCurrentSort.direction === 'asc' ? 'desc' : 'asc';
+                } else {
+                    hrCurrentSort.key = key;
+                    hrCurrentSort.direction = 'asc';
+                }
+                return data.slice().sort(function (a, b) {
+                    var valA = a[key];
+                    var valB = b[key];
+                    if (valA == null) valA = '';
+                    if (valB == null) valB = '';
+                    if (typeof valA === 'string') valA = valA.toLowerCase();
+                    if (typeof valB === 'string') valB = valB.toLowerCase();
+                    var na = Number(valA);
+                    var nb = Number(valB);
+                    if (!isNaN(na) && !isNaN(nb) && String(valA).trim() !== '' && String(valB).trim() !== '') {
+                        return hrCurrentSort.direction === 'asc' ? na - nb : nb - na;
+                    }
+                    if (valA < valB) return hrCurrentSort.direction === 'asc' ? -1 : 1;
+                    if (valA > valB) return hrCurrentSort.direction === 'asc' ? 1 : -1;
+                    return 0;
+                });
+            }
+
+            function hrRenderTableBody(rows, keys) {
+                var tbody = document.getElementById('hr-tbody');
+                tbody.innerHTML = rows.map(function (r) {
+                    return '<tr class="report-drilldown-row">' + keys.map(function (k) {
+                        var v = r[k];
+                        if (k === 'name' && r._studentId != null) {
+                            return '<td class="td-name" style="text-align:left;padding:12px 14px;vertical-align:middle;"><a href="/students/' + encodeURIComponent(String(r._studentId)) + '" class="student-link">' + escapeHtml(v == null ? '' : String(v)) + '</a></td>';
+                        }
+                        return '<td style="padding:12px 14px;vertical-align:middle;">' + escapeHtml(v == null ? '' : String(v)) + '</td>';
+                    }).join('') + '</tr>';
+                }).join('');
             }
 
             function drillDown(payload) {
@@ -134,8 +174,13 @@
                 } else {
                     empty.style.display = 'none';
                     wrap.style.display = 'block';
+                    hrCurrentSort = { key: null, direction: 'asc' };
                     var normalized = rows.map(function (r) {
                         var c = Object.assign({}, r);
+                        if (c.id != null) {
+                            c._studentId = c.id;
+                            delete c.id;
+                        }
                         if (Object.prototype.hasOwnProperty.call(c, 'first_name') && Object.prototype.hasOwnProperty.call(c, 'last_name')) {
                             c.name = ((c.first_name || '') + ' ' + (c.last_name || '')).trim() || '—';
                             delete c.first_name;
@@ -143,19 +188,12 @@
                         }
                         return c;
                     });
-                    var keys = Object.keys(normalized[0]);
+                    hrTableData = normalized;
+                    var keys = Object.keys(normalized[0]).filter(function (k) { return k.indexOf('_') !== 0; });
                     thead.innerHTML = keys.map(function (k) {
-                        return '<th style="text-align:left;padding:8px 10px;border-bottom:2px solid #334155;">' + escapeHtml(friendlyLabel(k)) + '</th>';
+                        return '<th data-sort-key="' + escapeHtml(k) + '" style="text-align:left;padding:10px 14px;border-bottom:2px solid #334155;cursor:pointer;">' + escapeHtml(friendlyLabel(k)) + '</th>';
                     }).join('');
-                    tbody.innerHTML = normalized.map(function (r) {
-                        return '<tr style="border-bottom:1px solid #334155;">' + keys.map(function (k) {
-                            var v = r[k];
-                            if (k === 'name' && r.id != null) {
-                                return '<td style="padding:8px 10px;"><a href="/students/' + encodeURIComponent(String(r.id)) + '" class="student-link">' + escapeHtml(v == null ? '' : String(v)) + '</a></td>';
-                            }
-                            return '<td style="padding:8px 10px;">' + escapeHtml(v == null ? '' : String(v)) + '</td>';
-                        }).join('') + '</tr>';
-                    }).join('');
+                    hrRenderTableBody(hrTableData, keys);
                 }
                 document.getElementById('hr-modal-backdrop').style.display = 'flex';
             }
@@ -265,8 +303,7 @@
                 var rawDates = (data.trend && data.trend.categories) ? data.trend.categories : [];
                 var values = chartDataSeries(data.trend ? data.trend.series : []);
                 var displayDates = rawDates.map(function (d) {
-                    var date = new Date(d + 'T00:00:00');
-                    return date.getDate() + ' ' + date.toLocaleString('en-AU', { month: 'short' });
+                    return typeof window.formatReportChartDate === 'function' ? window.formatReportChartDate(d) : String(d);
                 });
 
                 var minValue = values.length ? Math.min.apply(null, values) : 0;
@@ -334,6 +371,21 @@
                     })
                     .catch(function () {});
             }
+
+            document.getElementById('hr-modal-body').addEventListener('click', function (e) {
+                var th = e.target.closest('th[data-sort-key]');
+                if (!th || !document.getElementById('hr-drilldown-table').contains(th)) {
+                    return;
+                }
+                var key = th.getAttribute('data-sort-key');
+                if (!key || !hrTableData.length) {
+                    return;
+                }
+                var sorted = hrSortRows(hrTableData, key);
+                hrTableData = sorted;
+                var keys = Object.keys(sorted[0]).filter(function (k) { return k.indexOf('_') !== 0; });
+                hrRenderTableBody(sorted, keys);
+            });
 
             document.getElementById('hr-modal-close').addEventListener('click', function () {
                 document.getElementById('hr-modal-backdrop').style.display = 'none';

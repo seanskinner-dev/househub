@@ -55,14 +55,14 @@
 
     <div id="house-modal-backdrop" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:1000;align-items:center;justify-content:center;padding:20px;">
         <div style="background:#1e293b;color:#f1f5f9;max-width:920px;width:100%;max-height:86vh;overflow:auto;border-radius:10px;box-shadow:0 20px 50px rgba(0,0,0,0.5);">
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid #334155;">
+            <div class="modal-header" style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;">
                 <h3 id="house-modal-title" style="margin:0;font-size:1.1rem;">Details</h3>
                 <button id="house-modal-close" type="button" style="background:transparent;border:none;color:#fff;font-size:1.4rem;cursor:pointer;" aria-label="Close">&times;</button>
             </div>
-            <div style="padding:16px 18px;">
+            <div id="house-modal-body" style="padding:16px 18px;">
                 <p id="house-empty" style="margin:0;opacity:0.9;display:none;">No rows.</p>
                 <div id="house-wrap" style="display:none;overflow-x:auto;">
-                    <table style="width:100%;border-collapse:collapse;font-size:0.95rem;">
+                    <table id="house-drilldown-table" class="report-drilldown-table" style="font-size:0.95rem;">
                         <thead><tr id="house-thead"></tr></thead>
                         <tbody id="house-tbody"></tbody>
                     </table>
@@ -87,9 +87,50 @@
             const thisTerm = data.map(h => Number(h.this_term ?? h.term_total ?? 0));
             const previousTerm = data.map(h => Number(h.previous_term ?? h.last_term_total ?? 0));
 
+            let houseTableData = [];
+            let houseCurrentSort = { key: null, direction: 'asc' };
+
             function friendlyLabel(key) {
                 const map = { first_name: 'First Name', last_name: 'Last Name', year_level: 'Year Level', activity_count: 'Activity', name: 'Name' };
                 return map[key] || key.replace(/_/g, ' ').replace(/\b\w/g, s => s.toUpperCase());
+            }
+
+            function houseSortRows(data, key) {
+                if (houseCurrentSort.key === key) {
+                    houseCurrentSort.direction = houseCurrentSort.direction === 'asc' ? 'desc' : 'asc';
+                } else {
+                    houseCurrentSort.key = key;
+                    houseCurrentSort.direction = 'asc';
+                }
+                return [...data].sort((a, b) => {
+                    let valA = a[key];
+                    let valB = b[key];
+                    if (valA == null) valA = '';
+                    if (valB == null) valB = '';
+                    if (typeof valA === 'string') valA = valA.toLowerCase();
+                    if (typeof valB === 'string') valB = valB.toLowerCase();
+                    const na = Number(valA);
+                    const nb = Number(valB);
+                    if (!isNaN(na) && !isNaN(nb) && String(valA).trim() !== '' && String(valB).trim() !== '') {
+                        return houseCurrentSort.direction === 'asc' ? na - nb : nb - na;
+                    }
+                    if (valA < valB) return houseCurrentSort.direction === 'asc' ? -1 : 1;
+                    if (valA > valB) return houseCurrentSort.direction === 'asc' ? 1 : -1;
+                    return 0;
+                });
+            }
+
+            function houseRenderBody(rows, keys) {
+                const tbody = document.getElementById('house-tbody');
+                tbody.innerHTML = rows.map((r) => {
+                    return '<tr class="report-drilldown-row">' + keys.map((k) => {
+                        const v = r[k];
+                        if (k === 'name' && r._studentId != null) {
+                            return '<td class="td-name" style="text-align:left;padding:12px 14px;vertical-align:middle;"><a href="/students/' + encodeURIComponent(String(r._studentId)) + '" class="student-link">' + (v == null ? '' : String(v)) + '</a></td>';
+                        }
+                        return '<td style="padding:12px 14px;vertical-align:middle;">' + (v == null ? '' : String(v)) + '</td>';
+                    }).join('') + '</tr>';
+                }).join('');
             }
 
             function renderDrillDownModal(data) {
@@ -98,17 +139,22 @@
                 const empty = document.getElementById('house-empty');
                 const wrap = document.getElementById('house-wrap');
                 const thead = document.getElementById('house-thead');
-                const tbody = document.getElementById('house-tbody');
                 if (!rows.length) {
+                    houseTableData = [];
                     empty.style.display = 'block';
                     wrap.style.display = 'none';
                     thead.innerHTML = '';
-                    tbody.innerHTML = '';
+                    document.getElementById('house-tbody').innerHTML = '';
                 } else {
                     empty.style.display = 'none';
                     wrap.style.display = 'block';
+                    houseCurrentSort = { key: null, direction: 'asc' };
                     const normalized = rows.map(function (r) {
                         const c = { ...r };
+                        if (c.id != null) {
+                            c._studentId = c.id;
+                            delete c.id;
+                        }
                         if (Object.prototype.hasOwnProperty.call(c, 'first_name') && Object.prototype.hasOwnProperty.call(c, 'last_name')) {
                             c.name = ((c.first_name || '') + ' ' + (c.last_name || '')).trim() || '—';
                             delete c.first_name;
@@ -116,20 +162,24 @@
                         }
                         return c;
                     });
-                    const keys = Object.keys(normalized[0]);
-                    thead.innerHTML = keys.map(k => '<th style="text-align:left;padding:8px 10px;border-bottom:2px solid #334155;">' + friendlyLabel(k) + '</th>').join('');
-                    tbody.innerHTML = normalized.map(function (r) {
-                        return '<tr style="border-bottom:1px solid #334155;">' + keys.map(function (k) {
-                            const v = r[k];
-                            if (k === 'name' && r.id != null) {
-                                return '<td style="padding:8px 10px;"><a href="/students/' + encodeURIComponent(String(r.id)) + '" class="student-link">' + (v == null ? '' : String(v)) + '</a></td>';
-                            }
-                            return '<td style="padding:8px 10px;">' + (v == null ? '' : String(v)) + '</td>';
-                        }).join('') + '</tr>';
-                    }).join('');
+                    houseTableData = normalized;
+                    const keys = Object.keys(normalized[0]).filter((k) => !k.startsWith('_'));
+                    thead.innerHTML = keys.map(k => '<th data-sort-key="' + k + '" style="text-align:left;padding:10px 14px;border-bottom:2px solid #334155;cursor:pointer;">' + friendlyLabel(k) + '</th>').join('');
+                    houseRenderBody(houseTableData, keys);
                 }
                 document.getElementById('house-modal-backdrop').style.display = 'flex';
             }
+
+            document.getElementById('house-modal-body').addEventListener('click', function (e) {
+                const th = e.target.closest('th[data-sort-key]');
+                if (!th || !document.getElementById('house-drilldown-table').contains(th)) return;
+                const key = th.getAttribute('data-sort-key');
+                if (!key || !houseTableData.length) return;
+                const sorted = houseSortRows(houseTableData, key);
+                houseTableData = sorted;
+                const keys = Object.keys(sorted[0]).filter((k) => !k.startsWith('_'));
+                houseRenderBody(sorted, keys);
+            });
 
             function drillDown(payload) {
                 var meta = document.querySelector('meta[name="csrf-token"]');

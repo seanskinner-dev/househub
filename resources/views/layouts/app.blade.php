@@ -164,6 +164,47 @@
             color: #bfdbfe;
             text-decoration: underline;
         }
+
+        .modal-header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: #1e293b;
+            border-bottom: 1px solid #334155;
+        }
+
+        table.report-drilldown-table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        table.report-drilldown-table th[data-sort-key] {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        table.report-drilldown-table th[data-sort-key]:hover {
+            color: #f8fafc;
+        }
+
+        table.report-drilldown-table tbody tr.report-drilldown-row:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        table.report-drilldown-table td {
+            padding: 12px 14px;
+            vertical-align: middle;
+        }
+
+        table.report-drilldown-table td.td-name,
+        table.report-drilldown-table td.td-name .student-link {
+            color: #f8fafc;
+        }
+
+        table.report-drilldown-table td.td-actions {
+            text-align: right;
+            white-space: nowrap;
+        }
     </style>
 </head>
 
@@ -221,6 +262,22 @@
         if (typeof ApexCharts === 'undefined') {
             console.error('ApexCharts failed to load');
         }
+        window.formatReportChartDate = function (d) {
+            if (d == null || d === '') return '';
+            var s = String(d).trim();
+            var m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            if (m) {
+                return m[3] + '/' + m[2];
+            }
+            var dt = new Date(s.indexOf('T') === -1 ? s + 'T00:00:00' : s);
+            if (!isNaN(dt.getTime())) {
+                var dd = String(dt.getDate()).padStart(2, '0');
+                var mm = String(dt.getMonth() + 1).padStart(2, '0');
+                return dd + '/' + mm;
+            }
+            return s;
+        };
+
         window.Apex = {
             colors: ['#0ea5e9', '#22c55e', '#f59e0b', '#ef4444', '#a855f7'],
             chart: {
