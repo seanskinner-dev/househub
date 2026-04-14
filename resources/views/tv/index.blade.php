@@ -2110,5 +2110,45 @@ setInterval(function () {
 }, 300000);
 </script>
 
+<script>
+const weatherBackgrounds = {
+    clear: ['clear1.jpg','clear2.jpg','clear3.jpg'],
+    cloud: ['cloud1.jpg','cloud2.jpg','cloud3.jpg'],
+    rain: ['rain1.jpg','rain2.jpg','rain3.jpg','rain4.jpg'],
+    storm: ['storm1.jpg','storm2.jpg']
+};
+
+let lastBg = null;
+
+function getRandomBackground(type) {
+    const pool = weatherBackgrounds[type] || weatherBackgrounds.clear;
+
+    let selected;
+    do {
+        selected = pool[Math.floor(Math.random() * pool.length)];
+    } while (selected === lastBg && pool.length > 1);
+
+    lastBg = selected;
+    return `/weather/${type}/${selected}`;
+}
+
+function setWeatherBackground(type) {
+    const bg = getRandomBackground(type);
+
+    const el = document.querySelector('.tv-container');
+
+    if (!el) return;
+
+    el.style.background = `
+        linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.35)),
+        url('${bg}') center/cover no-repeat
+    `;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    setWeatherBackground('rain');
+});
+</script>
+
 </body>
 </html>
