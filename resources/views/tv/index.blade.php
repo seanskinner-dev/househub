@@ -819,32 +819,51 @@
         .leaderboard-list {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 18px;
             margin-top: 40px;
+            padding: 0 40px;
             flex: 1;
             justify-content: center;
         }
 
-        .leaderboard-row {
+        .leaderboard-list .student-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 32px;
+            border-radius: 18px;
+            background: rgba(255,255,255,0.06);
+            backdrop-filter: blur(6px);
+            font-size: 2.6rem;
+            font-weight: 700;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .leaderboard-list .student-row:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+
+        .leaderboard-list .student-left {
             display: flex;
             align-items: center;
-            justify-content: flex-start;
-            font-size: 2.5rem;
-            font-weight: 700;
-            padding: 20px 30px;
-            border-radius: 16px;
-            background: rgba(255,255,255,0.08);
-            line-height: 1.1;
+            gap: 20px;
         }
 
-        .leaderboard-row .rank {
-            width: 120px;
+        .leaderboard-list .student-emoji {
+            font-size: 2.4rem;
+        }
+
+        .leaderboard-list .student-name {
+            letter-spacing: 0.5px;
+        }
+
+        .leaderboard-list .student-rank {
             font-size: 2rem;
             opacity: 0.8;
-            margin: 0;
         }
 
-        .leaderboard-row .name {
+        .leaderboard-list .student-name-wrap {
             flex: 1;
         }
 
@@ -862,6 +881,19 @@
 <body>
 
 <div class="tv-container">
+    @php
+        if (!function_exists('houseMeta')) {
+            function houseMeta($house) {
+                return match($house) {
+                    'Gryffindor' => ['color' => '#740001', 'emoji' => '🦁'],
+                    'Slytherin' => ['color' => '#1a472a', 'emoji' => '🐍'],
+                    'Ravenclaw' => ['color' => '#0e1a40', 'emoji' => '🦅'],
+                    'Hufflepuff' => ['color' => '#ffcc00', 'emoji' => '🦡'],
+                    default => ['color' => '#444', 'emoji' => '🏫'],
+                };
+            }
+        }
+    @endphp
 
     <div id="emergencyScreen" style="display:none;">
         <div id="emergencyText"></div>
@@ -1165,9 +1197,17 @@
             <h1 class="screen-title">Top 10 - Gryffindor</h1>
             <div class="leaderboard-list">
                 @foreach($topGryffindor as $index => $student)
-                    <div class="leaderboard-row">
-                        <span class="rank">#{{ $index + 1 }}</span>
-                        <span class="name">{{ $student->first_name }} {{ $student->last_name }}</span>
+                    @php
+                        $meta = houseMeta($student->house_name ?? 'Gryffindor');
+                    @endphp
+                    <div class="student-row" style="border-left: 10px solid {{ $meta['color'] }}">
+                        <div class="student-left">
+                            <span class="student-emoji">{{ $meta['emoji'] }}</span>
+                            <span class="student-name-wrap">
+                                <span class="student-name">{{ $student->first_name }} {{ $student->last_name }}</span>
+                            </span>
+                        </div>
+                        <div class="student-rank">#{{ $index + 1 }}</div>
                     </div>
                 @endforeach
             </div>
@@ -1179,9 +1219,17 @@
             <h1 class="screen-title">Top 10 - Slytherin</h1>
             <div class="leaderboard-list">
                 @foreach($topSlytherin as $index => $student)
-                    <div class="leaderboard-row">
-                        <span class="rank">#{{ $index + 1 }}</span>
-                        <span class="name">{{ $student->first_name }} {{ $student->last_name }}</span>
+                    @php
+                        $meta = houseMeta($student->house_name ?? 'Slytherin');
+                    @endphp
+                    <div class="student-row" style="border-left: 10px solid {{ $meta['color'] }}">
+                        <div class="student-left">
+                            <span class="student-emoji">{{ $meta['emoji'] }}</span>
+                            <span class="student-name-wrap">
+                                <span class="student-name">{{ $student->first_name }} {{ $student->last_name }}</span>
+                            </span>
+                        </div>
+                        <div class="student-rank">#{{ $index + 1 }}</div>
                     </div>
                 @endforeach
             </div>
@@ -1193,9 +1241,17 @@
             <h1 class="screen-title">Top 10 - Ravenclaw</h1>
             <div class="leaderboard-list">
                 @foreach($topRavenclaw as $index => $student)
-                    <div class="leaderboard-row">
-                        <span class="rank">#{{ $index + 1 }}</span>
-                        <span class="name">{{ $student->first_name }} {{ $student->last_name }}</span>
+                    @php
+                        $meta = houseMeta($student->house_name ?? 'Ravenclaw');
+                    @endphp
+                    <div class="student-row" style="border-left: 10px solid {{ $meta['color'] }}">
+                        <div class="student-left">
+                            <span class="student-emoji">{{ $meta['emoji'] }}</span>
+                            <span class="student-name-wrap">
+                                <span class="student-name">{{ $student->first_name }} {{ $student->last_name }}</span>
+                            </span>
+                        </div>
+                        <div class="student-rank">#{{ $index + 1 }}</div>
                     </div>
                 @endforeach
             </div>
@@ -1207,9 +1263,17 @@
             <h1 class="screen-title">Top 10 - Hufflepuff</h1>
             <div class="leaderboard-list">
                 @foreach($topHufflepuff as $index => $student)
-                    <div class="leaderboard-row">
-                        <span class="rank">#{{ $index + 1 }}</span>
-                        <span class="name">{{ $student->first_name }} {{ $student->last_name }}</span>
+                    @php
+                        $meta = houseMeta($student->house_name ?? 'Hufflepuff');
+                    @endphp
+                    <div class="student-row" style="border-left: 10px solid {{ $meta['color'] }}">
+                        <div class="student-left">
+                            <span class="student-emoji">{{ $meta['emoji'] }}</span>
+                            <span class="student-name-wrap">
+                                <span class="student-name">{{ $student->first_name }} {{ $student->last_name }}</span>
+                            </span>
+                        </div>
+                        <div class="student-rank">#{{ $index + 1 }}</div>
                     </div>
                 @endforeach
             </div>

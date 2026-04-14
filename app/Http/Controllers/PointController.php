@@ -523,7 +523,7 @@ class PointController extends Controller
         $topByHouse = function (string $houseName) {
             return DB::table('students')
                 ->leftJoin('houses', 'students.house_id', '=', 'houses.id')
-                ->select('students.first_name', 'students.last_name', 'students.house_points')
+                ->select('students.first_name', 'students.last_name', 'students.house_points', 'houses.name as house_name')
                 ->where('houses.name', $houseName)
                 ->orderByDesc('students.house_points')
                 ->limit(10)
