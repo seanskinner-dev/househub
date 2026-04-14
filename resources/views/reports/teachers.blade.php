@@ -252,7 +252,7 @@
                         tooltip: { theme: 'dark' }
                     };
 
-                    tuModalChart = new ApexCharts(document.querySelector('#drilldown-chart'), options);
+                    tuModalChart = new ApexCharts(document.querySelector('#drilldown-chart'), window.hhApplyApexDefaults(options));
                     tuModalChart.render();
 
                     if (typeof window.renderStudentTable !== 'function') {
@@ -330,7 +330,7 @@
                 }
 
                 var common = { fontFamily: 'Arial, sans-serif', foreColor: '#e2e8f0' };
-                tuCharts.low = new ApexCharts(document.querySelector('#teacher-bias'), {
+                tuCharts.low = new ApexCharts(document.querySelector('#teacher-bias'), window.hhApplyApexDefaults({
                     chart: {
                         type: 'bar',
                         height: 320,
@@ -371,7 +371,7 @@
                     grid: { borderColor: '#334155' },
                     dataLabels: { enabled: true },
                     tooltip: { theme: 'dark' }
-                });
+                }));
                 tuCharts.low.render();
             }
 
@@ -408,7 +408,7 @@
                     return buckets[k].length;
                 });
                 var common = { fontFamily: 'Arial, sans-serif', foreColor: '#e2e8f0' };
-                tuCharts.freq = new ApexCharts(document.querySelector('#teacher-frequency'), {
+                tuCharts.freq = new ApexCharts(document.querySelector('#teacher-frequency'), window.hhApplyApexDefaults({
                     chart: {
                         type: 'bar',
                         height: 320,
@@ -439,7 +439,7 @@
                     grid: { borderColor: '#334155' },
                     dataLabels: { enabled: true },
                     tooltip: { theme: 'dark' }
-                });
+                }));
                 tuCharts.freq.render();
             }
 
@@ -482,7 +482,7 @@
                     ];
                 }
                 var common = { fontFamily: 'Arial, sans-serif', foreColor: '#e2e8f0' };
-                tuCharts.trend = new ApexCharts(document.querySelector('#tu-trend'), {
+                tuCharts.trend = new ApexCharts(document.querySelector('#tu-trend'), window.hhApplyApexDefaults({
                     chart: {
                         type: 'line',
                         height: 320,
@@ -519,7 +519,7 @@
                     grid: { borderColor: '#334155' },
                     annotations: annotations,
                     tooltip: { theme: 'dark' }
-                });
+                }));
                 tuCharts.trend.render();
             }
 
@@ -545,7 +545,7 @@
                 }
 
                 var common = { fontFamily: 'Arial, sans-serif', foreColor: '#e2e8f0' };
-                tuCharts.lowStaff = new ApexCharts(document.querySelector('#teacher-low-usage'), {
+                tuCharts.lowStaff = new ApexCharts(document.querySelector('#teacher-low-usage'), window.hhApplyApexDefaults({
                     chart: {
                         type: 'bar',
                         height: 320,
@@ -581,7 +581,7 @@
                     grid: { borderColor: '#334155' },
                     dataLabels: { enabled: true },
                     tooltip: { theme: 'dark' }
-                });
+                }));
                 tuCharts.lowStaff.render();
             }
 

@@ -1065,6 +1065,34 @@
                 '#a855f7'
             ]
         };
+
+        window.hhApplyApexDefaults = function (options) {
+            options = options || {};
+            return {
+                ...window.Apex,
+                ...options,
+                chart: {
+                    ...window.Apex.chart,
+                    ...(options.chart || {})
+                },
+                xaxis: {
+                    ...window.Apex.xaxis,
+                    ...(options.xaxis || {})
+                },
+                yaxis: {
+                    ...window.Apex.yaxis,
+                    ...(options.yaxis || {})
+                },
+                grid: {
+                    ...window.Apex.grid,
+                    ...(options.grid || {})
+                },
+                tooltip: {
+                    ...window.Apex.tooltip,
+                    ...(options.tooltip || {})
+                }
+            };
+        };
     </script>
     @stack('scripts')
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>

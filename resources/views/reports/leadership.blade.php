@@ -305,7 +305,7 @@
                     colors: ['#22c55e']
                 };
 
-                lrCharts.health = new ApexCharts(document.querySelector('#engagement-health'), options);
+                lrCharts.health = new ApexCharts(document.querySelector('#engagement-health'), window.hhApplyApexDefaults(options));
                 lrCharts.health.render();
             }
 
@@ -346,7 +346,7 @@
                     grid: { borderColor: '#334155' }
                 };
 
-                lrCharts.heatmap = new ApexCharts(document.querySelector('#heatmap'), options);
+                lrCharts.heatmap = new ApexCharts(document.querySelector('#heatmap'), window.hhApplyApexDefaults(options));
                 lrCharts.heatmap.render();
             }
 
@@ -397,7 +397,7 @@
                     tooltip: { theme: 'dark' }
                 };
 
-                lrCharts.yearTrend = new ApexCharts(document.querySelector('#year-level'), options);
+                lrCharts.yearTrend = new ApexCharts(document.querySelector('#year-level'), window.hhApplyApexDefaults(options));
                 lrCharts.yearTrend.render();
             }
 
@@ -439,7 +439,7 @@
                     yaxis: { show: false }
                 };
 
-                lrCharts.distribution = new ApexCharts(document.querySelector('#risk-mix'), options);
+                lrCharts.distribution = new ApexCharts(document.querySelector('#risk-mix'), window.hhApplyApexDefaults(options));
                 lrCharts.distribution.render();
             }
 
@@ -474,7 +474,7 @@
                     tooltip: { theme: 'dark' }
                 };
 
-                lrCharts.dropoff = new ApexCharts(document.querySelector('#lr-dropoff'), options);
+                lrCharts.dropoff = new ApexCharts(document.querySelector('#lr-dropoff'), window.hhApplyApexDefaults(options));
                 lrCharts.dropoff.render();
             }
 

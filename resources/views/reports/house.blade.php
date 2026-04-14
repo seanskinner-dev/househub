@@ -132,7 +132,7 @@
                 //-----------------------------------
                 // 1. TERM COMPARISON
                 //-----------------------------------
-                new ApexCharts(document.querySelector("#house-comparison"), {
+                var houseApexOpts = window.hhApplyApexDefaults({
                 chart: {
                     type: 'bar',
                     height: 320,
@@ -152,12 +152,13 @@
                 ],
                 xaxis: { categories: names },
                 title: { text: 'Term Comparison' }
-                }).render();
+                });
+                new ApexCharts(document.querySelector("#house-comparison"), houseApexOpts).render();
 
                 //-----------------------------------
                 // 2. MOMENTUM
                 //-----------------------------------
-                new ApexCharts(document.querySelector("#house-momentum"), {
+                houseApexOpts = window.hhApplyApexDefaults({
                 chart: {
                     type: 'line',
                     height: 320,
@@ -173,14 +174,15 @@
                 series: [{ name: 'Momentum', data: thisTerm }],
                 xaxis: { categories: names },
                 title: { text: 'Momentum' }
-                }).render();
+                });
+                new ApexCharts(document.querySelector("#house-momentum"), houseApexOpts).render();
 
                 //-----------------------------------
                 // 3. CONTRIBUTION
                 //-----------------------------------
                 const contribution = thisTerm.map(v => Math.max(1, Math.floor(v / 10)));
 
-                new ApexCharts(document.querySelector("#house-contribution"), {
+                houseApexOpts = window.hhApplyApexDefaults({
                 chart: {
                     type: 'radar',
                     height: 320,
@@ -199,7 +201,8 @@
                 }],
                 labels: names,
                 title: { text: 'Contribution Spread' }
-                }).render();
+                });
+                new ApexCharts(document.querySelector("#house-contribution"), houseApexOpts).render();
 
                 //-----------------------------------
                 // 4. RISK
@@ -212,7 +215,7 @@
                         const categories = apiData?.underperformance_index?.categories || names;
                         const risk = apiData?.underperformance_index?.series?.[0]?.data || [];
 
-                        new ApexCharts(document.querySelector("#house-risk"), {
+                        houseApexOpts = window.hhApplyApexDefaults({
                 chart: {
                     type: 'bar',
                     height: 320,
@@ -228,7 +231,8 @@
                 series: [{ name: 'Underperformance Index', data: risk }],
                 xaxis: { categories: categories },
                 title: { text: 'Underperformance' }
-                }).render();
+                });
+                        new ApexCharts(document.querySelector("#house-risk"), houseApexOpts).render();
                     })
                     .catch(function () {
                         document.querySelector("#house-risk").innerHTML = '<div class="text-white-50 small">No data available</div>';

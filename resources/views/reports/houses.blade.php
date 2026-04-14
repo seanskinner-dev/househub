@@ -147,7 +147,7 @@
                     return b.value - a.value;
                 });
 
-                charts.rank = new ApexCharts(document.querySelector('#house-comparison'), {
+                charts.rank = new ApexCharts(document.querySelector('#house-comparison'), window.hhApplyApexDefaults({
                     chart: {
                         type: 'bar',
                         height: 320,
@@ -167,7 +167,7 @@
                     colors: ['#0ea5e9'],
                     title: { text: 'Rank Shift Pressure (click house for low-activity students)' },
                     tooltip: { theme: 'dark' }
-                });
+                }));
                 charts.rank.render();
             }
 
@@ -176,7 +176,7 @@
                 var source = chartDataSeries(data.house_breakdown ? data.house_breakdown.series : []);
                 var values = source.map(function (v) { return Math.max(0, Math.floor(v / 10)); });
 
-                charts.contribution = new ApexCharts(document.querySelector('#house-contribution'), {
+                charts.contribution = new ApexCharts(document.querySelector('#house-contribution'), window.hhApplyApexDefaults({
                     chart: {
                         type: 'radar',
                         height: 320,
@@ -197,7 +197,7 @@
                     colors: ['#f59e0b'],
                     title: { text: 'Contribution Spread (click to inspect non-contributors)' },
                     tooltip: { theme: 'dark' }
-                });
+                }));
                 charts.contribution.render();
             }
 
@@ -206,7 +206,7 @@
                 var source = chartDataSeries(data.underperformance_index ? data.underperformance_index.series : []);
                 var values = source.map(function (v) { return Math.min(100, Math.floor(100 / (Number(v) + 1))); });
 
-                charts.risk = new ApexCharts(document.querySelector('#house-risk'), {
+                charts.risk = new ApexCharts(document.querySelector('#house-risk'), window.hhApplyApexDefaults({
                     chart: {
                         type: 'bar',
                         height: 320,
@@ -226,7 +226,7 @@
                     plotOptions: { bar: { borderRadius: 5 } },
                     title: { text: 'Underperformance Index (click for at-risk students)' },
                     tooltip: { theme: 'dark' }
-                });
+                }));
                 charts.risk.render();
             }
 
@@ -248,7 +248,7 @@
                     });
                 }
 
-                charts.momentum = new ApexCharts(document.querySelector('#house-momentum'), {
+                charts.momentum = new ApexCharts(document.querySelector('#house-momentum'), window.hhApplyApexDefaults({
                     chart: {
                         type: 'area',
                         height: 320,
@@ -273,7 +273,7 @@
                     colors: ['#a855f7'],
                     title: { text: 'House Momentum (click weakest day for detail)' },
                     tooltip: { theme: 'dark' }
-                });
+                }));
                 charts.momentum.render();
             }
 

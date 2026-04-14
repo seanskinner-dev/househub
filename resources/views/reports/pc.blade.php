@@ -295,7 +295,8 @@ document.addEventListener("DOMContentLoaded", function () {
             colors: config.colors || undefined
         };
 
-        instances[containerId] = new ApexCharts(document.querySelector('#' + containerId), options);
+        const finalOptions = window.hhApplyApexDefaults(options);
+        instances[containerId] = new ApexCharts(document.querySelector('#' + containerId), finalOptions);
         instances[containerId].render();
     }
 
@@ -311,7 +312,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
 
-      instances['risk-distribution'] = new ApexCharts(document.querySelector("#risk-distribution"), {
+      const riskDistOpts = window.hhApplyApexDefaults({
         chart: {
           type: 'donut',
           height: 320
@@ -333,6 +334,7 @@ document.addEventListener("DOMContentLoaded", function () {
           theme: 'dark'
         }
       });
+      instances['risk-distribution'] = new ApexCharts(document.querySelector("#risk-distribution"), riskDistOpts);
       instances['risk-distribution'].render();
     }
 
@@ -377,7 +379,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         destroyChart('points-by-house');
         if (houseSeries.length > 0) {
-            instances['points-by-house'] = new ApexCharts(document.querySelector("#points-by-house"), {
+            const pointsByHouseOpts = window.hhApplyApexDefaults({
                 chart: {
                     type: 'bar',
                     height: 320,
@@ -396,6 +398,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 xaxis: { categories: houseCategories },
                 tooltip: { theme: 'dark' }
             });
+            instances['points-by-house'] = new ApexCharts(document.querySelector("#points-by-house"), pointsByHouseOpts);
             instances['points-by-house'].render();
         } else {
             showEmpty('points-by-house');
@@ -403,7 +406,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         destroyChart('year-level-distribution');
         if (yearSeries.length > 0) {
-            instances['year-level-distribution'] = new ApexCharts(document.querySelector("#year-level-distribution"), {
+            const yearLevelOpts = window.hhApplyApexDefaults({
                 chart: {
                     type: 'bar',
                     height: 320,
@@ -422,6 +425,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 xaxis: { categories: yearCategories },
                 tooltip: { theme: 'dark' }
             });
+            instances['year-level-distribution'] = new ApexCharts(document.querySelector("#year-level-distribution"), yearLevelOpts);
             instances['year-level-distribution'].render();
         } else {
             showEmpty('year-level-distribution');
