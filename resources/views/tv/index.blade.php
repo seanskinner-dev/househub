@@ -86,7 +86,7 @@
             box-sizing: border-box;
             position: relative;
             z-index: 1;
-            background: transparent;
+            background: transparent !important;
         }
 
         .tv-layout {
@@ -1925,13 +1925,10 @@ document.addEventListener("DOMContentLoaded", function () {
         const screen = getActiveScreen();
         if (!screen) return;
         if (screen.id !== 'screen-weather') return;
-
-        const bg = getRandomBackground(type);
-
-        screen.style.background = `
-        linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.3)),
-        url('${bg}') center/cover no-repeat
-    `;
+        screen.style.backgroundImage = "url('/weather/rain/rain1.jpg')";
+        screen.style.backgroundSize = "cover";
+        screen.style.backgroundPosition = "center";
+        screen.style.backgroundRepeat = "no-repeat";
     }
 
     function updateWeatherBackground() {
