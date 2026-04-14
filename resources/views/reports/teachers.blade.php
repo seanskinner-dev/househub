@@ -509,7 +509,8 @@
                     },
                     series: [{ name: 'Points', data: values }],
                     stroke: { curve: 'smooth', width: 3 },
-                    markers: { size: 5, hover: { size: 8 } },
+                    markers: { size: 4, hover: { size: 8 } },
+                    dataLabels: { enabled: false },
                     xaxis: {
                         type: 'category',
                         categories: displayDates,

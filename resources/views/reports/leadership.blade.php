@@ -386,6 +386,8 @@
                         }
                     },
                     stroke: { curve: 'smooth', width: 2 },
+                    markers: { size: 4 },
+                    dataLabels: { enabled: false },
                     fill: {
                         type: 'gradient',
                         gradient: { shadeIntensity: 1, opacityFrom: 0.45, opacityTo: 0.05 }

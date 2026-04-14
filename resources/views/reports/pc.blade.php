@@ -292,6 +292,10 @@ document.addEventListener("DOMContentLoaded", function () {
             labels: config.type === 'donut' ? categories : undefined,
             colors: config.colors || undefined
         };
+        if (config.type === 'line' || config.type === 'area') {
+            options.dataLabels = { enabled: false };
+            options.markers = { size: 4 };
+        }
 
         const finalOptions = window.hhApplyApexDefaults(options);
         instances[containerId] = new ApexCharts(document.querySelector('#' + containerId), finalOptions);

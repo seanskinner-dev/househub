@@ -265,6 +265,8 @@
                     series: [{ name: 'Weekday points', data: values }],
                     xaxis: { type: 'category', categories: displayDates },
                     stroke: { curve: 'smooth', width: 3 },
+                    markers: { size: 4 },
+                    dataLabels: { enabled: false },
                     fill: {
                         type: 'gradient',
                         gradient: { opacityFrom: 0.45, opacityTo: 0.05 }

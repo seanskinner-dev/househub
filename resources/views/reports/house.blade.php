@@ -172,6 +172,8 @@
                     }
                 },
                 series: [{ name: 'Momentum', data: thisTerm }],
+                dataLabels: { enabled: false },
+                markers: { size: 4 },
                 xaxis: { categories: names },
                 title: { text: 'Momentum' }
                 });
