@@ -1065,6 +1065,10 @@
             animation: studentPulseTop1 5s ease-in-out infinite;
         }
 
+        .student-card.is-top-1:hover {
+            transform: scale(1.07);
+        }
+
         .student-card.is-top-1 .student-rank::before {
             content: "👑 ";
         }
@@ -1213,10 +1217,10 @@
             50% { transform: scale(1.06); }
         }
 
-        .screen-inner.gryffindor,
-        .screen-inner.slytherin,
-        .screen-inner.ravenclaw,
-        .screen-inner.hufflepuff { background: transparent; color: #fff; }
+        .screen-inner.gryffindor { background: linear-gradient(180deg, rgba(116, 0, 1, 0.35), rgba(10, 10, 10, 0.35)); color: #fff; }
+        .screen-inner.slytherin { background: linear-gradient(180deg, rgba(26, 71, 42, 0.35), rgba(10, 10, 10, 0.35)); color: #fff; }
+        .screen-inner.ravenclaw { background: linear-gradient(180deg, rgba(14, 26, 64, 0.38), rgba(10, 10, 10, 0.35)); color: #fff; }
+        .screen-inner.hufflepuff { background: linear-gradient(180deg, rgba(255, 204, 0, 0.28), rgba(10, 10, 10, 0.35)); color: #fff; }
     </style>
 </head>
 
@@ -1845,17 +1849,18 @@ document.addEventListener("DOMContentLoaded", function () {
             screens.forEach(function (s) { s.style.display = 'none'; });
             return;
         }
-        const nextScreenId = screens[index] ? screens[index].id : '';
-        const container = document.querySelector('.tv-container');
-        if (nextScreenId !== 'screen-weather') {
-            const weatherScreen = document.getElementById('screen-weather');
-            if (weatherScreen) {
-                weatherScreen.style.background = '';
-            }
-        }
         screens.forEach((s, i) => {
             s.style.display = (i === index) ? 'flex' : 'none';
         });
+        document.querySelectorAll('.tv-screen').forEach(s => {
+            if (s.id !== 'screen-weather') {
+                s.style.background = '';
+            }
+        });
+        const weatherScreen = document.getElementById('screen-weather');
+        if (weatherScreen && weatherScreen.style.display === 'none') {
+            weatherScreen.style.background = '';
+        }
     }
 
     function nextScreen() {
@@ -1917,19 +1922,15 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function setWeatherBackground(type) {
-        const el = document.getElementById('screen-weather');
-        const activeScreen = document.querySelector('.tv-screen:not([style*="display: none"])');
+        const screen = document.getElementById('screen-weather');
+        if (!screen) return;
 
-        if (!el) return;
+        const bg = getRandomBackground(type);
 
-        if (activeScreen && activeScreen.id === 'screen-weather') {
-            const bg = getRandomBackground(type);
-
-            el.style.background = `
-            linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.35)),
-            url('${bg}') center/cover no-repeat
-        `;
-        }
+        screen.style.background = `
+        linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.35)),
+        url('${bg}') center/cover no-repeat
+    `;
     }
 
     function updateWeatherBackground() {
