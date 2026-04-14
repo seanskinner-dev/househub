@@ -187,6 +187,12 @@
                 var overTime = data.house_points_over_time || {};
                 var rawDates = Array.isArray(overTime.categories) ? overTime.categories : [];
                 var displayDates = rawDates.map(function (d) {
+                    if (typeof d === 'string' && d.length >= 10) {
+                        var dt = new Date(d + 'T00:00:00');
+                        if (!isNaN(dt.getTime())) {
+                            return dt.toLocaleDateString(undefined, { weekday: 'short' });
+                        }
+                    }
                     return typeof window.formatReportChartDate === 'function' ? window.formatReportChartDate(d) : String(d);
                 });
 
@@ -194,7 +200,7 @@
                 var colorsByHouse = {
                     Gryffindor: '#740001',
                     Slytherin: '#1a472a',
-                    Ravenclaw: '#0e1a40',
+                    Ravenclaw: '#3b82f6',
                     Hufflepuff: '#ffcc00'
                 };
                 var colorList = series.map(function (s) {
@@ -214,7 +220,14 @@
                         };
                     }),
                     xaxis: {
-                        categories: displayDates
+                        categories: displayDates,
+                        tickPlacement: 'on',
+                        labels: {
+                            rotate: -90,
+                            style: {
+                                fontSize: '12px'
+                            }
+                        }
                     },
                     yaxis: {
                         title: {
@@ -227,6 +240,9 @@
                     },
                     markers: {
                         size: 0
+                    },
+                    grid: {
+                        borderColor: 'rgba(255,255,255,0.1)'
                     },
                     dataLabels: {
                         enabled: false
