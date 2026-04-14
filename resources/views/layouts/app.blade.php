@@ -592,6 +592,18 @@
                             window.houseHubPrependRecentActivity(data.recent_entry);
                         }
                         reportShowToast('Points updated');
+                        var cell = document.querySelector('.td-points[data-student-id="' + String(studentId) + '"]');
+                        if (cell) {
+                            var current = parseInt(cell.innerText || '0', 10);
+                            if (isNaN(current)) {
+                                current = 0;
+                            }
+                            cell.innerText = String(current + Number(amount || 0));
+                            cell.style.transform = 'scale(1.1)';
+                            setTimeout(function () {
+                                cell.style.transform = 'scale(1)';
+                            }, 150);
+                        }
                     })
                     .catch(function () { reportShowToast('Unable to update points'); });
             }
@@ -622,7 +634,8 @@
                     var sid = rowStudentId(row);
                     var nm = escapeReportHtml(row.name || '');
                     var yl = escapeReportHtml(row.year_level || '');
-                    var ac = escapeReportHtml(row.activity_count || '');
+                    var pointsValue = row.points != null ? row.points : row.activity_count;
+                    var pts = escapeReportHtml(pointsValue == null ? '0' : pointsValue);
                     var dt = escapeReportHtml(row.date || '');
                     var nameCell = studentIdUsable(sid)
                         ? '<td class="td-name" style="text-align:left;padding:12px 14px;vertical-align:middle;"><a href="/students/' + encodeURIComponent(String(sid)) + '" class="student-link">' + nm + '</a></td>'
@@ -641,7 +654,7 @@
                         '</div></td>';
                     return '<tr class="report-drilldown-row">' + nameCell +
                         '<td style="text-align:left;padding:12px 14px;vertical-align:middle;">' + yl + '</td>' +
-                        '<td style="text-align:left;padding:12px 14px;vertical-align:middle;">' + ac + '</td>' +
+                        '<td class="td-points" data-student-id="' + escapeReportHtml(String(sid || '')) + '" style="text-align:left;padding:12px 14px;vertical-align:middle;">' + pts + '</td>' +
                         '<td style="text-align:left;padding:12px 14px;vertical-align:middle;">' + dt + '</td>' +
                         actions +
                         '</tr>';
