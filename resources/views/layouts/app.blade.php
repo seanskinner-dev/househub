@@ -496,10 +496,7 @@
                 });
             }
 
-            /**
-             * @param data {{ title?: string, rows?: array, student_breakdown?: array, groups?: array }}
-             * @param els {{ title: Element, empty: Element, wrap: Element, theadRow: Element, tbody: Element, table: Element, singleTableWrap?: Element, groupedHost?: Element }}
-             */
+            /* renderStudentTable(data, els): data may include title, rows, student_breakdown, groups; els includes title, empty, wrap, theadRow, tbody, table, optional singleTableWrap and groupedHost. */
             window.renderStudentTable = function (data, els) {
                 var title = (data && data.title) ? data.title : 'Details';
                 if (els.title) {
