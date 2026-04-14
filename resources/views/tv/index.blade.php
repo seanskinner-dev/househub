@@ -1193,14 +1193,21 @@
                 <div class="leaderboard-column">
                     @foreach($left as $index => $student)
                         @php
-                            $houseName = optional($student->house)->name ?? ($student->house_name ?? null);
-                            $meta = houseMeta($houseName);
+                            $houseStyles = [
+                                'Gryffindor' => ['color' => '#740001', 'emoji' => '🦁'],
+                                'Slytherin' => ['color' => '#1a472a', 'emoji' => '🐍'],
+                                'Ravenclaw' => ['color' => '#0e1a40', 'emoji' => '🦅'],
+                                'Hufflepuff' => ['color' => '#ffcc00', 'emoji' => '🦡'],
+                            ];
+                            $house = $student->house_name ?? (optional($student->house)->name ?? 'Gryffindor');
+                            $style = $houseStyles[$house] ?? $houseStyles['Gryffindor'];
                             $rankNumber = $index + 1;
                             $rankClass = $rankNumber === 1 ? ' is-top-1' : ($rankNumber <= 3 ? ' is-top-2' : '');
+                            $textColor = $house === 'Hufflepuff' ? '#111' : '#fff';
                         @endphp
-                        <div class="student-card{{ $rankClass }}" data-house="{{ $houseName }}" style="--house-color: {{ $meta['color'] }}">
+                        <div class="student-card{{ $rankClass }}" data-house="{{ $house }}" style="--house-color: {{ $style['color'] }}; background: {{ $style['color'] }}; box-shadow: 0 0 12px {{ $style['color'] }}55; color: {{ $textColor }};">
                             <div class="student-left">
-                                <span class="student-emoji">{{ $meta['emoji'] }}</span>
+                                <span class="student-emoji house-emoji">{{ $style['emoji'] }}</span>
                                 <span>
                                     <span class="student-name">{{ $student->name }}</span>
                                     <span class="student-points">{{ (int) $student->house_points }} pts</span>
@@ -1213,13 +1220,21 @@
                 <div class="leaderboard-column">
                     @foreach($right as $index => $student)
                         @php
-                            $houseName = optional($student->house)->name ?? ($student->house_name ?? null);
-                            $meta = houseMeta($houseName);
+                            $houseStyles = [
+                                'Gryffindor' => ['color' => '#740001', 'emoji' => '🦁'],
+                                'Slytherin' => ['color' => '#1a472a', 'emoji' => '🐍'],
+                                'Ravenclaw' => ['color' => '#0e1a40', 'emoji' => '🦅'],
+                                'Hufflepuff' => ['color' => '#ffcc00', 'emoji' => '🦡'],
+                            ];
+                            $house = $student->house_name ?? (optional($student->house)->name ?? 'Gryffindor');
+                            $style = $houseStyles[$house] ?? $houseStyles['Gryffindor'];
                             $rankNumber = $index + 6;
+                            $rankClass = $rankNumber <= 3 ? ' is-top-2' : '';
+                            $textColor = $house === 'Hufflepuff' ? '#111' : '#fff';
                         @endphp
-                        <div class="student-card" data-house="{{ $houseName }}" style="--house-color: {{ $meta['color'] }}">
+                        <div class="student-card{{ $rankClass }}" data-house="{{ $house }}" style="--house-color: {{ $style['color'] }}; background: {{ $style['color'] }}; box-shadow: 0 0 12px {{ $style['color'] }}55; color: {{ $textColor }};">
                             <div class="student-left">
-                                <span class="student-emoji">{{ $meta['emoji'] }}</span>
+                                <span class="student-emoji house-emoji">{{ $style['emoji'] }}</span>
                                 <span>
                                     <span class="student-name">{{ $student->name }}</span>
                                     <span class="student-points">{{ (int) $student->house_points }} pts</span>
