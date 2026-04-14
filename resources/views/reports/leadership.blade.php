@@ -432,25 +432,25 @@
                         }
                     },
                     dataLabels: {
-                        enabled: true,
-                        offset: 20,
-                        style: {
-                            colors: ['#f8fafc'],
-                            fontSize: '12px',
-                            fontWeight: 600
-                        },
-                        background: {
-                            enabled: true,
-                            fillColor: '#0f172a',
-                            borderRadius: 6,
-                            padding: 4,
-                            opacity: 1
-                        }
+                        enabled: false
                     },
                     stroke: { colors: ['#0f172a'], width: 2 },
                     fill: { opacity: 0.85 },
                     colors: ['#ef4444', '#f59e0b', '#22c55e'],
-                    legend: { position: 'bottom', fontSize: '14px' },
+                    legend: {
+                        show: true,
+                        position: 'bottom',
+                        fontSize: '14px',
+                        labels: {
+                            colors: '#e2e8f0'
+                        },
+                        formatter: function (seriesName, opts) {
+                            var val = opts.w.globals.series[opts.seriesIndex];
+                            var total = opts.w.globals.series.reduce(function (a, b) { return a + b; }, 0);
+                            var pct = total ? ((val / total) * 100).toFixed(1) : 0;
+                            return seriesName + ' (' + pct + '%)';
+                        }
+                    },
                     tooltip: { theme: 'dark' },
                     yaxis: { show: false }
                 };
