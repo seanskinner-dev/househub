@@ -513,6 +513,8 @@
             max-width: 960px;
             padding: 20px 40px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
         }
 
         .weather-icon {
@@ -520,18 +522,65 @@
             line-height: 1;
             margin-bottom: 8px;
             filter: drop-shadow(0 0 18px rgba(255,255,255,0.2));
+            position: relative;
+            z-index: 3;
         }
 
-        .weather-icon.sun {
-            animation: sunSpin 18s linear infinite, sunGlow 4s ease-in-out infinite;
+        .sun-glow {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,223,0,0.5), transparent 70%);
+            opacity: 0;
+            animation: sunPulse 6s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 1;
         }
 
-        .weather-icon.rain {
-            animation: rainBounce 2.4s ease-in-out infinite, rainPulse 2.4s ease-in-out infinite;
+        .weather-icon.cloud {
+            animation: cloudDrift 12s ease-in-out infinite;
         }
 
-        .weather-icon.storm {
-            animation: stormFlicker 2.1s ease-in-out infinite;
+        .weather-animation-layer {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .rain-layer {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .rain-layer.active {
+            opacity: 0.38;
+        }
+
+        .rain-drop {
+            position: absolute;
+            top: 0;
+            width: 2px;
+            height: 12px;
+            background: rgba(173,216,230,0.7);
+            border-radius: 999px;
+            animation: rainFall linear infinite;
+        }
+
+        .storm-flash {
+            position: absolute;
+            inset: 0;
+            background: rgba(255,255,255,0.2);
+            opacity: 0;
+        }
+
+        .storm-flash.active {
+            animation: lightningFlash 6s infinite;
         }
 
         .weather-temp-main {
@@ -543,6 +592,8 @@
             text-shadow:
                 0 10px 40px rgba(0, 0, 0, 0.8),
                 0 0 20px rgba(255, 255, 255, 0.2);
+            position: relative;
+            z-index: 3;
         }
 
         .weather-description {
@@ -552,6 +603,8 @@
             margin-top: 12px;
             letter-spacing: 0.04em;
             transition: all 0.5s ease;
+            position: relative;
+            z-index: 3;
         }
 
         .weather-good {
@@ -605,29 +658,37 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        @keyframes sunSpin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        @keyframes sunPulse {
+            0%, 100% { transform: scale(1); opacity: 0.6; }
+            50% { transform: scale(1.1); opacity: 0.9; }
         }
 
-        @keyframes sunGlow {
-            0%, 100% { filter: drop-shadow(0 0 14px rgba(250, 204, 21, 0.45)); }
-            50% { filter: drop-shadow(0 0 28px rgba(250, 204, 21, 0.75)); }
+        @keyframes cloudDrift {
+            0% { transform: translateX(-12px); }
+            50% { transform: translateX(12px); }
+            100% { transform: translateX(-12px); }
         }
 
-        @keyframes rainBounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
+        @keyframes rainFall {
+            0% {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh);
+                opacity: 0;
+            }
         }
 
-        @keyframes rainPulse {
-            0%, 100% { opacity: 0.82; }
-            50% { opacity: 1; }
-        }
-
-        @keyframes stormFlicker {
-            0%, 19%, 21%, 60%, 62%, 100% { opacity: 1; }
-            20%, 61% { opacity: 0.5; }
+        @keyframes lightningFlash {
+            0%, 95%, 100% { opacity: 0; }
+            96% { opacity: 0.3; }
+            97% { opacity: 0; }
+            98% { opacity: 0.4; }
+            99% { opacity: 0; }
         }
 
         .tv-this-term-screen {
@@ -1401,6 +1462,11 @@
             <div class="weather-hero">
 
                 <div class="weather-main">
+                    <div id="sun-glow" class="sun-glow"></div>
+                    <div class="weather-animation-layer">
+                        <div id="rain-layer" class="rain-layer"></div>
+                        <div id="storm-flash" class="storm-flash"></div>
+                    </div>
                     <div id="weather-icon" class="weather-icon sun">☀️</div>
 
                     <div id="weather-temp" class="weather-temp-main">
@@ -1710,8 +1776,27 @@ document.addEventListener("DOMContentLoaded", function () {
         const weatherDescEl = document.getElementById('weather-description');
         const weatherTempEl = document.getElementById('weather-temp');
         const weatherIconEl = document.getElementById('weather-icon');
+        const sunGlowEl = document.getElementById('sun-glow');
+        const rainLayerEl = document.getElementById('rain-layer');
+        const stormFlashEl = document.getElementById('storm-flash');
         const recessEl = document.getElementById('weather-recess');
         const lunchEl = document.getElementById('weather-lunch');
+
+        function ensureRainDrops(count) {
+            if (!rainLayerEl) return;
+            if (rainLayerEl.dataset.count === String(count)) return;
+            rainLayerEl.innerHTML = '';
+            for (var i = 0; i < count; i++) {
+                var drop = document.createElement('span');
+                drop.className = 'rain-drop';
+                drop.style.left = (Math.random() * 100).toFixed(2) + '%';
+                drop.style.animationDuration = (0.9 + Math.random() * 1.1).toFixed(2) + 's';
+                drop.style.animationDelay = (Math.random() * 2.2).toFixed(2) + 's';
+                drop.style.opacity = (0.25 + Math.random() * 0.5).toFixed(2);
+                rainLayerEl.appendChild(drop);
+            }
+            rainLayerEl.dataset.count = String(count);
+        }
 
         fetch('https://api.open-meteo.com/v1/forecast?latitude=-42.88&longitude=147.33&current_weather=true')
             .then(res => res.json())
@@ -1723,47 +1808,55 @@ document.addEventListener("DOMContentLoaded", function () {
                 let bg = fallbackBg;
                 let text = 'Partly cloudy';
                 let icon = '⛅';
-                let iconClass = 'sun';
+                let iconClass = '';
                 let severityClass = 'weather-warning';
                 let isWet = false;
+                let isStorm = false;
+                let isSunny = false;
+                let rainCount = 0;
 
                 if (code === 0) {
                     text = 'Clear';
                     icon = '☀️';
-                    iconClass = 'sun';
+                    iconClass = '';
+                    isSunny = true;
                     severityClass = 'weather-good';
                     bg = 'radial-gradient(circle at top, #60a5fa, #0f172a)';
                 } else if (code >= 1 && code <= 3) {
                     text = 'Partly cloudy';
                     icon = '⛅';
-                    iconClass = 'sun';
+                    iconClass = 'cloud';
+                    isSunny = true;
                     severityClass = 'weather-warning';
                     bg = 'radial-gradient(circle at top, #4b5563, #0f172a)';
                 } else if (code >= 45 && code <= 48) {
                     text = 'Fog';
                     icon = '🌫️';
-                    iconClass = 'rain';
+                    iconClass = '';
                     severityClass = 'weather-warning';
                     bg = 'radial-gradient(circle at top, #374151, #111827)';
                 } else if (code >= 51 && code <= 67) {
                     text = 'Rain';
                     icon = '🌧️';
-                    iconClass = 'rain';
+                    iconClass = '';
                     severityClass = 'weather-bad';
                     isWet = true;
+                    rainCount = 46;
                     bg = 'radial-gradient(circle at top, #1e293b, #020617)';
                 } else if (code >= 71 && code <= 77) {
                     text = 'Snow';
                     icon = '❄️';
-                    iconClass = 'rain';
+                    iconClass = '';
                     severityClass = 'weather-warning';
                     bg = 'radial-gradient(circle at top, #334155, #0f172a)';
                 } else if (code >= 80 && code <= 99) {
                     text = 'Heavy rain / storm';
                     icon = '⛈️';
-                    iconClass = 'storm';
+                    iconClass = '';
                     severityClass = 'weather-bad';
                     isWet = true;
+                    isStorm = true;
+                    rainCount = 52;
                     bg = 'radial-gradient(circle at top, #111827, #000000)';
                 }
 
@@ -1777,8 +1870,28 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
                 if (weatherIconEl) {
                     weatherIconEl.textContent = icon;
-                    weatherIconEl.classList.remove('sun', 'rain', 'storm');
-                    weatherIconEl.classList.add(iconClass);
+                    weatherIconEl.classList.remove('cloud');
+                    if (iconClass) {
+                        weatherIconEl.classList.add(iconClass);
+                    }
+                }
+                if (sunGlowEl) {
+                    sunGlowEl.style.opacity = isSunny ? '1' : '0';
+                }
+                if (rainLayerEl) {
+                    if (isWet) {
+                        ensureRainDrops(rainCount || 48);
+                        rainLayerEl.classList.add('active');
+                    } else {
+                        rainLayerEl.classList.remove('active');
+                    }
+                }
+                if (stormFlashEl) {
+                    if (isStorm) {
+                        stormFlashEl.classList.add('active');
+                    } else {
+                        stormFlashEl.classList.remove('active');
+                    }
                 }
                 if (recessEl && lunchEl) {
                     const statusClass = isWet ? 'rain' : 'dry';
