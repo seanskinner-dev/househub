@@ -32,23 +32,25 @@
         }
 
         #tv-bg {
-            position: absolute;
-            inset: 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             z-index: 0;
             background: #0a0a0a;
             background-size: cover;
             background-position: center;
-            transition: background 1s ease;
         }
 
-        .tv-container::after {
+        /* .tv-container::after {
             content: '';
             position: absolute;
             inset: 0;
             background: rgba(0,0,0,0.25);
             pointer-events: none;
             z-index: 0;
-        }
+        } */
 
         .tv-broadcast-banner {
             position: fixed;
@@ -62,7 +64,7 @@
             font-weight: bold;
             padding: 16px;
             display: none;
-            z-index: 9999;
+            z-index: 1;
         }
 
         #emergencyScreen {
@@ -79,7 +81,7 @@
             font-weight: bold;
             text-align: center;
             padding: 40px;
-            z-index: 10000;
+            z-index: 1;
         }
 
         #emergencyScreen .em-sub {
