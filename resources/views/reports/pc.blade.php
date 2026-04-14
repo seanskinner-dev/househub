@@ -54,7 +54,7 @@
     </div>
 
     <div id="pc-report-grid">
-        <div class="row mb-4">
+        <div class="row">
             <div class="col-md-6">
                 <div class="card hh-card mb-4 shadow-sm h-100">
                     <div class="card-body">
