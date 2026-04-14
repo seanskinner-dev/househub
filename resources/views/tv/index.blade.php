@@ -25,6 +25,7 @@
             height: 100vh;
             width: 100vw;
             overflow: hidden;
+            background: #0a0a0a;
             color: #fff;
             transition: background 1s ease;
             animation: bgDrift 20s ease-in-out infinite;
@@ -407,7 +408,7 @@
             overflow: hidden;
             box-sizing: border-box;
             padding: 18px 28px;
-            background: #0a0a0a;
+            background: transparent;
             color: #fff;
         }
 
@@ -898,7 +899,7 @@
             display: flex;
             flex-direction: column;
             padding: 18px 28px;
-            background: #0a0a0a;
+            background: transparent;
             color: #ffffff;
         }
 
@@ -1846,7 +1847,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const nextScreenId = screens[index] ? screens[index].id : '';
         const container = document.querySelector('.tv-container');
         if (nextScreenId !== 'screen-weather') {
-            container.style.background = '';
+            container.style.background = '#0a0a0a';
         }
         screens.forEach((s, i) => {
             s.style.display = (i === index) ? 'flex' : 'none';
