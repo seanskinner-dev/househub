@@ -53,6 +53,20 @@
         </div>
     </div>
 
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card hh-card">
+          <div class="card-body">
+            <h5 class="mb-2">At Risk Students</h5>
+            <p class="text-muted small mb-3">
+              Shows current student risk levels based on engagement and points. Click a segment to view students.
+            </p>
+            <div id="risk-distribution" style="min-height: 320px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div id="pc-report-grid">
         <div class="row">
             <div class="col-md-6">
@@ -84,18 +98,6 @@
             <div class="col-md-6">
                 <div class="card hh-card mb-4 shadow-sm h-100">
                     <div class="card-body">
-                        <h5>Engagement Trend</h5>
-                        <p class="small text-white-50">
-                            Displays how many points are awarded each day over the selected period. Sudden drops highlight days where student engagement is low.
-                        </p>
-                        <div id="engagement-trend"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-6">
-                <div class="card hh-card mb-4 shadow-sm h-100">
-                    <div class="card-body">
                         <h5>Points by House</h5>
                         <p class="small text-white-50">
                             Compares total points earned by each house to identify engagement differences. Lower-performing houses may need targeted support.
@@ -104,6 +106,20 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <div class="row mb-4">
+          <div class="col-12">
+            <div class="card hh-card">
+              <div class="card-body">
+                <h5>Engagement Trend</h5>
+                <p class="small text-white-50">
+                    Displays how many points are awarded each day over the selected period. Sudden drops highlight days where student engagement is low.
+                </p>
+                <div id="engagement-trend"></div>
+              </div>
+            </div>
+          </div>
         </div>
     </div>
 
@@ -275,6 +291,43 @@ document.addEventListener("DOMContentLoaded", function () {
         instances[containerId].render();
     }
 
+    function renderRiskDistribution(data) {
+      destroyChart('risk-distribution');
+      var categories = (data.risk_distribution && data.risk_distribution.categories) ? data.risk_distribution.categories : [];
+      var series = (data.risk_distribution && data.risk_distribution.series && data.risk_distribution.series[0] && data.risk_distribution.series[0].data)
+        ? data.risk_distribution.series[0].data
+        : [];
+
+      if (!categories.length || !series.length) {
+        showEmpty('risk-distribution');
+        return;
+      }
+
+      instances['risk-distribution'] = new ApexCharts(document.querySelector("#risk-distribution"), {
+        chart: {
+          type: 'donut',
+          height: 320
+        },
+        series: series,
+        labels: categories,
+        colors: ['#ef4444', '#f59e0b', '#22c55e'],
+        legend: {
+          position: 'bottom'
+        },
+        plotOptions: {
+          pie: {
+            donut: {
+              size: '60%'
+            }
+          }
+        },
+        tooltip: {
+          theme: 'dark'
+        }
+      });
+      instances['risk-distribution'].render();
+    }
+
     async function loadAndRender() {
         const res = await fetch(dataUrl + '?' + queryStringFromFilters(), {
             headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
@@ -304,6 +357,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return '#22c55e';
         });
 
+        renderRiskDistribution(data);
         renderChart('engagement-health', risk, { type: 'donut', colors: riskColors });
         renderChart('engagement-trend', trend, { type: 'line' });
 
