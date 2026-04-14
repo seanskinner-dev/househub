@@ -83,15 +83,24 @@
         }
 
         .tv-screen {
-            display: none;
+            display: flex;
             flex-direction: column;
             height: 100vh;
             width: 100vw;
             overflow: hidden;
             box-sizing: border-box;
-            position: relative;
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity 0.6s ease;
+            pointer-events: none;
             z-index: 1;
             background: transparent !important;
+        }
+
+        .tv-screen.active {
+            opacity: 1;
+            pointer-events: auto;
         }
 
         .tv-layout {
@@ -185,7 +194,7 @@
             color: #fff;
         }
         .house-card.ravenclaw {
-            background-color: #0e1a40;
+            background-color: #3b82f6;
             color: #fff;
         }
         .house-card.hufflepuff {
@@ -345,14 +354,13 @@
         }
 
         .streak-list {
-            display: flex;
-            flex-direction: column;
-            gap: 28px;
-        }
-
-        .streak-list {
-            width: min(1240px, 95vw);
-            margin-top: 16px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-auto-rows: 1fr;
+            gap: 12px 14px;
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
         }
 
         .activity-container {
@@ -517,17 +525,37 @@
             width: 100%;
         }
 
+        #screen-weather .weather-hero {
+            position: relative;
+            min-height: 100vh;
+            animation: slowZoom 20s ease-in-out infinite alternate;
+        }
+
+        #screen-weather .weather-hero::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                to bottom,
+                rgba(0,0,0,0.2),
+                rgba(0,0,0,0.55)
+            );
+            pointer-events: none;
+            z-index: 1;
+        }
+
         .weather-main {
             width: 100%;
             position: relative;
             overflow: hidden;
+            z-index: 2;
         }
 
         .weather-icon {
             font-size: clamp(88px, 10vw, 150px);
             line-height: 1;
             margin-bottom: 8px;
-            filter: drop-shadow(0 0 18px rgba(255,255,255,0.2));
+            filter: drop-shadow(0 6px 20px rgba(0,0,0,0.6));
             position: relative;
             z-index: 3;
             width: 160px;
@@ -702,6 +730,13 @@
             margin-top: 40px;
             width: 100%;
             flex-wrap: wrap;
+            position: relative;
+            z-index: 2;
+        }
+
+        @keyframes slowZoom {
+            from { transform: scale(1); }
+            to   { transform: scale(1.05); }
         }
 
         .break-card {
@@ -920,7 +955,6 @@
         .streak-list {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            grid-auto-rows: 1fr;
             gap: 12px 14px;
             width: 100%;
             max-width: 1240px;
@@ -929,6 +963,13 @@
             flex: 1;
             align-content: center;
             min-height: 0;
+        }
+
+        .activity-list,
+        .streak-list {
+            grid-auto-rows: auto;
+            align-content: start;
+            padding-bottom: 20px;
         }
 
         .leaderboard-list {
@@ -992,7 +1033,11 @@
             align-items: center;
             padding: 12px 16px;
             border-radius: 18px;
-            background-color: var(--house-color, #334155);
+            background: linear-gradient(
+                145deg,
+                rgba(20,20,20,0.95),
+                rgba(10,10,10,0.95)
+            );
             border: 1px solid rgba(255,255,255,0.1);
             font-size: 1.55rem;
             font-weight: 700;
@@ -1018,7 +1063,7 @@
             width: 140px;
             height: 100%;
             background: radial-gradient(circle, var(--house-color), transparent 70%);
-            opacity: 0.25;
+            opacity: 0.18;
         }
 
         .student-card::after {
@@ -1052,6 +1097,7 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.6);
         }
 
         .student-points {
@@ -1121,8 +1167,7 @@
         }
 
         .student-card[data-house="Hufflepuff"] {
-            color: #111;
-            text-shadow: none;
+            color: #ffffff;
         }
 
         .student-card[data-house="Hufflepuff"] .student-rank {
@@ -1148,7 +1193,7 @@
 
         .banner.gryffindor { --house-color: #740001; }
         .banner.slytherin { --house-color: #1a472a; }
-        .banner.ravenclaw { --house-color: #0e1a40; }
+        .banner.ravenclaw { --house-color: #3b82f6; }
         .banner.hufflepuff { --house-color: #ffcc00; }
 
         .banner-inner {
@@ -1164,7 +1209,7 @@
             background: linear-gradient(
                 180deg,
                 var(--house-color),
-                #000
+                rgba(0,0,0,0.95)
             );
             box-shadow:
                 0 20px 60px rgba(0,0,0,0.8),
@@ -1213,6 +1258,14 @@
             font-weight: 900;
         }
 
+        .banner-name {
+            font-size: clamp(1.6rem, 2.5vw, 2.2rem);
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-align: center;
+            opacity: 0.9;
+        }
+
         @keyframes studentPulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.02); }
@@ -1254,7 +1307,7 @@
                 return match($house) {
                     'Gryffindor' => ['color' => '#740001', 'emoji' => '🦁'],
                     'Slytherin' => ['color' => '#1a472a', 'emoji' => '🐍'],
-                    'Ravenclaw' => ['color' => '#0e1a40', 'emoji' => '🦅'],
+                    'Ravenclaw' => ['color' => '#3b82f6', 'emoji' => '🦅'],
                     'Hufflepuff' => ['color' => '#ffcc00', 'emoji' => '🦡'],
                     default => ['color' => '#444', 'emoji' => '🏫'],
                 };
@@ -1269,29 +1322,33 @@
 
     <div id="broadcastBanner" class="tv-broadcast-banner" role="status" aria-live="polite"></div>
 
-    <section class="tv-screen" id="screen-house-banners">
+    <section class="tv-screen active" id="screen-house-banners">
         <div class="banner-container">
             <div class="banner gryffindor">
                 <div class="banner-inner">
                     <div class="banner-emoji">🦁</div>
+                    <div class="banner-name">GRYFFINDOR</div>
                     <div class="banner-points">{{ $gryffindorPoints }}</div>
                 </div>
             </div>
             <div class="banner slytherin">
                 <div class="banner-inner">
                     <div class="banner-emoji">🐍</div>
+                    <div class="banner-name">SLYTHERIN</div>
                     <div class="banner-points">{{ $slytherinPoints }}</div>
                 </div>
             </div>
             <div class="banner ravenclaw">
                 <div class="banner-inner">
                     <div class="banner-emoji">🦅</div>
+                    <div class="banner-name">RAVENCLAW</div>
                     <div class="banner-points">{{ $ravenclawPoints }}</div>
                 </div>
             </div>
             <div class="banner hufflepuff">
                 <div class="banner-inner">
                     <div class="banner-emoji">🦡</div>
+                    <div class="banner-name">HUFFLEPUFF</div>
                     <div class="banner-points">{{ $hufflepuffPoints }}</div>
                 </div>
             </div>
@@ -1449,7 +1506,7 @@
                                 'Gryffindor' => ['color' => '#740001', 'emoji' => '🦁'],
                                 'GryffINDOR' => ['color' => '#740001', 'emoji' => '🦁'],
                                 'Slytherin' => ['color' => '#1a472a', 'emoji' => '🐍'],
-                                'Ravenclaw' => ['color' => '#0e1a40', 'emoji' => '🦅'],
+                                'Ravenclaw' => ['color' => '#3b82f6', 'emoji' => '🦅'],
                                 'Hufflepuff' => ['color' => '#ffcc00', 'emoji' => '🦡'],
                             ];
                             $house = $student->house_name ?? null;
@@ -1477,7 +1534,7 @@
                                 'Gryffindor' => ['color' => '#740001', 'emoji' => '🦁'],
                                 'GryffINDOR' => ['color' => '#740001', 'emoji' => '🦁'],
                                 'Slytherin' => ['color' => '#1a472a', 'emoji' => '🐍'],
-                                'Ravenclaw' => ['color' => '#0e1a40', 'emoji' => '🦅'],
+                                'Ravenclaw' => ['color' => '#3b82f6', 'emoji' => '🦅'],
                                 'Hufflepuff' => ['color' => '#ffcc00', 'emoji' => '🦡'],
                             ];
                             $house = $student->house_name ?? null;
@@ -1865,13 +1922,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function showScreen(index) {
         if (emergencyActive) {
-            screens.forEach(function (s) { s.style.display = 'none'; });
+            screens.forEach(function (s) { s.classList.remove('active'); });
             return;
         }
-        const nextScreenId = screens[index] ? screens[index].id : '';
-        screens.forEach((s, i) => {
-            s.style.display = (i === index) ? 'flex' : 'none';
-        });
+        const next = screens[index];
+        if (!next) return;
+
+        let current = document.querySelector('.tv-screen.active');
+        if (current) current.classList.remove('active');
+        next.classList.add('active');
     }
 
     function nextScreen() {
@@ -1933,7 +1992,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function getActiveScreen() {
-        return document.querySelector('.tv-screen[style*="display: flex"]');
+        return document.querySelector('.tv-screen.active');
     }
 
     function setWeatherBackground(type) {
@@ -2179,7 +2238,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     const code = message.slice('EMERGENCY:'.length).trim();
                     const emergencyBg = emergencyColorMap[code] || '#dc2626';
                     emergencyActive = true;
-                    screens.forEach(function (s) { s.style.display = 'none'; });
+                    screens.forEach(function (s) { s.classList.remove('active'); });
                     if (emergencyScreen) {
                         emergencyScreen.style.display = 'flex';
                         emergencyScreen.style.background = emergencyBg;
@@ -2195,6 +2254,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     if (emergencyScreen) {
                         emergencyScreen.style.display = 'none';
                     }
+                    showScreen(currentScreen);
                     if (broadcastBanner) {
                         if (message) {
                             broadcastBanner.textContent = message;
