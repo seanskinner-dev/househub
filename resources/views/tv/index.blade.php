@@ -1843,6 +1843,11 @@ document.addEventListener("DOMContentLoaded", function () {
             screens.forEach(function (s) { s.style.display = 'none'; });
             return;
         }
+        var screenId = screens[index] ? screens[index].id : '';
+        if (screenId !== 'screen-weather') {
+            var tvContainer = document.querySelector('.tv-container');
+            if (tvContainer) tvContainer.style.background = '';
+        }
         screens.forEach((s, i) => {
             s.style.display = (i === index) ? 'flex' : 'none';
         });
@@ -2231,6 +2236,9 @@ setInterval(function () {
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+    const weatherScreen = document.getElementById('screen-weather');
+    if (!weatherScreen || weatherScreen.style.display === 'none') return;
+
     const el = document.querySelector('.tv-container');
     if (!el) return;
 
