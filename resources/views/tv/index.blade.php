@@ -25,7 +25,6 @@
             height: 100vh;
             width: 100vw;
             overflow: hidden;
-            background: #0a0a0a;
             color: #fff;
             transition: background 1s ease;
             animation: bgDrift 20s ease-in-out infinite;
