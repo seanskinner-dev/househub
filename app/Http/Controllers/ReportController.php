@@ -11,6 +11,11 @@ class ReportController extends Controller
 {
     public function housePerformance()
     {
+        dd([
+            'transactions_count' => DB::table('point_transactions')->count(),
+            'students_with_points' => DB::table('students')->where('house_points', '>', 0)->count(),
+        ]);
+
         $now = Carbon::now();
         $year = (int) $now->year;
         $month = (int) $now->month;
