@@ -95,6 +95,13 @@ class ReportController extends Controller
 
     public function reportChartData(Request $request)
     {
+        dd([
+            'transactions' => DB::table('point_transactions')->select('house_id', 'amount')->limit(20)->get(),
+            'transaction_count' => DB::table('point_transactions')->count(),
+            'students_sample' => DB::table('students')->select('id', 'house_id', 'house_points')->limit(20)->get(),
+            'houses' => DB::table('houses')->get()
+        ]);
+
         \Log::info('Report endpoint hit');
 
         $emptyDataset = function (string $name): array {
