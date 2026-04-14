@@ -1227,6 +1227,9 @@
 <body>
 
 <div class="tv-container">
+    <div id="debug-test" style="color:white; position:absolute; z-index:9999;">
+        CONTENT SHOULD BE HERE
+    </div>
     @php
         if (!function_exists('houseMeta')) {
             function houseMeta($house) {
@@ -1840,6 +1843,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const screens = Array.from(document.querySelectorAll('.tv-screen'));
     shuffle(screens);
+    console.log('TV screens:', document.querySelectorAll('.tv-screen').length);
     console.log('TV screens found:', screens.length);
     const broadcastUrl = @json(route('broadcast-messages.latest'));
     const broadcastBanner = document.getElementById('broadcastBanner');
