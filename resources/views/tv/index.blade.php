@@ -1846,7 +1846,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const nextScreenId = screens[index] ? screens[index].id : '';
         const container = document.querySelector('.tv-container');
         if (nextScreenId !== 'screen-weather') {
-            container.style.background = '#0a0a0a';
+            container.style.background = '';
         }
         screens.forEach((s, i) => {
             s.style.display = (i === index) ? 'flex' : 'none';
