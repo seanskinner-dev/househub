@@ -51,15 +51,15 @@
                                 </small>
                             </div>
 
-                            <div class="btn-group flex-shrink-0" role="group">
+                            <div class="action-group flex-shrink-0" role="group">
                                 <button type="button"
-                                        class="btn btn-sm btn-danger btn-sub"
+                                        class="btn btn-sm btn-sub"
                                         data-id="{{ (int) $student->id }}"
                                         data-student-id="{{ (int) $student->id }}">
                                     −1
                                 </button>
                                 <button type="button"
-                                        class="btn btn-sm btn-success btn-add"
+                                        class="btn btn-sm btn-add"
                                         data-id="{{ (int) $student->id }}"
                                         data-student-id="{{ (int) $student->id }}">
                                     +1

@@ -228,6 +228,36 @@
         .apexcharts-canvas svg rect[fill="#fefefe"] {
             fill: transparent !important;
         }
+
+        .btn-add,
+        .btn-sub {
+            background-color: transparent !important;
+            border: 1px solid #334155 !important;
+            color: #e2e8f0 !important;
+            min-width: 28px;
+            height: 28px;
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .btn-add {
+            border-color: #22c55e !important;
+            color: #22c55e !important;
+        }
+
+        .btn-sub {
+            border-color: #ef4444 !important;
+            color: #ef4444 !important;
+        }
+
+        .action-group {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            align-items: center;
+        }
     </style>
 </head>
 
@@ -603,7 +633,7 @@
                     var dataStudentAttr = canAct ? ' data-student-id="' + dataId + '"' : '';
                     var actions =
                         '<td class="td-actions text-end" style="padding:12px 14px;vertical-align:middle;">' +
-                        '<div class="d-flex gap-2 justify-content-end flex-wrap">' +
+                        '<div class="action-group flex-wrap">' +
                         '<button type="button" class="btn-sub btn btn-sm"' + dis + ' data-id="' + dataId + '"' + dataStudentAttr + '>-1</button>' +
                         '<button type="button" class="btn-add btn btn-sm"' + dis + ' data-id="' + dataId + '"' + dataStudentAttr + '>+1</button>' +
                         '<button type="button" class="btn-award btn btn-sm"' + dis + ' data-id="' + dataId + '"' + dataStudentAttr + '>🏆</button>' +

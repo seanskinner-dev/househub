@@ -21,8 +21,6 @@
             color: #bfdbfe;
         }
 
-        .btn-add { background: #22c55e; color: white; border: none; }
-        .btn-sub { background: #ef4444; color: white; border: none; }
         .btn-award { background: #f59e0b; color: white; border: none; }
         .btn-commend { background: #0ea5e9; color: white; border: none; }
     </style>
