@@ -167,10 +167,28 @@ class ReportController extends Controller
         try {
             $data = $this->getReportData($request);
 
-            return response()->json([
-                'house_breakdown' => $normalizeDataset($data['house_breakdown'] ?? null, 'House Points'),
-                'trend' => $normalizeDataset($data['trend'] ?? null, 'Trend'),
-            ]);
+            $houses = DB::table('houses')
+                ->leftJoin('students', 'houses.id', '=', 'students.house_id')
+                ->select(
+                    'houses.name',
+                    DB::raw('COALESCE(SUM(students.house_points), 0) as total_points')
+                )
+                ->groupBy('houses.name')
+                ->orderBy('houses.name')
+                ->get();
+
+            $categories = $houses->pluck('name')->map(fn ($v) => (string) $v)->toArray();
+            $houseData = $houses->pluck('total_points')->map(fn ($v) => (int) ($v ?? 0))->toArray();
+
+            $data['house_breakdown'] = [
+                'categories' => $categories,
+                'series' => [[
+                    'name' => 'House Points',
+                    'data' => $houseData,
+                ]],
+            ];
+
+            return response()->json($data);
         } catch (\Exception $e) {
             \Log::error('Report error: '.$e->getMessage());
             \Log::error($e->getTraceAsString());
