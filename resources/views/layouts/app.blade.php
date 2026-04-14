@@ -331,9 +331,32 @@
                 return { val: '', kind: 'activity' };
             }
 
+            function resolveDrilldownStudentId(r) {
+                if (!r || typeof r !== 'object') {
+                    return null;
+                }
+                var keys = ['student_id', 'studentId', '_studentId', 'id'];
+                for (var ki = 0; ki < keys.length; ki++) {
+                    var k = keys[ki];
+                    if (!Object.prototype.hasOwnProperty.call(r, k)) {
+                        continue;
+                    }
+                    var v = r[k];
+                    if (v == null) {
+                        continue;
+                    }
+                    var s = String(v).trim();
+                    if (s === '' || s === 'undefined' || s.toLowerCase() === 'null') {
+                        continue;
+                    }
+                    return v;
+                }
+                return null;
+            }
+
             function mapDrilldownRowToStandard(raw) {
                 var r = raw && typeof raw === 'object' ? raw : {};
-                var sid = r.id != null ? r.id : (r._studentId != null ? r._studentId : (r.student_id != null ? r.student_id : null));
+                var sid = resolveDrilldownStudentId(r);
 
                 var name = '';
                 if (r.name != null && String(r.name).trim() !== '') {
@@ -366,6 +389,7 @@
                 }
 
                 return {
+                    student_id: sid,
                     _studentId: sid,
                     _metricKind: picked.kind,
                     name: name || '—',
@@ -438,12 +462,29 @@
             }
 
             function studentIdUsable(sid) {
-                return sid != null && sid !== '' && String(sid) !== 'undefined';
+                if (sid == null) {
+                    return false;
+                }
+                var s = String(sid).trim();
+                return s !== '' && s !== 'undefined' && s.toLowerCase() !== 'null';
+            }
+
+            function rowStudentId(row) {
+                if (!row) {
+                    return null;
+                }
+                if (studentIdUsable(row.student_id)) {
+                    return row.student_id;
+                }
+                if (studentIdUsable(row._studentId)) {
+                    return row._studentId;
+                }
+                return null;
             }
 
             function renderStandardDrilldownBody(tbody, rows) {
                 tbody.innerHTML = rows.map(function (row) {
-                    var sid = row._studentId;
+                    var sid = rowStudentId(row);
                     var nm = escapeReportHtml(row.name || '');
                     var yl = escapeReportHtml(row.year_level || '');
                     var ac = escapeReportHtml(row.activity_count || '');
@@ -648,24 +689,35 @@
             });
 
             document.addEventListener('click', function (e) {
-                if (e.target.classList.contains('btn-add')) {
-                    var id = e.target.getAttribute('data-id');
-                    if (id) reportSendPoint(id, 1);
+                var addBtn = e.target.closest('button.btn-add');
+                if (addBtn && !addBtn.disabled) {
+                    var id = addBtn.getAttribute('data-id');
+                    if (id) {
+                        reportSendPoint(id, 1);
+                    }
+                    return;
                 }
-                if (e.target.classList.contains('btn-sub')) {
-                    var id2 = e.target.getAttribute('data-id');
-                    if (id2) reportSendPoint(id2, -1);
+                var subBtn = e.target.closest('button.btn-sub');
+                if (subBtn && !subBtn.disabled) {
+                    var id2 = subBtn.getAttribute('data-id');
+                    if (id2) {
+                        reportSendPoint(id2, -1);
+                    }
+                    return;
                 }
-                if (e.target.classList.contains('btn-award')) {
-                    var id3 = e.target.getAttribute('data-id');
+                var awardBtn = e.target.closest('button.btn-award');
+                if (awardBtn && !awardBtn.disabled) {
+                    var id3 = awardBtn.getAttribute('data-id');
                     if (id3 && typeof window.openAwardModal === 'function') {
                         window.openAwardModal(id3);
                     } else if (id3) {
                         window.dispatchEvent(new CustomEvent('award:open', { detail: { student_id: id3 } }));
                     }
+                    return;
                 }
-                if (e.target.classList.contains('btn-commend')) {
-                    var id4 = e.target.getAttribute('data-id');
+                var commendBtn = e.target.closest('button.btn-commend');
+                if (commendBtn && !commendBtn.disabled) {
+                    var id4 = commendBtn.getAttribute('data-id');
                     if (id4 && typeof window.openCommendationModal === 'function') {
                         window.openCommendationModal(id4);
                     } else if (id4) {
@@ -673,6 +725,8 @@
                     }
                 }
             });
+
+            window.reportSendPoint = reportSendPoint;
         })();
 
         window.Apex = {
