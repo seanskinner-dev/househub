@@ -27,13 +27,14 @@
             overflow: hidden;
             color: #fff;
             transition: background 1s ease;
+            animation: bgDrift 20s ease-in-out infinite;
         }
 
         .tv-container::after {
             content: '';
             position: absolute;
             inset: 0;
-            background: rgba(0,0,0,0.35);
+            background: rgba(0,0,0,0.25);
             pointer-events: none;
             z-index: 0;
         }
@@ -492,8 +493,9 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            padding: 24px 16px 16px;
+            justify-content: center;
+            align-items: center;
+            padding: 24px 16px;
             min-height: 0;
             overflow: hidden;
             animation: weatherFade 1s ease;
@@ -506,13 +508,23 @@
             justify-content: center;
             align-items: center;
             min-height: 0;
+            width: 100%;
+        }
+
+        .weather-card {
+            width: 100%;
+            max-width: 980px;
+            background: rgba(0,0,0,0.45);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+            text-align: center;
+            transition: all 0.3s ease;
         }
 
         .weather-main {
             width: 100%;
-            max-width: 960px;
-            padding: 20px 40px;
-            text-align: center;
             position: relative;
             overflow: hidden;
         }
@@ -616,7 +628,8 @@
             animation: rainFall linear infinite;
         }
 
-        .weather-temp-main {
+        .weather-temp-main,
+        .weather-temp {
             font-size: clamp(120px, 20vw, 260px);
             font-weight: 900;
             text-align: center;
@@ -630,19 +643,20 @@
         }
 
         .weather-description {
-            font-size: clamp(28px, 4vw, 50px);
+            font-size: clamp(32px, 4vw, 44px);
             text-align: center;
-            font-weight: 700;
+            font-weight: 600;
             margin-top: 12px;
-            letter-spacing: 0.04em;
-            transition: all 0.5s ease;
+            letter-spacing: 0.08em;
+            transition: all 0.3s ease;
             position: relative;
             z-index: 3;
+            color: #facc15;
         }
 
         .weather-good {
-            color: #4ade80;
-            text-shadow: 0 0 20px rgba(74, 222, 128, 0.4);
+            color: #facc15;
+            text-shadow: 0 0 20px rgba(250, 204, 21, 0.3);
         }
 
         .weather-warning {
@@ -655,12 +669,67 @@
             text-shadow: 0 0 20px rgba(248, 113, 113, 0.4);
         }
 
-        .weather-breaks {
+        .weather-alert {
+            margin-top: 20px;
+            font-size: 2rem;
+            font-weight: 700;
+            text-align: center;
+            padding: 12px 24px;
+            border-radius: 14px;
+            backdrop-filter: blur(6px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            letter-spacing: 0.05em;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 3;
+        }
+
+        .weather-alert.rain {
+            background: rgba(30, 58, 138, 0.85);
+            color: #fff;
+        }
+
+        .weather-alert.storm {
+            background: rgba(127, 29, 29, 0.9);
+            color: #fff;
+        }
+
+        .break-container {
             display: flex;
             justify-content: center;
-            gap: 80px;
+            gap: 40px;
             margin-top: 40px;
-            flex-shrink: 0;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        .break-card {
+            background: rgba(0,0,0,0.45);
+            backdrop-filter: blur(8px);
+            border-radius: 18px;
+            padding: 20px 30px;
+            text-align: center;
+            min-width: 180px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
+        }
+
+        .break-card .label {
+            font-size: 1.2rem;
+            opacity: 0.7;
+            margin-bottom: 10px;
+        }
+
+        .break-card.rain {
+            background: rgba(30, 58, 138, 0.55);
+        }
+
+        .break-card.storm {
+            background: rgba(127, 29, 29, 0.6);
+        }
+
+        .break-card.dry {
+            background: rgba(15, 23, 42, 0.5);
         }
 
         .weather-break {
@@ -684,6 +753,13 @@
 
         .weather-break .dry {
             color: #facc15;
+        }
+
+        .hidden { display: none !important; }
+
+        @keyframes bgDrift {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.015); }
         }
 
         @keyframes weatherFade {
@@ -1497,52 +1573,53 @@
             @endphp
 
             <div class="weather-hero">
+                <div class="weather-card">
+                    <div class="weather-main">
+                        <div class="weather-animation-layer">
+                            <div id="rain-layer" class="rain-layer"></div>
+                        </div>
+                        <div id="weather-icon" class="weather-icon">
+                            <span id="weather-icon-primary" class="icon-primary">☀️</span>
+                            <span id="weather-icon-sun" class="sun">☀️</span>
+                            <span id="weather-icon-cloud" class="cloud">☁️</span>
+                            <div id="sparkle-layer" class="sparkle-layer"></div>
+                            <div id="lightning-layer" class="lightning-layer"></div>
+                        </div>
 
-                <div class="weather-main">
-                    <div class="weather-animation-layer">
-                        <div id="rain-layer" class="rain-layer"></div>
-                    </div>
-                    <div id="weather-icon" class="weather-icon">
-                        <span id="weather-icon-primary" class="icon-primary">☀️</span>
-                        <span id="weather-icon-sun" class="sun">☀️</span>
-                        <span id="weather-icon-cloud" class="cloud">☁️</span>
-                        <div id="sparkle-layer" class="sparkle-layer"></div>
-                        <div id="lightning-layer" class="lightning-layer"></div>
+                        <div id="weather-temp" class="weather-temp-main weather-temp">
+                            {{ $weather[1]['temp'] }}°
+                        </div>
+
+                        <div id="weather-description" class="weather-description {{ $severityClass }}">
+                            {{ $desc }}
+                        </div>
+
+                        <div id="weather-alert" class="weather-alert hidden"></div>
                     </div>
 
-                    <div id="weather-temp" class="weather-temp-main">
-                        {{ $weather[1]['temp'] }}°
-                    </div>
+                    <div class="break-container">
 
-                    <div id="weather-description" class="weather-description {{ $severityClass }}">
-                        {{ $desc }}
-                    </div>
+                        @php
+                            $recessRain = (collect($weather)->firstWhere('label', 'RECESS') ?? [])['rain'] ?? 0;
+                            $lunchRain = (collect($weather)->firstWhere('label', 'LUNCH') ?? [])['rain'] ?? 0;
+                        @endphp
 
+                        <div class="break-card {{ $recessRain >= 40 ? 'rain' : 'dry' }}" id="recess-card">
+                            <div class="label">RECESS</div>
+                            <div id="weather-recess" class="{{ $recessRain >= 40 ? 'rain' : 'dry' }}">
+                                {{ $recessRain >= 40 ? '🌧' : '☀️' }}
+                            </div>
+                        </div>
+
+                        <div class="break-card {{ $lunchRain >= 40 ? 'rain' : 'dry' }}" id="lunch-card">
+                            <div class="label">LUNCH</div>
+                            <div id="weather-lunch" class="{{ $lunchRain >= 40 ? 'rain' : 'dry' }}">
+                                {{ $lunchRain >= 40 ? '🌧' : '☀️' }}
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
-
-            </div>
-
-            <div class="weather-breaks">
-
-                @php
-                    $recessRain = (collect($weather)->firstWhere('label', 'RECESS') ?? [])['rain'] ?? 0;
-                    $lunchRain = (collect($weather)->firstWhere('label', 'LUNCH') ?? [])['rain'] ?? 0;
-                @endphp
-
-                <div class="weather-break">
-                    <span>RECESS</span>
-                    <span id="weather-recess" class="{{ $recessRain >= 40 ? 'rain' : 'dry' }}">
-                        {{ $recessRain >= 40 ? '🌧' : '☀️' }}
-                    </span>
-                </div>
-
-                <div class="weather-break">
-                    <span>LUNCH</span>
-                    <span id="weather-lunch" class="{{ $lunchRain >= 40 ? 'rain' : 'dry' }}">
-                        {{ $lunchRain >= 40 ? '🌧' : '☀️' }}
-                    </span>
-                </div>
-
             </div>
 
         </div>
@@ -1841,30 +1918,57 @@ document.addEventListener("DOMContentLoaded", function () {
         const sparkleLayerEl = document.getElementById('sparkle-layer');
         const lightningLayerEl = document.getElementById('lightning-layer');
         const rainLayerEl = document.getElementById('rain-layer');
+        const alertEl = document.getElementById('weather-alert');
         const recessEl = document.getElementById('weather-recess');
         const lunchEl = document.getElementById('weather-lunch');
+        const recessCardEl = document.getElementById('recess-card');
+        const lunchCardEl = document.getElementById('lunch-card');
 
         function updateBreakIcons(type) {
             if (!recessEl || !lunchEl) return;
 
             recessEl.classList.remove('rain', 'dry');
             lunchEl.classList.remove('rain', 'dry');
+            if (recessCardEl) recessCardEl.classList.remove('rain', 'storm', 'dry');
+            if (lunchCardEl) lunchCardEl.classList.remove('rain', 'storm', 'dry');
 
             if (type === 'rain' || type === 'storm') {
                 recessEl.innerText = '🌧️';
                 lunchEl.innerText = '🌧️';
                 recessEl.classList.add('rain');
                 lunchEl.classList.add('rain');
+                if (recessCardEl) recessCardEl.classList.add(type);
+                if (lunchCardEl) lunchCardEl.classList.add(type);
             } else if (type === 'cloud') {
                 recessEl.innerText = '⛅';
                 lunchEl.innerText = '⛅';
                 recessEl.classList.add('dry');
                 lunchEl.classList.add('dry');
+                if (recessCardEl) recessCardEl.classList.add('dry');
+                if (lunchCardEl) lunchCardEl.classList.add('dry');
             } else {
                 recessEl.innerText = '☀️';
                 lunchEl.innerText = '☀️';
                 recessEl.classList.add('dry');
                 lunchEl.classList.add('dry');
+                if (recessCardEl) recessCardEl.classList.add('dry');
+                if (lunchCardEl) lunchCardEl.classList.add('dry');
+            }
+        }
+
+        function updateWeatherAlert(type) {
+            if (!alertEl) return;
+
+            alertEl.classList.remove('hidden', 'rain', 'storm');
+
+            if (type === 'rain') {
+                alertEl.innerText = 'WET WEATHER - INDOOR BREAK';
+                alertEl.classList.add('rain');
+            } else if (type === 'storm') {
+                alertEl.innerText = 'SEVERE WEATHER - FOLLOW STAFF INSTRUCTIONS';
+                alertEl.classList.add('storm');
+            } else {
+                alertEl.classList.add('hidden');
             }
         }
 
@@ -1998,12 +2102,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
                 updateBreakIcons(state);
+                updateWeatherAlert(state);
 
                 setWeatherBackground(state);
             })
             .catch(function () {
                 clearAllStates();
                 createSparkles();
+                updateBreakIcons('clear');
+                updateWeatherAlert('clear');
                 setWeatherBackground('clear');
             });
     }
