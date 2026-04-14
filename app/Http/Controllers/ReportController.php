@@ -326,6 +326,48 @@ class ReportController extends Controller
             ]],
         ];
 
+        $houseRows = DB::table('point_transactions as pt')
+            ->join('houses as h', 'pt.house_id', '=', 'h.id')
+            ->whereNotNull('pt.house_id')
+            ->selectRaw('DATE(pt.created_at) as point_date, h.name as house_name, SUM(pt.amount) as total_points')
+            ->groupByRaw('DATE(pt.created_at), h.name')
+            ->orderByRaw('DATE(pt.created_at)')
+            ->orderBy('h.name')
+            ->get();
+
+        $allDates = $houseRows
+            ->pluck('point_date')
+            ->map(fn ($d) => (string) $d)
+            ->unique()
+            ->values()
+            ->all();
+
+        $houseNames = ['Gryffindor', 'Slytherin', 'Ravenclaw', 'Hufflepuff'];
+        $dateTemplate = array_fill_keys($allDates, 0);
+        $houseDateTotals = [];
+        foreach ($houseNames as $houseName) {
+            $houseDateTotals[$houseName] = $dateTemplate;
+        }
+
+        foreach ($houseRows as $row) {
+            $dateKey = (string) $row->point_date;
+            $houseName = (string) $row->house_name;
+            if (isset($houseDateTotals[$houseName]) && array_key_exists($dateKey, $houseDateTotals[$houseName])) {
+                $houseDateTotals[$houseName][$dateKey] = (int) $row->total_points;
+            }
+        }
+
+        $housePointsOverTime = [
+            'type' => 'line',
+            'categories' => $allDates,
+            'series' => array_map(function ($houseName) use ($houseDateTotals) {
+                return [
+                    'name' => $houseName,
+                    'data' => array_values($houseDateTotals[$houseName] ?? []),
+                ];
+            }, $houseNames),
+        ];
+
         return [
             'risk_distribution' => $riskDistribution,
             'points_by_house' => $pointsByHouse,
@@ -333,6 +375,7 @@ class ReportController extends Controller
             'year_level_distribution' => $yearLevelDistribution,
             'underperformance_index' => $underperformanceIndex,
             'low_usage_staff' => $lowUsageStaff,
+            'house_points_over_time' => $housePointsOverTime,
 
             // Legacy keys kept for existing report pages.
             'donut' => $legacyDonut,

@@ -7,6 +7,18 @@
     </p>
 
     <div class="row mb-4">
+        <div class="col-12">
+            <div class="card hh-card mb-4 h-100" style="grid-column: span 2;">
+                <div class="card-body">
+                    <h5 class="mb-2">House Points Over Time</h5>
+                    <p class="text-muted small mb-3">
+                        Shows how each house is tracking over time.
+                        Use this to identify momentum and compare performance trends.
+                    </p>
+                    <div id="house-points-over-time" style="min-height: 340px;"></div>
+                </div>
+            </div>
+        </div>
         <div class="col-md-6">
             <div class="card hh-card mb-4 h-100">
                 <div class="card-body">
@@ -80,7 +92,7 @@
         (function () {
             var dataUrl = @json(route('reports.data'));
             var drillUrl = @json(route('reports.drilldown'));
-            var charts = { rank: null, contribution: null, risk: null, momentum: null };
+            var charts = { overTime: null, rank: null, contribution: null, risk: null, momentum: null };
             function chartDataSeries(rawSeries) {
                 if (Array.isArray(rawSeries) && rawSeries.length && typeof rawSeries[0] === 'object' && rawSeries[0] && Array.isArray(rawSeries[0].data)) {
                     return rawSeries[0].data.map(function (v) { return Number(v) || 0; });
@@ -169,6 +181,68 @@
                     tooltip: { theme: 'dark' }
                 }));
                 charts.rank.render();
+            }
+
+            function renderHousePointsOverTime(data) {
+                var overTime = data.house_points_over_time || {};
+                var rawDates = Array.isArray(overTime.categories) ? overTime.categories : [];
+                var displayDates = rawDates.map(function (d) {
+                    return typeof window.formatReportChartDate === 'function' ? window.formatReportChartDate(d) : String(d);
+                });
+
+                var series = Array.isArray(overTime.series) ? overTime.series : [];
+                var colorsByHouse = {
+                    Gryffindor: '#740001',
+                    Slytherin: '#1a472a',
+                    Ravenclaw: '#0e1a40',
+                    Hufflepuff: '#ffcc00'
+                };
+                var colorList = series.map(function (s) {
+                    return colorsByHouse[s.name] || '#0ea5e9';
+                });
+
+                charts.overTime = new ApexCharts(document.querySelector('#house-points-over-time'), window.hhApplyApexDefaults({
+                    chart: {
+                        type: 'line',
+                        height: 340,
+                        toolbar: { show: false }
+                    },
+                    series: series.map(function (s) {
+                        return {
+                            name: String(s.name || ''),
+                            data: Array.isArray(s.data) ? s.data.map(function (v) { return Number(v) || 0; }) : []
+                        };
+                    }),
+                    xaxis: {
+                        categories: displayDates
+                    },
+                    yaxis: {
+                        title: {
+                            text: 'Points'
+                        }
+                    },
+                    stroke: {
+                        curve: 'smooth',
+                        width: 4
+                    },
+                    markers: {
+                        size: 0
+                    },
+                    dataLabels: {
+                        enabled: false
+                    },
+                    colors: colorList,
+                    tooltip: {
+                        theme: 'dark',
+                        y: {
+                            formatter: function (val, opts) {
+                                var s = opts && opts.seriesIndex != null && series[opts.seriesIndex] ? series[opts.seriesIndex].name : 'House';
+                                return s + ': ' + (Number(val) || 0);
+                            }
+                        }
+                    }
+                }));
+                charts.overTime.render();
             }
 
             function renderContribution(data) {
@@ -338,6 +412,7 @@
             function renderHouseCharts(data) {
                 try {
                     destroyCharts();
+                    renderHousePointsOverTime(data);
                     renderRank(data);
                     renderContribution(data);
                     renderRisk(data);
