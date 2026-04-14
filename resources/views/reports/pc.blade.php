@@ -70,7 +70,7 @@
     <div id="pc-report-grid">
         <div class="row">
             <div class="col-12">
-                <div class="card hh-card mb-4 shadow-sm h-100">
+                <div class="card hh-card mb-4 h-100">
                     <div class="card-body">
                         <h5>At Risk</h5>
                         <p class="small text-white-50">
@@ -85,7 +85,7 @@
 
         <div class="row mb-4">
             <div class="col-md-6">
-                <div class="card hh-card mb-4 shadow-sm h-100">
+                <div class="card hh-card mb-4 h-100">
                     <div class="card-body">
                         <h5>Year Level Distribution</h5>
                         <p class="small text-white-50">
@@ -96,7 +96,7 @@
                 </div>
             </div>
             <div class="col-md-6">
-                <div class="card hh-card mb-4 shadow-sm h-100">
+                <div class="card hh-card mb-4 h-100">
                     <div class="card-body">
                         <h5>Points by House</h5>
                         <p class="small text-white-50">
@@ -110,7 +110,7 @@
 
         <div class="row mb-4">
           <div class="col-12">
-            <div class="card hh-card">
+            <div class="card hh-card mb-4 h-100">
               <div class="card-body">
                 <h5>Engagement Trend</h5>
                 <p class="small text-white-50">
@@ -356,10 +356,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 return typeof window.formatReportChartDate === 'function' ? window.formatReportChartDate(c) : String(c);
             })
         };
-        const yearSeries = data?.year_level?.series?.[0]?.data || data?.year_level_distribution?.series?.[0]?.data || [];
-        const yearCategories = data?.year_level?.categories || data?.year_level_distribution?.categories || [];
-        const houseSeries = data?.house_breakdown?.series?.[0]?.data || data?.points_by_house?.series?.[0]?.data || [];
-        const houseCategories = data?.house_breakdown?.categories || data?.points_by_house?.categories || [];
+        const rawYearSeries = data?.year_level?.series?.[0]?.data || data?.year_level_distribution?.series?.[0]?.data || [];
+        const rawYearCategories = data?.year_level?.categories || data?.year_level_distribution?.categories || [];
+        const rawHouseSeries = data?.house_breakdown?.series?.[0]?.data || data?.points_by_house?.series?.[0]?.data || [];
+        const rawHouseCategories = data?.house_breakdown?.categories || data?.points_by_house?.categories || [];
+        const houseCombined = rawHouseCategories.map((name, i) => ({ name, value: Number(rawHouseSeries[i]) || 0 }));
+        houseCombined.sort((a, b) => b.value - a.value);
+        const houseCategories = houseCombined.map(r => r.name);
+        const houseSeries = houseCombined.map(r => r.value);
+        const yearCombined = rawYearCategories.map((name, i) => ({ name, value: Number(rawYearSeries[i]) || 0 }));
+        yearCombined.sort((a, b) => b.value - a.value);
+        const yearCategories = yearCombined.map(r => r.name);
+        const yearSeries = yearCombined.map(r => r.value);
 
         if (yearSeries.length === 0) {
             console.error('Year level data missing or empty', data.year_level || data.year_level_distribution);

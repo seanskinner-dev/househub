@@ -8,7 +8,7 @@
 
     <div class="row mb-4">
         <div class="col-md-6">
-            <div class="card hh-card mb-4 shadow-sm h-100">
+            <div class="card hh-card mb-4 h-100">
                 <div class="card-body">
                     <h5 class="mb-2">Term Performance Comparison</h5>
                     <p class="text-muted small mb-3">
@@ -19,7 +19,7 @@
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card hh-card mb-4 shadow-sm h-100">
+            <div class="card hh-card mb-4 h-100">
                 <div class="card-body">
                     <h5 class="mb-2">House Momentum</h5>
                     <p class="text-muted small mb-3">
@@ -33,7 +33,7 @@
 
     <div class="row mb-4">
         <div class="col-md-6">
-            <div class="card hh-card mb-4 shadow-sm h-100">
+            <div class="card hh-card mb-4 h-100">
                 <div class="card-body">
                     <h5 class="mb-2">Contribution Spread</h5>
                     <p class="text-muted small mb-3">
@@ -44,7 +44,7 @@
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card hh-card mb-4 shadow-sm h-100">
+            <div class="card hh-card mb-4 h-100">
                 <div class="card-body">
                     <h5 class="mb-2">Underperformance Index</h5>
                     <p class="text-muted small mb-3">
@@ -175,6 +175,11 @@
                 var houses = (data.house_breakdown && data.house_breakdown.categories) ? data.house_breakdown.categories : [];
                 var source = chartDataSeries(data.house_breakdown ? data.house_breakdown.series : []);
                 var values = source.map(function (v) { return Math.max(0, Math.floor(v / 10)); });
+                var sortedContribution = houses.map(function (h, i) {
+                    return { name: h, value: values[i] || 0 };
+                }).sort(function (a, b) { return b.value - a.value; });
+                houses = sortedContribution.map(function (r) { return r.name; });
+                values = sortedContribution.map(function (r) { return r.value; });
 
                 charts.contribution = new ApexCharts(document.querySelector('#house-contribution'), window.hhApplyApexDefaults({
                     chart: {
@@ -251,6 +256,11 @@
                 var houses = (data.underperformance_index && data.underperformance_index.categories) ? data.underperformance_index.categories : [];
                 var source = chartDataSeries(data.underperformance_index ? data.underperformance_index.series : []);
                 var values = source.map(function (v) { return Math.min(100, Math.floor(100 / (Number(v) + 1))); });
+                var sortedRisk = houses.map(function (h, i) {
+                    return { name: h, value: values[i] || 0 };
+                }).sort(function (a, b) { return b.value - a.value; });
+                houses = sortedRisk.map(function (r) { return r.name; });
+                values = sortedRisk.map(function (r) { return r.value; });
 
                 charts.risk = new ApexCharts(document.querySelector('#house-risk'), window.hhApplyApexDefaults({
                     chart: {

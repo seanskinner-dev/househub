@@ -45,7 +45,7 @@
 
     <div class="row mb-4">
         <div class="col-md-6">
-            <div class="card hh-card mb-4 shadow-sm h-100">
+            <div class="card hh-card mb-4 h-100">
                 <div class="card-body">
                     <h5 class="mb-2">Engagement Health</h5>
                     <p class="text-muted small mb-3">
@@ -56,7 +56,7 @@
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card hh-card mb-4 shadow-sm h-100">
+            <div class="card hh-card mb-4 h-100">
                 <div class="card-body">
                     <h5 class="mb-2">Weekday Activity Heatmap</h5>
                     <p class="text-muted small mb-3">
@@ -70,7 +70,7 @@
 
     <div class="row mb-4">
         <div class="col-md-6">
-            <div class="card hh-card mb-4 shadow-sm h-100">
+            <div class="card hh-card mb-4 h-100">
                 <div class="card-body">
                     <h5 class="mb-2">Points by Year Level</h5>
                     <p class="text-muted small mb-3">
@@ -81,7 +81,7 @@
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card hh-card mb-4 shadow-sm h-100">
+            <div class="card hh-card mb-4 h-100">
                 <div class="card-body">
                     <h5 class="mb-2">Risk Mix</h5>
                     <p class="text-muted small mb-3">
@@ -95,7 +95,7 @@
 
     <div class="row mb-4">
         <div class="col-md-6">
-            <div class="card hh-card mb-4 shadow-sm h-100">
+            <div class="card hh-card mb-4 h-100">
                 <div class="card-body">
                     <h5 class="mb-2">Students Without Weekday Points</h5>
                     <p class="text-muted small mb-3">

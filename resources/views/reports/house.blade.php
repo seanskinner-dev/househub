@@ -5,7 +5,7 @@
 
     <div class="row mb-4">
         <div class="col-md-6">
-            <div class="card hh-card mb-4 shadow-sm h-100">
+            <div class="card hh-card mb-4 h-100">
                 <div class="card-body">
                     <h5 class="mb-2">Term Performance Comparison</h5>
                     <p class="text-muted small mb-3">
@@ -16,7 +16,7 @@
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card hh-card mb-4 shadow-sm h-100">
+            <div class="card hh-card mb-4 h-100">
                 <div class="card-body">
                     <h5 class="mb-2">House Momentum</h5>
                     <p class="text-muted small mb-3">
@@ -30,7 +30,7 @@
 
     <div class="row mb-4">
         <div class="col-md-6">
-            <div class="card hh-card mb-4 shadow-sm h-100">
+            <div class="card hh-card mb-4 h-100">
                 <div class="card-body">
                     <h5 class="mb-2">Contribution Spread</h5>
                     <p class="text-muted small mb-3">
@@ -41,7 +41,7 @@
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card hh-card mb-4 shadow-sm h-100">
+            <div class="card hh-card mb-4 h-100">
                 <div class="card-body">
                     <h5 class="mb-2">Underperformance Index</h5>
                     <p class="text-muted small mb-3">
@@ -132,13 +132,23 @@
                 //-----------------------------------
                 // 1. TERM COMPARISON
                 //-----------------------------------
+                const sortedTermRows = names.map(function (name, i) {
+                    return {
+                        name: name,
+                        thisTerm: Number(thisTerm[i]) || 0,
+                        previousTerm: Number(previousTerm[i]) || 0
+                    };
+                }).sort(function (a, b) { return b.thisTerm - a.thisTerm; });
+                const rankedNames = sortedTermRows.map(function (r) { return r.name; });
+                const rankedThisTerm = sortedTermRows.map(function (r) { return r.thisTerm; });
+                const rankedPreviousTerm = sortedTermRows.map(function (r) { return r.previousTerm; });
                 var houseApexOpts = window.hhApplyApexDefaults({
                 chart: {
                     type: 'bar',
                     height: 320,
                     events: {
                         dataPointSelection: function(event, chartContext, config) {
-                            const house = names[config.dataPointIndex];
+                            const house = rankedNames[config.dataPointIndex];
                             if (house) {
                                 const term = config.seriesIndex === 1 ? 'previous_term' : 'this_term';
                                 drillDown({ type: 'term_comparison', value: { house, term } });
@@ -147,10 +157,10 @@
                     }
                 },
                 series: [
-                    { name: 'This Term', data: thisTerm },
-                    { name: 'Previous Term', data: previousTerm }
+                    { name: 'This Term', data: rankedThisTerm },
+                    { name: 'Previous Term', data: rankedPreviousTerm }
                 ],
-                xaxis: { categories: names },
+                xaxis: { categories: rankedNames },
                 title: { text: 'Term Comparison' }
                 });
                 new ApexCharts(document.querySelector("#house-comparison"), houseApexOpts).render();
@@ -171,10 +181,10 @@
                         }
                     }
                 },
-                series: [{ name: 'Momentum', data: thisTerm }],
+                series: [{ name: 'Momentum', data: rankedThisTerm }],
                 dataLabels: { enabled: false },
                 markers: { size: 4 },
-                xaxis: { categories: names },
+                xaxis: { categories: rankedNames },
                 title: { text: 'Momentum' }
                 });
                 new ApexCharts(document.querySelector("#house-momentum"), houseApexOpts).render();
@@ -182,7 +192,11 @@
                 //-----------------------------------
                 // 3. CONTRIBUTION
                 //-----------------------------------
-                const contribution = thisTerm.map(v => Math.max(1, Math.floor(v / 10)));
+                const contributionRows = rankedNames.map(function (name, i) {
+                    return { name: name, value: Math.max(1, Math.floor(rankedThisTerm[i] / 10)) };
+                }).sort(function (a, b) { return b.value - a.value; });
+                const contributionNames = contributionRows.map(function (r) { return r.name; });
+                const contribution = contributionRows.map(function (r) { return r.value; });
 
                 houseApexOpts = window.hhApplyApexDefaults({
                 chart: {
@@ -190,7 +204,7 @@
                     height: 320,
                     events: {
                         dataPointSelection: function(event, chartContext, config) {
-                            const house = names[config.dataPointIndex];
+                            const house = contributionNames[config.dataPointIndex];
                             if (house) {
                                 drillDown({ type: 'contribution_spread', value: house });
                             }
@@ -209,7 +223,7 @@
                     data: contribution
                 }],
                 xaxis: {
-                    categories: names,
+                    categories: contributionNames,
                     labels: {
                         style: {
                             colors: '#94a3b8'
@@ -264,7 +278,12 @@
                     .then(function (res) { return res.json(); })
                     .then(function (apiData) {
                         const categories = apiData?.underperformance_index?.categories || names;
-                        const risk = apiData?.underperformance_index?.series?.[0]?.data || [];
+                        const riskRaw = apiData?.underperformance_index?.series?.[0]?.data || [];
+                        const riskRows = categories.map(function (name, i) {
+                            return { name: name, value: Number(riskRaw[i]) || 0 };
+                        }).sort(function (a, b) { return b.value - a.value; });
+                        const rankedRiskCategories = riskRows.map(function (r) { return r.name; });
+                        const risk = riskRows.map(function (r) { return r.value; });
 
                         houseApexOpts = window.hhApplyApexDefaults({
                 chart: {
@@ -272,7 +291,7 @@
                     height: 320,
                     events: {
                         dataPointSelection: function(event, chartContext, config) {
-                            const house = categories[config.dataPointIndex];
+                            const house = rankedRiskCategories[config.dataPointIndex];
                             if (house) {
                                 drillDown({ type: 'underperformance_house', value: house });
                             }
@@ -280,7 +299,7 @@
                     }
                 },
                 series: [{ name: 'Underperformance Index', data: risk }],
-                xaxis: { categories: categories },
+                xaxis: { categories: rankedRiskCategories },
                 title: { text: 'Underperformance' }
                 });
                         new ApexCharts(document.querySelector("#house-risk"), houseApexOpts).render();

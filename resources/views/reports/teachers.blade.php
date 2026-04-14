@@ -40,7 +40,7 @@
 
     <div class="row mb-4">
         <div class="col-md-6">
-            <div class="card hh-card mb-4 shadow-sm h-100">
+            <div class="card hh-card mb-4 h-100">
                 <div class="card-body">
                     <h5 class="mb-2">Student Distribution by Teacher</h5>
                     <p class="text-muted small mb-3">
@@ -51,7 +51,7 @@
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card hh-card mb-4 shadow-sm h-100">
+            <div class="card hh-card mb-4 h-100">
                 <div class="card-body">
                     <h5 class="mb-2">Staff Usage Frequency</h5>
                     <p class="text-muted small mb-3">
@@ -65,7 +65,7 @@
 
     <div class="row mb-4">
         <div class="col-md-6">
-            <div class="card hh-card mb-4 shadow-sm h-100">
+            <div class="card hh-card mb-4 h-100">
                 <div class="card-body">
                     <h5 class="mb-2">Weekday Points Trend</h5>
                     <p class="text-muted small mb-3">
@@ -76,7 +76,7 @@
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card hh-card mb-4 shadow-sm h-100">
+            <div class="card hh-card mb-4 h-100">
                 <div class="card-body">
                     <h5 class="mb-2">Low Usage Staff</h5>
                     <p class="text-muted small mb-3">
@@ -407,6 +407,11 @@
                 var bucketCounts = bucketKeys.map(function (k) {
                     return buckets[k].length;
                 });
+                var sortedBuckets = bucketKeys.map(function (k, i) {
+                    return { key: k, count: bucketCounts[i] || 0 };
+                }).sort(function (a, b) { return b.count - a.count; });
+                bucketKeys = sortedBuckets.map(function (r) { return r.key; });
+                bucketCounts = sortedBuckets.map(function (r) { return r.count; });
                 var common = { fontFamily: 'Arial, sans-serif', foreColor: '#e2e8f0' };
                 tuCharts.freq = new ApexCharts(document.querySelector('#teacher-frequency'), window.hhApplyApexDefaults({
                     chart: {
@@ -544,6 +549,11 @@
                     names = ['No data'];
                     values = [0];
                 }
+                var sortedLowStaff = names.map(function (name, i) {
+                    return { name: name, value: values[i] || 0 };
+                }).sort(function (a, b) { return b.value - a.value; }).slice(0, 10);
+                names = sortedLowStaff.map(function (r) { return r.name; });
+                values = sortedLowStaff.map(function (r) { return r.value; });
 
                 var common = { fontFamily: 'Arial, sans-serif', foreColor: '#e2e8f0' };
                 tuCharts.lowStaff = new ApexCharts(document.querySelector('#teacher-low-usage'), window.hhApplyApexDefaults({

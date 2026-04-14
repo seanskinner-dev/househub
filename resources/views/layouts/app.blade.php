@@ -593,11 +593,10 @@
             }
 
             function buildDrilldownTheadHtml(metricLabel) {
-                var ml = escapeReportHtml(metricLabel);
                 return (
                     '<th data-sort-key="name" class="report-sort-th" style="text-align:left;padding:12px 14px;border-bottom:2px solid #334155;">Name</th>' +
                     '<th data-sort-key="year_level" class="report-sort-th" style="text-align:left;padding:12px 14px;border-bottom:2px solid #334155;">Year Level</th>' +
-                    '<th data-sort-key="activity_count" class="report-sort-th" style="text-align:left;padding:12px 14px;border-bottom:2px solid #334155;">' + ml + '</th>' +
+                    '<th data-sort-key="activity_count" class="report-sort-th" style="text-align:left;padding:12px 14px;border-bottom:2px solid #334155;">Points</th>' +
                     '<th data-sort-key="date" class="report-sort-th" style="text-align:left;padding:12px 14px;border-bottom:2px solid #334155;">Date</th>' +
                     '<th class="text-end" style="padding:12px 14px;border-bottom:2px solid #334155;">Actions</th>'
                 );
@@ -684,7 +683,11 @@
                     var nm = escapeReportHtml(row.name || '');
                     var yl = escapeReportHtml(row.year_level || '');
                     var pointsValue = row.points != null ? row.points : row.activity_count;
-                    var pts = escapeReportHtml(pointsValue == null ? '0' : pointsValue);
+                    var pointsInt = parseInt(pointsValue, 10);
+                    if (isNaN(pointsInt)) {
+                        pointsInt = 0;
+                    }
+                    var pts = escapeReportHtml(String(pointsInt));
                     var dt = escapeReportHtml(row.date || '');
                     var nameCell = studentIdUsable(sid)
                         ? '<td class="td-name" style="text-align:left;padding:12px 14px;vertical-align:middle;"><a href="/students/' + encodeURIComponent(String(sid)) + '" class="student-link">' + nm + '</a></td>'
@@ -1229,14 +1232,20 @@
                 tooltip: {
                     ...apex.tooltip,
                     ...(options.tooltip || {}),
-                    theme: 'dark'
+                    theme: 'dark',
+                    style: {
+                        ...((apex.tooltip && apex.tooltip.style) || {}),
+                        ...(((options.tooltip || {}).style) || {}),
+                        fontSize: '13px',
+                        color: '#f8fafc'
+                    }
                 }
             };
-
+            var chartType = (options.chart && options.chart.type) ? String(options.chart.type).toLowerCase() : '';
             merged.dataLabels = {
                 ...(merged.dataLabels || {}),
                 ...(options.dataLabels || {}),
-                enabled: true,
+                enabled: chartType === 'bar',
                 style: {
                     ...((merged.dataLabels && merged.dataLabels.style) || {}),
                     ...((options.dataLabels && options.dataLabels.style) || {}),
@@ -1272,7 +1281,7 @@
                 };
             }
 
-            if (options.chart && options.chart.type === 'line') {
+            if (chartType === 'line' || chartType === 'area') {
                 var existingAnnotations = merged.annotations || {};
                 var pointAnnotations = Array.isArray(existingAnnotations.points) ? existingAnnotations.points : [];
                 merged.annotations = {
@@ -1297,34 +1306,10 @@
                     }),
                     xaxis: Array.isArray(existingAnnotations.xaxis) ? existingAnnotations.xaxis : []
                 };
-                merged.dataLabels = {
-                    ...(merged.dataLabels || {}),
-                    ...(options.dataLabels || {}),
-                    enabled: true,
-                    offsetY: -12,
-                    style: {
-                        ...((merged.dataLabels && merged.dataLabels.style) || {}),
-                        ...((options.dataLabels && options.dataLabels.style) || {}),
-                        colors: ['#f8fafc'],
-                        fontSize: '11px',
-                        fontWeight: 600
-                    },
-                    background: {
-                        ...((merged.dataLabels && merged.dataLabels.background) || {}),
-                        ...((options.dataLabels && options.dataLabels.background) || {}),
-                        enabled: true,
-                        foreColor: '#f8fafc',
-                        borderRadius: 6,
-                        padding: 4,
-                        opacity: 1,
-                        borderWidth: 0,
-                        fillColor: '#0f172a'
-                    }
-                };
                 merged.markers = {
                     ...(merged.markers || {}),
                     ...(options.markers || {}),
-                    size: 5,
+                    size: 4,
                     strokeWidth: 2,
                     strokeColors: '#0f172a'
                 };
