@@ -209,6 +209,14 @@ class ReportController extends Controller
         $legacyHouse = $this->pcChartHousePoints($house, $start, $end, $yearFilter);
         $legacyYearLevel = $this->pcChartYearLevel($house, $start, $end, $yearFilter);
         $recent = $this->pcTeacherRecentRows($house, $start, $end, $yearFilter);
+        $lowUsageStaffRows = $this->tuPointTransactionsBase($house, $start, $end, $yearFilter)
+            ->selectRaw("COALESCE(NULLIF(TRIM(u.name), ''), 'Unknown') as teacher")
+            ->selectRaw('COALESCE(SUM(pt.amount), 0) as total_points')
+            ->groupBy('pt.awarded_by', 'u.id', 'u.name')
+            ->orderBy('total_points')
+            ->orderBy('teacher')
+            ->limit(10)
+            ->get();
 
         $high = (int) ($legacyDonut['series'][0] ?? 0);
         $medium = (int) ($legacyDonut['series'][1] ?? 0);
@@ -310,12 +318,21 @@ class ReportController extends Controller
             'Underperformance Index'
         );
 
+        $lowUsageStaff = [
+            'categories' => $lowUsageStaffRows->pluck('teacher')->map(fn ($v) => (string) $v)->values()->all(),
+            'series' => [[
+                'name' => 'Points Awarded',
+                'data' => $lowUsageStaffRows->pluck('total_points')->map(fn ($v) => (int) $v)->values()->all(),
+            ]],
+        ];
+
         return [
             'risk_distribution' => $riskDistribution,
             'points_by_house' => $pointsByHouse,
             'engagement_trend' => $engagementTrend,
             'year_level_distribution' => $yearLevelDistribution,
             'underperformance_index' => $underperformanceIndex,
+            'low_usage_staff' => $lowUsageStaff,
 
             // Legacy keys kept for existing report pages.
             'donut' => $legacyDonut,

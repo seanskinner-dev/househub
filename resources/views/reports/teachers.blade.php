@@ -75,6 +75,17 @@
                 </div>
             </div>
         </div>
+        <div class="col-md-6">
+            <div class="card mb-4 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="mb-2">Low Usage Staff</h5>
+                    <p class="text-muted small mb-3">
+                        Highlights staff with the lowest point awarding activity to identify disengagement.
+                    </p>
+                    <div id="teacher-low-usage" style="min-height: 320px;"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div id="tu-modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 1000; align-items: center; justify-content: center; padding: 20px;">
@@ -105,7 +116,7 @@
             var dataUrl = @json(route('reports.data'));
             var drillUrl = @json(route('reports.drilldown'));
 
-            var tuCharts = { low: null, freq: null, trend: null };
+            var tuCharts = { low: null, freq: null, trend: null, lowStaff: null };
             var tuModalChart = null;
             var tuTrendRawDates = [];
 
@@ -334,7 +345,7 @@
             }
 
             function destroyTuCharts() {
-                ['low', 'freq', 'trend'].forEach(function (k) {
+                ['low', 'freq', 'trend', 'lowStaff'].forEach(function (k) {
                     if (tuCharts[k]) {
                         tuCharts[k].destroy();
                         tuCharts[k] = null;
@@ -557,12 +568,75 @@
                 tuCharts.trend.render();
             }
 
+            function renderLowUsageStaff(data) {
+                var lowUsage = data.low_usage_staff || { categories: [], series: [] };
+                var names = Array.isArray(lowUsage.categories) ? lowUsage.categories.slice() : [];
+                var sourceSeries = Array.isArray(lowUsage.series) ? lowUsage.series : [];
+                var values;
+                if (
+                    sourceSeries.length > 0 &&
+                    typeof sourceSeries[0] === 'object' &&
+                    sourceSeries[0] !== null &&
+                    Array.isArray(sourceSeries[0].data)
+                ) {
+                    values = sourceSeries[0].data.map(function (v) { return Number(v) || 0; });
+                } else {
+                    values = [];
+                }
+
+                if (!names.length || !values.length) {
+                    names = ['No data'];
+                    values = [0];
+                }
+
+                var common = { fontFamily: 'Arial, sans-serif', foreColor: '#e2e8f0' };
+                tuCharts.lowStaff = new ApexCharts(document.querySelector('#teacher-low-usage'), {
+                    chart: {
+                        type: 'bar',
+                        height: 320,
+                        fontFamily: common.fontFamily,
+                        foreColor: common.foreColor,
+                        toolbar: { show: false },
+                        events: {
+                            dataPointSelection: function (event, chartContext, config) {
+                                if (event) {
+                                    if (event.preventDefault) {
+                                        event.preventDefault();
+                                    }
+                                    if (event.stopPropagation) {
+                                        event.stopPropagation();
+                                    }
+                                }
+                                var teacher = names[config.dataPointIndex];
+                                if (!teacher || teacher === 'No data') {
+                                    return;
+                                }
+                                drillDown({ type: 'teacher', value: teacher });
+                            }
+                        }
+                    },
+                    series: [{ name: 'Points Awarded', data: values }],
+                    xaxis: {
+                        categories: names,
+                        labels: { rotate: -35, style: { fontSize: '12px' } }
+                    },
+                    yaxis: { min: 0, labels: { style: { fontSize: '13px' } } },
+                    colors: ['#ef4444'],
+                    plotOptions: { bar: { borderRadius: 4, horizontal: true } },
+                    grid: { borderColor: '#334155' },
+                    dataLabels: { enabled: true },
+                    tooltip: { theme: 'dark' }
+                });
+                tuCharts.lowStaff.render();
+            }
+
             function renderTeacherCharts(data) {
                 try {
                     destroyTuCharts();
                     renderLowUsage(data);
                     renderFrequency(data);
                     renderTrend(data);
+                    renderLowUsageStaff(data);
                 } catch (e) {
                     console.error('Chart render failed:', e);
                 }
