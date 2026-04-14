@@ -1533,7 +1533,7 @@
 
     </div>
 
-    <div class="tv-screen" id="screen-weather">
+    <div class="tv-screen" id="screen-weather" style="display: flex; background: linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.35)), url('/weather/cloud/cloud3.jpg') center/cover no-repeat;">
 
         <div class="weather-container">
 
