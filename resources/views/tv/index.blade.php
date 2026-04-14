@@ -1860,6 +1860,7 @@ document.addEventListener("DOMContentLoaded", function () {
             s.style.display = (i === index) ? 'flex' : 'none';
         });
         document.querySelectorAll('.tv-screen').forEach(s => {
+            if (s.style.display !== 'flex') return;
             if (s.id !== 'screen-weather') {
                 s.style.background = '#0a0a0a';
             }
@@ -1924,14 +1925,19 @@ document.addEventListener("DOMContentLoaded", function () {
         return "/weather/" + type + "/" + selected;
     }
 
+    function getActiveScreen() {
+        return document.querySelector('.tv-screen[style*="display: flex"]');
+    }
+
     function setWeatherBackground(type) {
-        const screen = document.getElementById('screen-weather');
+        const screen = getActiveScreen();
         if (!screen) return;
+        if (screen.id !== 'screen-weather') return;
 
         const bg = getRandomBackground(type);
 
         screen.style.background = `
-        linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.35)),
+        linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.3)),
         url('${bg}') center/cover no-repeat
     `;
     }
