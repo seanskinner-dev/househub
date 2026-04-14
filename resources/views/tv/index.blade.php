@@ -760,6 +760,7 @@
             color: #ffffff;
             text-shadow: 0 2px 8px rgba(0,0,0,0.45);
             height: 100%;
+            animation: studentPulse 5.2s ease-in-out infinite;
         }
 
         .student-card::before {
@@ -826,10 +827,11 @@
         }
 
         .student-card.is-top-1 {
-            transform: scale(1.06);
+            transform: scale(1.03);
             box-shadow:
                 0 0 52px var(--house-color),
                 0 14px 42px rgba(0,0,0,0.85);
+            animation: studentPulseTop1 5s ease-in-out infinite;
         }
 
         .student-card.is-top-1 .student-rank::before {
@@ -842,6 +844,12 @@
                 0 0 32px var(--house-color),
                 0 11px 32px rgba(0,0,0,0.7),
                 inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+
+        .student-card:not(.is-top-1):not(.is-top-2):not(.is-top-3) {
+            box-shadow:
+                0 8px 25px rgba(0,0,0,0.7),
+                0 0 12px var(--house-color);
         }
 
         .student-card.is-compact {
@@ -949,17 +957,19 @@
             animation: bannerPulse 4.6s ease-in-out infinite;
         }
 
-        .banner-subtitle {
-            font-size: clamp(0.95rem, 1.55vw, 1.45rem);
-            font-weight: 800;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
-            opacity: 0.86;
-        }
-
         .banner-points {
             font-size: clamp(4rem, 7vw, 6rem);
             font-weight: 900;
+        }
+
+        @keyframes studentPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        @keyframes studentPulseTop1 {
+            0%, 100% { transform: scale(1.03); }
+            50% { transform: scale(1.06); }
         }
 
         @keyframes bannerPulse {
@@ -1007,28 +1017,24 @@
             <div class="banner gryffindor">
                 <div class="banner-inner">
                     <div class="banner-emoji">🦁</div>
-                    <div class="banner-subtitle">House Leader</div>
                     <div class="banner-points">{{ $gryffindorPoints }}</div>
                 </div>
             </div>
             <div class="banner slytherin">
                 <div class="banner-inner">
                     <div class="banner-emoji">🐍</div>
-                    <div class="banner-subtitle">Achievement</div>
                     <div class="banner-points">{{ $slytherinPoints }}</div>
                 </div>
             </div>
             <div class="banner ravenclaw">
                 <div class="banner-inner">
                     <div class="banner-emoji">🦅</div>
-                    <div class="banner-subtitle">House Leader</div>
                     <div class="banner-points">{{ $ravenclawPoints }}</div>
                 </div>
             </div>
             <div class="banner hufflepuff">
                 <div class="banner-inner">
                     <div class="banner-emoji">🦡</div>
-                    <div class="banner-subtitle">Achievement</div>
                     <div class="banner-points">{{ $hufflepuffPoints }}</div>
                 </div>
             </div>
