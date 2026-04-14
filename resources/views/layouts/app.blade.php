@@ -278,6 +278,230 @@
             return s;
         };
 
+        (function () {
+            window._reportDrilldownSortState = window._reportDrilldownSortState || new Map();
+
+            function escapeReportHtml(value) {
+                return String(value == null ? '' : value)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+            }
+
+            function mapDrilldownRowToStandard(raw) {
+                var r = raw && typeof raw === 'object' ? raw : {};
+                var sid = r.id != null ? r.id : (r._studentId != null ? r._studentId : (r.student_id != null ? r.student_id : null));
+
+                var name = '';
+                if (r.name != null && String(r.name).trim() !== '') {
+                    name = String(r.name).trim();
+                } else if (r.first_name != null || r.last_name != null) {
+                    name = (String(r.first_name || '') + ' ' + String(r.last_name || '')).trim();
+                } else if (r.teacher != null) {
+                    name = String(r.teacher);
+                } else if (r.student != null) {
+                    name = String(r.student);
+                } else if (r.house_name != null) {
+                    name = String(r.house_name);
+                } else {
+                    name = '—';
+                }
+
+                var yl = r.year_level != null ? String(r.year_level) : '';
+
+                var act = r.activity_count != null ? r.activity_count
+                    : (r.weekday_awards != null ? r.weekday_awards
+                        : (r.total_actions != null ? r.total_actions
+                            : (r.total_points != null ? r.total_points
+                                : (r.amount != null ? r.amount
+                                    : (r.points_in_range != null ? r.points_in_range
+                                        : (r.total != null ? r.total
+                                            : (r['points (weekdays)'] != null ? r['points (weekdays)'] : '')))))));
+                if (act !== null && act !== undefined && typeof act !== 'string') {
+                    act = String(act);
+                }
+
+                var dateRaw = r.created_at != null ? r.created_at : (r.date != null ? r.date : null);
+                var dateStr = '';
+                if (dateRaw != null && dateRaw !== '') {
+                    var ds = String(dateRaw);
+                    var slice = ds.length >= 10 ? ds.slice(0, 10) : ds;
+                    dateStr = typeof window.formatReportChartDate === 'function' ? window.formatReportChartDate(slice) : slice;
+                }
+
+                return {
+                    _studentId: sid,
+                    name: name || '—',
+                    year_level: yl,
+                    activity_count: act === null || act === undefined ? '' : String(act),
+                    date: dateStr
+                };
+            }
+
+            function reportShowToast(message) {
+                var el = document.getElementById('report-global-toast');
+                if (!el) {
+                    el = document.createElement('div');
+                    el.id = 'report-global-toast';
+                    el.style.cssText = 'position:fixed;right:20px;bottom:20px;background:#0f172a;color:#e2e8f0;border:1px solid #334155;padding:10px 14px;border-radius:8px;z-index:1200;display:none;';
+                    document.body.appendChild(el);
+                }
+                el.textContent = message;
+                el.style.display = 'block';
+                setTimeout(function () { el.style.display = 'none'; }, 1500);
+            }
+
+            function reportSendPoint(studentId, amount) {
+                var meta = document.querySelector('meta[name="csrf-token"]');
+                var token = meta ? meta.getAttribute('content') : '';
+                fetch('/points', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': token
+                    },
+                    body: JSON.stringify({ student_id: studentId, amount: amount })
+                })
+                    .then(function (res) { return res.json(); })
+                    .then(function () { reportShowToast('Points updated'); })
+                    .catch(function () { reportShowToast('Unable to update points'); });
+            }
+
+            function renderStandardDrilldownBody(tbody, rows) {
+                tbody.innerHTML = rows.map(function (row) {
+                    var sid = row._studentId;
+                    var nm = escapeReportHtml(row.name || '');
+                    var yl = escapeReportHtml(row.year_level || '');
+                    var ac = escapeReportHtml(row.activity_count || '');
+                    var dt = escapeReportHtml(row.date || '');
+                    var nameCell = sid != null
+                        ? '<td class="td-name" style="text-align:left;padding:12px 14px;vertical-align:middle;"><a href="/students/' + encodeURIComponent(String(sid)) + '" class="student-link">' + nm + '</a></td>'
+                        : '<td class="td-name" style="text-align:left;padding:12px 14px;vertical-align:middle;">' + nm + '</td>';
+                    var dis = sid == null ? ' disabled' : '';
+                    var dataId = sid != null ? escapeReportHtml(String(sid)) : '';
+                    var actions =
+                        '<td class="td-actions" style="text-align:right;padding:12px 14px;vertical-align:middle;">' +
+                        '<div class="d-flex gap-2 justify-content-end flex-wrap">' +
+                        '<button type="button" class="btn-sub btn btn-sm"' + dis + ' data-id="' + dataId + '">-1</button>' +
+                        '<button type="button" class="btn-add btn btn-sm"' + dis + ' data-id="' + dataId + '">+1</button>' +
+                        '<button type="button" class="btn-award btn btn-sm"' + dis + ' data-id="' + dataId + '">🏆</button>' +
+                        '<button type="button" class="btn-commend btn btn-sm"' + dis + ' data-id="' + dataId + '">⭐</button>' +
+                        '</div></td>';
+                    return '<tr class="report-drilldown-row">' + nameCell +
+                        '<td style="text-align:left;padding:12px 14px;vertical-align:middle;">' + yl + '</td>' +
+                        '<td style="text-align:left;padding:12px 14px;vertical-align:middle;">' + ac + '</td>' +
+                        '<td style="text-align:left;padding:12px 14px;vertical-align:middle;">' + dt + '</td>' +
+                        actions +
+                        '</tr>';
+                }).join('');
+            }
+
+            function sortStandardRows(rows, key, currentSort) {
+                if (currentSort.key === key) {
+                    currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+                } else {
+                    currentSort.key = key;
+                    currentSort.direction = 'asc';
+                }
+                return rows.slice().sort(function (a, b) {
+                    var valA = a[key];
+                    var valB = b[key];
+                    if (valA == null) valA = '';
+                    if (valB == null) valB = '';
+                    if (typeof valA === 'string') valA = valA.toLowerCase();
+                    if (typeof valB === 'string') valB = valB.toLowerCase();
+                    var na = Number(valA);
+                    var nb = Number(valB);
+                    if (!isNaN(na) && !isNaN(nb) && String(valA).trim() !== '' && String(valB).trim() !== '') {
+                        return currentSort.direction === 'asc' ? na - nb : nb - na;
+                    }
+                    if (valA < valB) return currentSort.direction === 'asc' ? -1 : 1;
+                    if (valA > valB) return currentSort.direction === 'asc' ? 1 : -1;
+                    return 0;
+                });
+            }
+
+            /**
+             * @param data {{ title?: string, rows?: array, student_breakdown?: array }}
+             * @param els {{ title: Element, empty: Element, wrap: Element, theadRow: Element, tbody: Element, table: Element }}
+             */
+            window.renderStudentTable = function (data, els) {
+                var title = (data && data.title) ? data.title : 'Details';
+                var rawRows = (data && data.rows) ? data.rows : ((data && data.student_breakdown) ? data.student_breakdown : []);
+                if (els.title) {
+                    els.title.textContent = title;
+                }
+                if (!rawRows.length) {
+                    window._reportDrilldownSortState.delete(els.table.id);
+                    if (els.empty) els.empty.style.display = 'block';
+                    if (els.wrap) els.wrap.style.display = 'none';
+                    els.theadRow.innerHTML = '';
+                    els.tbody.innerHTML = '';
+                    return;
+                }
+                if (els.empty) els.empty.style.display = 'none';
+                if (els.wrap) {
+                    els.wrap.style.display = 'block';
+                    els.wrap.classList.add('hh-card', 'p-3');
+                }
+                var mapped = rawRows.map(mapDrilldownRowToStandard);
+                var currentSort = { key: null, direction: 'asc' };
+                window._reportDrilldownSortState.set(els.table.id, { rows: mapped, currentSort: currentSort, els: els });
+
+                els.theadRow.innerHTML =
+                    '<th data-sort-key="name" class="report-sort-th" style="text-align:left;padding:12px 14px;border-bottom:2px solid #334155;">Name</th>' +
+                    '<th data-sort-key="year_level" class="report-sort-th" style="text-align:left;padding:12px 14px;border-bottom:2px solid #334155;">Year Level</th>' +
+                    '<th data-sort-key="activity_count" class="report-sort-th" style="text-align:left;padding:12px 14px;border-bottom:2px solid #334155;">Activity</th>' +
+                    '<th data-sort-key="date" class="report-sort-th" style="text-align:left;padding:12px 14px;border-bottom:2px solid #334155;">Date</th>' +
+                    '<th style="text-align:right;padding:12px 14px;border-bottom:2px solid #334155;">Actions</th>';
+
+                renderStandardDrilldownBody(els.tbody, mapped);
+            };
+
+            document.addEventListener('click', function (e) {
+                var th = e.target.closest('th.report-sort-th[data-sort-key]');
+                if (!th) return;
+                var table = th.closest('table.report-drilldown-table');
+                if (!table || !table.id) return;
+                var state = window._reportDrilldownSortState.get(table.id);
+                if (!state || !state.rows.length) return;
+                var key = th.getAttribute('data-sort-key');
+                if (!key) return;
+                var sorted = sortStandardRows(state.rows, key, state.currentSort);
+                state.rows = sorted;
+                renderStandardDrilldownBody(state.els.tbody, sorted);
+            });
+
+            document.addEventListener('click', function (e) {
+                if (e.target.classList.contains('btn-add')) {
+                    var id = e.target.getAttribute('data-id');
+                    if (id) reportSendPoint(id, 1);
+                }
+                if (e.target.classList.contains('btn-sub')) {
+                    var id2 = e.target.getAttribute('data-id');
+                    if (id2) reportSendPoint(id2, -1);
+                }
+                if (e.target.classList.contains('btn-award')) {
+                    var id3 = e.target.getAttribute('data-id');
+                    if (id3 && typeof window.openAwardModal === 'function') {
+                        window.openAwardModal(id3);
+                    } else if (id3) {
+                        window.dispatchEvent(new CustomEvent('award:open', { detail: { student_id: id3 } }));
+                    }
+                }
+                if (e.target.classList.contains('btn-commend')) {
+                    var id4 = e.target.getAttribute('data-id');
+                    if (id4 && typeof window.openCommendationModal === 'function') {
+                        window.openCommendationModal(id4);
+                    } else if (id4) {
+                        window.dispatchEvent(new CustomEvent('commendation:open', { detail: { student_id: id4 } }));
+                    }
+                }
+            });
+        })();
+
         window.Apex = {
             colors: ['#0ea5e9', '#22c55e', '#f59e0b', '#ef4444', '#a855f7'],
             chart: {

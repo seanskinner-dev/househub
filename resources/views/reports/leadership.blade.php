@@ -160,9 +160,6 @@
                 year: 'All'
             };
 
-            var lrDrilldownData = [];
-            var lrCurrentSort = { key: null, direction: 'asc' };
-
             function escapeHtml(s) {
                 var d = document.createElement('div');
                 d.textContent = s;
@@ -215,130 +212,25 @@
                     .catch(function () {});
             }
 
-            function lrDrilldownIsDateKey(key) {
-                return key === 'created_at' || key === 'when' || /_at$/i.test(String(key));
-            }
-
-            function lrDrilldownCompare(a, b, key, ascending) {
-                var valA = a[key];
-                var valB = b[key];
-                var mul = ascending ? 1 : -1;
-                if (lrDrilldownIsDateKey(key)) {
-                    var ta = new Date(valA).getTime();
-                    var tb = new Date(valB).getTime();
-                    if (isNaN(ta) || isNaN(tb)) {
-                        return mul * String(valA == null ? '' : valA).localeCompare(String(valB == null ? '' : valB));
-                    }
-                    return mul * (ta - tb);
-                }
-                var na = Number(valA);
-                var nb = Number(valB);
-                if (!isNaN(na) && !isNaN(nb) && String(valA).trim() !== '' && String(valB).trim() !== '') {
-                    return mul * (na - nb);
-                }
-                return mul * String(valA == null ? '' : valA).localeCompare(String(valB == null ? '' : valB), undefined, { sensitivity: 'base' });
-            }
-
-            function lrFriendlyKey(k) {
-                var map = { first_name: 'First Name', last_name: 'Last Name', year_level: 'Year Level', activity_count: 'Activity', name: 'Name', house_name: 'House' };
-                return map[k] || String(k).replace(/_/g, ' ').replace(/\b\w/g, function (s) { return s.toUpperCase(); });
-            }
-
-            function lrNormalizeRows(rows) {
-                return rows.map(function (r) {
-                    var o = Object.assign({}, r);
-                    if (o.id != null) {
-                        o._studentId = o.id;
-                        delete o.id;
-                    }
-                    if (Object.prototype.hasOwnProperty.call(o, 'first_name') && Object.prototype.hasOwnProperty.call(o, 'last_name')) {
-                        o.name = ((o.first_name || '') + ' ' + (o.last_name || '')).trim() || '—';
-                        delete o.first_name;
-                        delete o.last_name;
-                    }
-                    return o;
-                });
-            }
-
-            function renderLrDrilldownTableBody(rows) {
-                var keys = rows.length ? Object.keys(rows[0]).filter(function (k) { return k.indexOf('_') !== 0; }) : [];
-                var tbody = document.getElementById('lr-drilldown-tbody');
-                var html = '';
-                rows.forEach(function (row) {
-                    html += '<tr class="report-drilldown-row">';
-                    keys.forEach(function (k) {
-                        var v = row[k];
-                        if (k === 'name' && row._studentId != null) {
-                            html += '<td class="td-name" style="text-align:left;"><a href="/students/' + encodeURIComponent(String(row._studentId)) + '" class="student-link">' + escapeHtml(v == null ? '' : String(v)) + '</a></td>';
-                        } else {
-                            html += '<td style="padding:12px 14px;vertical-align:middle;">' + escapeHtml(v == null ? '' : String(v)) + '</td>';
-                        }
-                    });
-                    html += '</tr>';
-                });
-                tbody.innerHTML = html;
-            }
-
             function renderDrillDownModal(data) {
-                var title = data.title || 'Details';
-                var rows = data.rows || [];
-                document.getElementById('lr-modal-title').textContent = title;
-                var emptyEl = document.getElementById('lr-drilldown-empty');
-                var wrapEl = document.getElementById('lr-drilldown-wrap');
-                var theadRow = document.getElementById('lr-drilldown-thead-row');
-                if (!rows.length) {
-                    lrDrilldownData = [];
-                    emptyEl.style.display = 'block';
-                    wrapEl.style.display = 'none';
-                    theadRow.innerHTML = '';
-                    document.getElementById('lr-drilldown-tbody').innerHTML = '';
-                } else {
-                    emptyEl.style.display = 'none';
-                    wrapEl.style.display = 'block';
-                    lrCurrentSort = { key: null, direction: 'asc' };
-                    lrDrilldownData = lrNormalizeRows(rows.map(function (r) { return Object.assign({}, r); }));
-                    var keys = Object.keys(lrDrilldownData[0]).filter(function (k) { return k.indexOf('_') !== 0; });
-                    var headHtml = '';
-                    keys.forEach(function (k) {
-                        headHtml +=
-                            '<th data-sort-key="' +
-                            escapeHtml(k) +
-                            '" style="text-align:left;padding:10px 14px;border-bottom:2px solid #334155;cursor:pointer;user-select:none;" title="Sort">' +
-                            escapeHtml(lrFriendlyKey(k)) +
-                            '</th>';
-                    });
-                    theadRow.innerHTML = headHtml;
-                    renderLrDrilldownTableBody(lrDrilldownData);
+                if (typeof window.renderStudentTable !== 'function') {
+                    console.warn('renderStudentTable is not available');
+                    return;
                 }
+                window.renderStudentTable(data, {
+                    title: document.getElementById('lr-modal-title'),
+                    empty: document.getElementById('lr-drilldown-empty'),
+                    wrap: document.getElementById('lr-drilldown-wrap'),
+                    theadRow: document.getElementById('lr-drilldown-thead-row'),
+                    tbody: document.getElementById('lr-drilldown-tbody'),
+                    table: document.getElementById('lr-drilldown-table')
+                });
                 document.getElementById('lr-modal-backdrop').style.display = 'flex';
             }
 
             function closeModal() {
                 document.getElementById('lr-modal-backdrop').style.display = 'none';
             }
-
-            document.getElementById('lr-modal-body').addEventListener('click', function (e) {
-                var th = e.target.closest('th[data-sort-key]');
-                if (!th || !document.getElementById('lr-drilldown-table').contains(th)) {
-                    return;
-                }
-                var key = th.getAttribute('data-sort-key');
-                if (!key || !lrDrilldownData.length) {
-                    return;
-                }
-                if (lrCurrentSort.key === key) {
-                    lrCurrentSort.direction = lrCurrentSort.direction === 'asc' ? 'desc' : 'asc';
-                } else {
-                    lrCurrentSort.key = key;
-                    lrCurrentSort.direction = 'asc';
-                }
-                var ascending = lrCurrentSort.direction === 'asc';
-                var sorted = lrDrilldownData.slice().sort(function (a, b) {
-                    return lrDrilldownCompare(a, b, key, ascending);
-                });
-                lrDrilldownData = sorted;
-                renderLrDrilldownTableBody(sorted);
-            });
 
             function destroyLrCharts() {
                 Object.keys(lrCharts).forEach(function (k) {

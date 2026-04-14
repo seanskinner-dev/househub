@@ -119,9 +119,6 @@
             var tuCharts = { low: null, freq: null, trend: null, lowStaff: null };
             var tuModalChart = null;
             var tuTrendRawDates = [];
-            var tuTableData = [];
-            var tuCurrentSort = { key: null, direction: 'asc' };
-
             var filters = {
                 house: 'All',
                 start_date: null,
@@ -159,93 +156,6 @@
                 }
                 p.set('year', filters.year || 'All');
                 return p.toString();
-            }
-
-            function tuFriendlyKey(k) {
-                var map = { name: 'Name', total_points: 'Total Points', teacher: 'Teacher', total_actions: 'Awards in range' };
-                return map[k] || String(k).replace(/_/g, ' ').replace(/\b\w/g, function (s) { return s.toUpperCase(); });
-            }
-
-            function tuSortRows(data, key) {
-                if (tuCurrentSort.key === key) {
-                    tuCurrentSort.direction = tuCurrentSort.direction === 'asc' ? 'desc' : 'asc';
-                } else {
-                    tuCurrentSort.key = key;
-                    tuCurrentSort.direction = 'asc';
-                }
-                return data.slice().sort(function (a, b) {
-                    var valA = a[key];
-                    var valB = b[key];
-                    if (valA == null) valA = '';
-                    if (valB == null) valB = '';
-                    if (typeof valA === 'string') valA = valA.toLowerCase();
-                    if (typeof valB === 'string') valB = valB.toLowerCase();
-                    var na = Number(valA);
-                    var nb = Number(valB);
-                    if (!isNaN(na) && !isNaN(nb) && String(valA).trim() !== '' && String(valB).trim() !== '') {
-                        return tuCurrentSort.direction === 'asc' ? na - nb : nb - na;
-                    }
-                    if (valA < valB) return tuCurrentSort.direction === 'asc' ? -1 : 1;
-                    if (valA > valB) return tuCurrentSort.direction === 'asc' ? 1 : -1;
-                    return 0;
-                });
-            }
-
-            function renderTuStudentTableBody(rows) {
-                var tbody = document.getElementById('tu-tbody');
-                tbody.innerHTML = rows
-                    .map(function (s) {
-                        var nm = escapeHtml(s.name || '');
-                        var pts = parseInt(s.total_points, 10) || 0;
-                        var link = s._studentId != null
-                            ? '<td class="td-name" style="text-align:left;"><a href="/students/' + encodeURIComponent(String(s._studentId)) + '" class="student-link">' + nm + '</a></td>'
-                            : '<td class="td-name" style="text-align:left;">' + nm + '</td>';
-                        return (
-                            '<tr class="report-drilldown-row">' +
-                            link +
-                            '<td style="text-align:right;padding:12px 14px;vertical-align:middle;">' + escapeHtml(String(pts)) + '</td>' +
-                            '</tr>'
-                        );
-                    })
-                    .join('');
-            }
-
-            function renderTuGenericTableBody(rows, keys) {
-                var tbody = document.getElementById('tu-tbody');
-                tbody.innerHTML = rows
-                    .map(function (row) {
-                        return (
-                            '<tr class="report-drilldown-row">' +
-                            keys
-                                .map(function (k) {
-                                    var v = row[k];
-                                    var align = (k === 'total_actions' || k === 'total_points') ? 'right' : 'left';
-                                    if (k === 'name' && row._studentId != null) {
-                                        return '<td class="td-name" style="text-align:left;padding:12px 14px;vertical-align:middle;"><a href="/students/' + encodeURIComponent(String(row._studentId)) + '" class="student-link">' + escapeHtml(v == null ? '' : String(v)) + '</a></td>';
-                                    }
-                                    return '<td style="padding:12px 14px;vertical-align:middle;text-align:' + align + ';">' + escapeHtml(v == null ? '' : String(v)) + '</td>';
-                                })
-                                .join('') +
-                            '</tr>'
-                        );
-                    })
-                    .join('');
-            }
-
-            function tuNormalizeGenericRows(rows) {
-                return rows.map(function (r) {
-                    var o = Object.assign({}, r);
-                    if (o.id != null) {
-                        o._studentId = o.id;
-                        delete o.id;
-                    }
-                    if (Object.prototype.hasOwnProperty.call(o, 'first_name') && Object.prototype.hasOwnProperty.call(o, 'last_name')) {
-                        o.name = ((o.first_name || '') + ' ' + (o.last_name || '')).trim() || '—';
-                        delete o.first_name;
-                        delete o.last_name;
-                    }
-                    return o;
-                });
             }
 
             function drillDown(payload) {
@@ -294,6 +204,14 @@
                 var thead = document.getElementById('tu-thead');
                 var tbody = document.getElementById('tu-tbody');
                 var chartWrap = document.getElementById('tu-drilldown-chart-wrap');
+                var tableEls = {
+                    title: document.getElementById('tu-modal-title'),
+                    empty: emptyEl,
+                    wrap: wrap,
+                    theadRow: thead,
+                    tbody: tbody,
+                    table: document.getElementById('tu-table')
+                };
 
                 if (data.student_breakdown && data.student_breakdown.length > 0) {
                     destroyTuModalChart();
@@ -337,21 +255,12 @@
                     tuModalChart = new ApexCharts(document.querySelector('#drilldown-chart'), options);
                     tuModalChart.render();
 
-                    emptyEl.style.display = 'none';
-                    wrap.style.display = 'block';
-                    tuCurrentSort = { key: null, direction: 'asc' };
-                    tuTableData = students.map(function (s) {
-                        return {
-                            _studentId: s.id,
-                            name: ((s.first_name || '') + ' ' + (s.last_name || '')).trim() || '—',
-                            total_points: parseInt(s.total_points, 10) || 0
-                        };
-                    });
-                    thead.innerHTML =
-                        '<th data-sort-key="name" style="text-align:left;padding:10px 14px;border-bottom:2px solid #334155;cursor:pointer;">' + escapeHtml('Name') + '</th>' +
-                        '<th data-sort-key="total_points" style="text-align:right;padding:10px 14px;border-bottom:2px solid #334155;cursor:pointer;">' + escapeHtml('Total Points') + '</th>';
-                    renderTuStudentTableBody(tuTableData);
-
+                    if (typeof window.renderStudentTable !== 'function') {
+                        console.warn('renderStudentTable is not available');
+                        document.getElementById('tu-modal-backdrop').style.display = 'flex';
+                        return;
+                    }
+                    window.renderStudentTable({ title: title, rows: students }, tableEls);
                     document.getElementById('tu-modal-backdrop').style.display = 'flex';
                     return;
                 }
@@ -383,27 +292,12 @@
                     tbody.innerHTML = '';
                 } else {
                     emptyEl.style.display = 'none';
-                    wrap.style.display = 'block';
-                    var isTeacherBucket =
-                        rows.length &&
-                        Object.prototype.hasOwnProperty.call(rows[0], 'teacher') &&
-                        Object.prototype.hasOwnProperty.call(rows[0], 'total_actions');
-                    if (isTeacherBucket) {
-                        tuCurrentSort = { key: null, direction: 'asc' };
-                        tuTableData = rows.map(function (r) { return { teacher: r.teacher, total_actions: parseInt(r.total_actions, 10) || 0 }; });
-                        thead.innerHTML =
-                            '<th data-sort-key="teacher" style="text-align:left;padding:10px 14px;border-bottom:2px solid #334155;cursor:pointer;">Teacher</th>' +
-                            '<th data-sort-key="total_actions" style="text-align:right;padding:10px 14px;border-bottom:2px solid #334155;cursor:pointer;">Awards in range</th>';
-                        renderTuGenericTableBody(tuTableData, ['teacher', 'total_actions']);
-                    } else {
-                        tuCurrentSort = { key: null, direction: 'asc' };
-                        tuTableData = tuNormalizeGenericRows(rows.map(function (r) { return Object.assign({}, r); }));
-                        var gKeys = Object.keys(tuTableData[0]).filter(function (k) { return k.indexOf('_') !== 0; });
-                        thead.innerHTML = gKeys.map(function (k) {
-                            return '<th data-sort-key="' + escapeHtml(k) + '" style="text-align:left;padding:10px 14px;border-bottom:2px solid #334155;cursor:pointer;">' + escapeHtml(tuFriendlyKey(k)) + '</th>';
-                        }).join('');
-                        renderTuGenericTableBody(tuTableData, gKeys);
+                    if (typeof window.renderStudentTable !== 'function') {
+                        console.warn('renderStudentTable is not available');
+                        document.getElementById('tu-modal-backdrop').style.display = 'flex';
+                        return;
                     }
+                    window.renderStudentTable(data, tableEls);
                 }
                 document.getElementById('tu-modal-backdrop').style.display = 'flex';
             }
@@ -733,25 +627,6 @@
                 syncFiltersFromDom();
                 fetchTeacherData();
             });
-            document.getElementById('tu-modal-body').addEventListener('click', function (e) {
-                var th = e.target.closest('th[data-sort-key]');
-                if (!th || !document.getElementById('tu-table').contains(th)) {
-                    return;
-                }
-                var key = th.getAttribute('data-sort-key');
-                if (!key || !tuTableData.length) {
-                    return;
-                }
-                var sorted = tuSortRows(tuTableData, key);
-                tuTableData = sorted;
-                var keys = Object.keys(sorted[0]).filter(function (k) { return k.indexOf('_') !== 0; });
-                if (keys.length === 2 && keys.indexOf('name') !== -1) {
-                    renderTuStudentTableBody(sorted);
-                } else {
-                    renderTuGenericTableBody(sorted, keys);
-                }
-            });
-
             document.getElementById('tu-modal-close').addEventListener('click', function () {
                 destroyTuModalChart();
                 document.getElementById('tu-modal-backdrop').style.display = 'none';

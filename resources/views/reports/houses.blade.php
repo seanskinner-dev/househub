@@ -81,9 +81,6 @@
             var dataUrl = @json(route('reports.data'));
             var drillUrl = @json(route('reports.drilldown'));
             var charts = { rank: null, contribution: null, risk: null, momentum: null };
-            var hrTableData = [];
-            var hrCurrentSort = { key: null, direction: 'asc' };
-
             function chartDataSeries(rawSeries) {
                 if (Array.isArray(rawSeries) && rawSeries.length && typeof rawSeries[0] === 'object' && rawSeries[0] && Array.isArray(rawSeries[0].data)) {
                     return rawSeries[0].data.map(function (v) { return Number(v) || 0; });
@@ -95,49 +92,6 @@
                 var d = document.createElement('div');
                 d.textContent = s;
                 return d.innerHTML;
-            }
-
-            function friendlyLabel(key) {
-                var map = { first_name: 'First Name', last_name: 'Last Name', year_level: 'Year Level', activity_count: 'Activity', name: 'Name' };
-                return map[key] || String(key).replace(/_/g, ' ').replace(/\b\w/g, function (s) { return s.toUpperCase(); });
-            }
-
-            function hrSortRows(data, key) {
-                if (hrCurrentSort.key === key) {
-                    hrCurrentSort.direction = hrCurrentSort.direction === 'asc' ? 'desc' : 'asc';
-                } else {
-                    hrCurrentSort.key = key;
-                    hrCurrentSort.direction = 'asc';
-                }
-                return data.slice().sort(function (a, b) {
-                    var valA = a[key];
-                    var valB = b[key];
-                    if (valA == null) valA = '';
-                    if (valB == null) valB = '';
-                    if (typeof valA === 'string') valA = valA.toLowerCase();
-                    if (typeof valB === 'string') valB = valB.toLowerCase();
-                    var na = Number(valA);
-                    var nb = Number(valB);
-                    if (!isNaN(na) && !isNaN(nb) && String(valA).trim() !== '' && String(valB).trim() !== '') {
-                        return hrCurrentSort.direction === 'asc' ? na - nb : nb - na;
-                    }
-                    if (valA < valB) return hrCurrentSort.direction === 'asc' ? -1 : 1;
-                    if (valA > valB) return hrCurrentSort.direction === 'asc' ? 1 : -1;
-                    return 0;
-                });
-            }
-
-            function hrRenderTableBody(rows, keys) {
-                var tbody = document.getElementById('hr-tbody');
-                tbody.innerHTML = rows.map(function (r) {
-                    return '<tr class="report-drilldown-row">' + keys.map(function (k) {
-                        var v = r[k];
-                        if (k === 'name' && r._studentId != null) {
-                            return '<td class="td-name" style="text-align:left;padding:12px 14px;vertical-align:middle;"><a href="/students/' + encodeURIComponent(String(r._studentId)) + '" class="student-link">' + escapeHtml(v == null ? '' : String(v)) + '</a></td>';
-                        }
-                        return '<td style="padding:12px 14px;vertical-align:middle;">' + escapeHtml(v == null ? '' : String(v)) + '</td>';
-                    }).join('') + '</tr>';
-                }).join('');
             }
 
             function drillDown(payload) {
@@ -160,41 +114,18 @@
             }
 
             function renderDrillDownModal(data) {
-                var rows = data.rows || [];
-                document.getElementById('hr-modal-title').textContent = data.title || 'Details';
-                var empty = document.getElementById('hr-empty');
-                var wrap = document.getElementById('hr-wrap');
-                var thead = document.getElementById('hr-thead');
-                var tbody = document.getElementById('hr-tbody');
-                if (!rows.length) {
-                    empty.style.display = 'block';
-                    wrap.style.display = 'none';
-                    thead.innerHTML = '';
-                    tbody.innerHTML = '';
-                } else {
-                    empty.style.display = 'none';
-                    wrap.style.display = 'block';
-                    hrCurrentSort = { key: null, direction: 'asc' };
-                    var normalized = rows.map(function (r) {
-                        var c = Object.assign({}, r);
-                        if (c.id != null) {
-                            c._studentId = c.id;
-                            delete c.id;
-                        }
-                        if (Object.prototype.hasOwnProperty.call(c, 'first_name') && Object.prototype.hasOwnProperty.call(c, 'last_name')) {
-                            c.name = ((c.first_name || '') + ' ' + (c.last_name || '')).trim() || '—';
-                            delete c.first_name;
-                            delete c.last_name;
-                        }
-                        return c;
-                    });
-                    hrTableData = normalized;
-                    var keys = Object.keys(normalized[0]).filter(function (k) { return k.indexOf('_') !== 0; });
-                    thead.innerHTML = keys.map(function (k) {
-                        return '<th data-sort-key="' + escapeHtml(k) + '" style="text-align:left;padding:10px 14px;border-bottom:2px solid #334155;cursor:pointer;">' + escapeHtml(friendlyLabel(k)) + '</th>';
-                    }).join('');
-                    hrRenderTableBody(hrTableData, keys);
+                if (typeof window.renderStudentTable !== 'function') {
+                    console.warn('renderStudentTable is not available');
+                    return;
                 }
+                window.renderStudentTable(data, {
+                    title: document.getElementById('hr-modal-title'),
+                    empty: document.getElementById('hr-empty'),
+                    wrap: document.getElementById('hr-wrap'),
+                    theadRow: document.getElementById('hr-thead'),
+                    tbody: document.getElementById('hr-tbody'),
+                    table: document.getElementById('hr-drilldown-table')
+                });
                 document.getElementById('hr-modal-backdrop').style.display = 'flex';
             }
 
@@ -371,21 +302,6 @@
                     })
                     .catch(function () {});
             }
-
-            document.getElementById('hr-modal-body').addEventListener('click', function (e) {
-                var th = e.target.closest('th[data-sort-key]');
-                if (!th || !document.getElementById('hr-drilldown-table').contains(th)) {
-                    return;
-                }
-                var key = th.getAttribute('data-sort-key');
-                if (!key || !hrTableData.length) {
-                    return;
-                }
-                var sorted = hrSortRows(hrTableData, key);
-                hrTableData = sorted;
-                var keys = Object.keys(sorted[0]).filter(function (k) { return k.indexOf('_') !== 0; });
-                hrRenderTableBody(sorted, keys);
-            });
 
             document.getElementById('hr-modal-close').addEventListener('click', function () {
                 document.getElementById('hr-modal-backdrop').style.display = 'none';

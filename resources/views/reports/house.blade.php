@@ -87,99 +87,21 @@
             const thisTerm = data.map(h => Number(h.this_term ?? h.term_total ?? 0));
             const previousTerm = data.map(h => Number(h.previous_term ?? h.last_term_total ?? 0));
 
-            let houseTableData = [];
-            let houseCurrentSort = { key: null, direction: 'asc' };
-
-            function friendlyLabel(key) {
-                const map = { first_name: 'First Name', last_name: 'Last Name', year_level: 'Year Level', activity_count: 'Activity', name: 'Name' };
-                return map[key] || key.replace(/_/g, ' ').replace(/\b\w/g, s => s.toUpperCase());
-            }
-
-            function houseSortRows(data, key) {
-                if (houseCurrentSort.key === key) {
-                    houseCurrentSort.direction = houseCurrentSort.direction === 'asc' ? 'desc' : 'asc';
-                } else {
-                    houseCurrentSort.key = key;
-                    houseCurrentSort.direction = 'asc';
-                }
-                return [...data].sort((a, b) => {
-                    let valA = a[key];
-                    let valB = b[key];
-                    if (valA == null) valA = '';
-                    if (valB == null) valB = '';
-                    if (typeof valA === 'string') valA = valA.toLowerCase();
-                    if (typeof valB === 'string') valB = valB.toLowerCase();
-                    const na = Number(valA);
-                    const nb = Number(valB);
-                    if (!isNaN(na) && !isNaN(nb) && String(valA).trim() !== '' && String(valB).trim() !== '') {
-                        return houseCurrentSort.direction === 'asc' ? na - nb : nb - na;
-                    }
-                    if (valA < valB) return houseCurrentSort.direction === 'asc' ? -1 : 1;
-                    if (valA > valB) return houseCurrentSort.direction === 'asc' ? 1 : -1;
-                    return 0;
-                });
-            }
-
-            function houseRenderBody(rows, keys) {
-                const tbody = document.getElementById('house-tbody');
-                tbody.innerHTML = rows.map((r) => {
-                    return '<tr class="report-drilldown-row">' + keys.map((k) => {
-                        const v = r[k];
-                        if (k === 'name' && r._studentId != null) {
-                            return '<td class="td-name" style="text-align:left;padding:12px 14px;vertical-align:middle;"><a href="/students/' + encodeURIComponent(String(r._studentId)) + '" class="student-link">' + (v == null ? '' : String(v)) + '</a></td>';
-                        }
-                        return '<td style="padding:12px 14px;vertical-align:middle;">' + (v == null ? '' : String(v)) + '</td>';
-                    }).join('') + '</tr>';
-                }).join('');
-            }
-
             function renderDrillDownModal(data) {
-                const rows = data.rows || [];
-                document.getElementById('house-modal-title').textContent = data.title || 'Details';
-                const empty = document.getElementById('house-empty');
-                const wrap = document.getElementById('house-wrap');
-                const thead = document.getElementById('house-thead');
-                if (!rows.length) {
-                    houseTableData = [];
-                    empty.style.display = 'block';
-                    wrap.style.display = 'none';
-                    thead.innerHTML = '';
-                    document.getElementById('house-tbody').innerHTML = '';
-                } else {
-                    empty.style.display = 'none';
-                    wrap.style.display = 'block';
-                    houseCurrentSort = { key: null, direction: 'asc' };
-                    const normalized = rows.map(function (r) {
-                        const c = { ...r };
-                        if (c.id != null) {
-                            c._studentId = c.id;
-                            delete c.id;
-                        }
-                        if (Object.prototype.hasOwnProperty.call(c, 'first_name') && Object.prototype.hasOwnProperty.call(c, 'last_name')) {
-                            c.name = ((c.first_name || '') + ' ' + (c.last_name || '')).trim() || '—';
-                            delete c.first_name;
-                            delete c.last_name;
-                        }
-                        return c;
-                    });
-                    houseTableData = normalized;
-                    const keys = Object.keys(normalized[0]).filter((k) => !k.startsWith('_'));
-                    thead.innerHTML = keys.map(k => '<th data-sort-key="' + k + '" style="text-align:left;padding:10px 14px;border-bottom:2px solid #334155;cursor:pointer;">' + friendlyLabel(k) + '</th>').join('');
-                    houseRenderBody(houseTableData, keys);
+                if (typeof window.renderStudentTable !== 'function') {
+                    console.warn('renderStudentTable is not available');
+                    return;
                 }
+                window.renderStudentTable(data, {
+                    title: document.getElementById('house-modal-title'),
+                    empty: document.getElementById('house-empty'),
+                    wrap: document.getElementById('house-wrap'),
+                    theadRow: document.getElementById('house-thead'),
+                    tbody: document.getElementById('house-tbody'),
+                    table: document.getElementById('house-drilldown-table')
+                });
                 document.getElementById('house-modal-backdrop').style.display = 'flex';
             }
-
-            document.getElementById('house-modal-body').addEventListener('click', function (e) {
-                const th = e.target.closest('th[data-sort-key]');
-                if (!th || !document.getElementById('house-drilldown-table').contains(th)) return;
-                const key = th.getAttribute('data-sort-key');
-                if (!key || !houseTableData.length) return;
-                const sorted = houseSortRows(houseTableData, key);
-                houseTableData = sorted;
-                const keys = Object.keys(sorted[0]).filter((k) => !k.startsWith('_'));
-                houseRenderBody(sorted, keys);
-            });
 
             function drillDown(payload) {
                 var meta = document.querySelector('meta[name="csrf-token"]');
