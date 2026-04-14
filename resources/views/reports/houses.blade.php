@@ -305,11 +305,13 @@
             }
 
             function fetchHouseData() {
+                console.log('Fetching report data...');
                 fetch(dataUrl, {
                     headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
                 })
                     .then(function (res) { return res.json(); })
                     .then(function (data) {
+                        console.log('Report data received:', data);
                         console.log('Chart data:', data);
                         renderHouseCharts(data);
                     })
