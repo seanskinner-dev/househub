@@ -400,7 +400,9 @@
             justify-content: center;
             overflow: hidden;
             box-sizing: border-box;
-            padding: 12px 20px;
+            padding: 18px 28px;
+            background: #0a0a0a;
+            color: #fff;
         }
 
         .top-title {
@@ -408,6 +410,9 @@
             font-size: clamp(40px, 6vw, 80px);
             font-weight: 800;
             margin-bottom: 20px;
+            text-align: center;
+            letter-spacing: 0.04em;
+            text-shadow: 0 8px 28px rgba(0, 0, 0, 0.6);
         }
 
         .top-hero {
