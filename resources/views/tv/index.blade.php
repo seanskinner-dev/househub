@@ -356,7 +356,6 @@
         .streak-list {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            grid-auto-rows: 1fr;
             gap: 12px 14px;
             width: 100%;
             max-width: 1100px;
@@ -969,7 +968,6 @@
         .streak-list {
             grid-auto-rows: auto;
             align-content: start;
-            padding-bottom: 20px;
         }
 
         .leaderboard-list {
