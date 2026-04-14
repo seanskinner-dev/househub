@@ -53,27 +53,22 @@
         </div>
     </div>
 
-    <div style="overflow-x: auto;">
-        <table style="width: 100%; border-collapse: collapse; background: #1e293b; border-radius: 8px;">
-            <thead>
-                <tr style="border-bottom: 1px solid #334155;">
-                    <th style="text-align: left; padding: 10px 12px;">House</th>
-                    <th style="text-align: right; padding: 10px 12px;">Year total</th>
-                    <th style="text-align: right; padding: 10px 12px;">This term</th>
-                    <th style="text-align: right; padding: 10px 12px;">Previous term</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($housePerformance as $house)
-                    <tr style="border-bottom: 1px solid #334155;">
-                        <td style="padding: 10px 12px; font-weight: 600;">{{ $house['house'] }}</td>
-                        <td style="padding: 10px 12px; text-align: right;">{{ number_format($house['year_total']) }}</td>
-                        <td style="padding: 10px 12px; text-align: right;">{{ number_format($house['term_total']) }}</td>
-                        <td style="padding: 10px 12px; text-align: right;">{{ number_format($house['last_term_total']) }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
+    <div id="house-modal-backdrop" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:1000;align-items:center;justify-content:center;padding:20px;">
+        <div style="background:#1e293b;color:#f1f5f9;max-width:920px;width:100%;max-height:86vh;overflow:auto;border-radius:10px;box-shadow:0 20px 50px rgba(0,0,0,0.5);">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid #334155;">
+                <h3 id="house-modal-title" style="margin:0;font-size:1.1rem;">Details</h3>
+                <button id="house-modal-close" type="button" style="background:transparent;border:none;color:#fff;font-size:1.4rem;cursor:pointer;" aria-label="Close">&times;</button>
+            </div>
+            <div style="padding:16px 18px;">
+                <p id="house-empty" style="margin:0;opacity:0.9;display:none;">No rows.</p>
+                <div id="house-wrap" style="display:none;overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;font-size:0.95rem;">
+                        <thead><tr id="house-thead"></tr></thead>
+                        <tbody id="house-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 @endsection
 
@@ -85,11 +80,39 @@
             }
 
             const data = @json($housePerformance);
+            const dataUrl = @json(route('reports.data'));
             console.log('Chart data:', data);
 
             const names = data.map(h => h.house);
             const thisTerm = data.map(h => Number(h.this_term ?? h.term_total ?? 0));
             const previousTerm = data.map(h => Number(h.previous_term ?? h.last_term_total ?? 0));
+
+            function renderDrillDownModal(data) {
+                const rows = data.rows || [];
+                document.getElementById('house-modal-title').textContent = data.title || 'Details';
+                const empty = document.getElementById('house-empty');
+                const wrap = document.getElementById('house-wrap');
+                const thead = document.getElementById('house-thead');
+                const tbody = document.getElementById('house-tbody');
+                if (!rows.length) {
+                    empty.style.display = 'block';
+                    wrap.style.display = 'none';
+                    thead.innerHTML = '';
+                    tbody.innerHTML = '';
+                } else {
+                    empty.style.display = 'none';
+                    wrap.style.display = 'block';
+                    const keys = Object.keys(rows[0]);
+                    thead.innerHTML = keys.map(k => '<th style="text-align:left;padding:8px 10px;border-bottom:2px solid #334155;">' + k + '</th>').join('');
+                    tbody.innerHTML = rows.map(function (r) {
+                        return '<tr style="border-bottom:1px solid #334155;">' + keys.map(function (k) {
+                            const v = r[k];
+                            return '<td style="padding:8px 10px;">' + (v == null ? '' : String(v)) + '</td>';
+                        }).join('') + '</tr>';
+                    }).join('');
+                }
+                document.getElementById('house-modal-backdrop').style.display = 'flex';
+            }
 
             function drillDown(payload) {
                 var meta = document.querySelector('meta[name="csrf-token"]');
@@ -104,7 +127,10 @@
                     },
                     credentials: 'same-origin',
                     body: JSON.stringify(payload || {})
-                }).catch(function () {});
+                })
+                    .then(function (res) { return res.json(); })
+                    .then(renderDrillDownModal)
+                    .catch(function () {});
             }
 
             //-----------------------------------
@@ -125,7 +151,8 @@
                         dataPointSelection: function(event, chartContext, config) {
                             const house = names[config.dataPointIndex];
                             if (house) {
-                                drillDown({ type: 'house_low', value: house });
+                                const term = config.seriesIndex === 1 ? 'previous_term' : 'this_term';
+                                drillDown({ type: 'term_comparison', value: { house, term } });
                             }
                         }
                     }
@@ -172,7 +199,7 @@
                         dataPointSelection: function(event, chartContext, config) {
                             const house = names[config.dataPointIndex];
                             if (house) {
-                                drillDown({ type: 'house_low', value: house });
+                                drillDown({ type: 'contribution_spread', value: house });
                             }
                         }
                     }
@@ -188,28 +215,47 @@
                 //-----------------------------------
                 // 4. RISK
                 //-----------------------------------
-                const risk = thisTerm.map(v => Math.floor(100 / (v + 1)));
+                fetch(dataUrl, {
+                    headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                    .then(function (res) { return res.json(); })
+                    .then(function (apiData) {
+                        const categories = apiData?.underperformance_index?.categories || names;
+                        const risk = apiData?.underperformance_index?.series?.[0]?.data || [];
 
-                new ApexCharts(document.querySelector("#house-risk"), {
+                        new ApexCharts(document.querySelector("#house-risk"), {
                 chart: {
                     type: 'bar',
                     height: 320,
                     events: {
                         dataPointSelection: function(event, chartContext, config) {
-                            const house = names[config.dataPointIndex];
+                            const house = categories[config.dataPointIndex];
                             if (house) {
-                                drillDown({ type: 'house_low', value: house });
+                                drillDown({ type: 'underperformance_house', value: house });
                             }
                         }
                     }
                 },
-                series: [{ name: 'Risk', data: risk }],
-                xaxis: { categories: names },
+                series: [{ name: 'Underperformance Index', data: risk }],
+                xaxis: { categories: categories },
                 title: { text: 'Underperformance' }
                 }).render();
+                    })
+                    .catch(function () {
+                        document.querySelector("#house-risk").innerHTML = '<div class="text-white-50 small">No data available</div>';
+                    });
             } catch (e) {
                 console.error('Chart render failed:', e);
             }
+
+            document.getElementById('house-modal-close').addEventListener('click', function () {
+                document.getElementById('house-modal-backdrop').style.display = 'none';
+            });
+            document.getElementById('house-modal-backdrop').addEventListener('click', function (e) {
+                if (e.target.id === 'house-modal-backdrop') {
+                    document.getElementById('house-modal-backdrop').style.display = 'none';
+                }
+            });
         });
     </script>
 @endpush

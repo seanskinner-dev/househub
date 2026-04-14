@@ -175,11 +175,45 @@ class ReportController extends Controller
             'Students'
         );
 
+        $studentTotals = DB::table('students as s')
+            ->leftJoin('houses as h', 's.house_id', '=', 'h.id')
+            ->leftJoin('point_transactions as pt', function ($join) use ($start, $end) {
+                $join->on('pt.student_id', '=', 's.id');
+                $this->pcTransactionsInRangeWeekday($join, $start, $end, 'pt');
+            })
+            ->when($house !== 'All', fn ($q) => $q->where('h.name', $house))
+            ->when($yearFilter !== 'All', fn ($q) => $q->where('s.year_level', (int) $yearFilter))
+            ->selectRaw("COALESCE(h.name, 'Unknown') as house_name")
+            ->selectRaw('s.id as student_id')
+            ->selectRaw('COALESCE(SUM(pt.amount), 0) as total_points')
+            ->groupBy('s.id', 'h.name')
+            ->get();
+
+        $schoolAvg = (float) ($studentTotals->avg('total_points') ?? 0);
+        $housesForIndex = $studentTotals
+            ->groupBy('house_name')
+            ->map(function ($rows) use ($schoolAvg) {
+                $total = $rows->count();
+                if ($total === 0) {
+                    return 0.0;
+                }
+                $low = $rows->filter(fn ($r) => (float) $r->total_points < $schoolAvg)->count();
+                return round(($low / $total) * 100, 2);
+            });
+
+        $underperformanceIndex = $buildDataset(
+            'breakdown',
+            $housesForIndex->keys()->values()->all(),
+            $housesForIndex->values()->all(),
+            'Underperformance Index'
+        );
+
         return [
             'risk_distribution' => $riskDistribution,
             'points_by_house' => $pointsByHouse,
             'engagement_trend' => $engagementTrend,
             'year_level_distribution' => $yearLevelDistribution,
+            'underperformance_index' => $underperformanceIndex,
 
             // Legacy keys kept for existing report pages.
             'donut' => $legacyDonut,
@@ -266,6 +300,16 @@ class ReportController extends Controller
             'engagement_low' => response()->json($this->pcDrilldownLowAtRisk($house, $start, $end, $yearFilter)),
             'engagement_active' => response()->json($this->pcDrilldownRiskActive($house, $start, $end, $yearFilter)),
             'house_low' => response()->json($this->drilldownHouseLow((string) ($data['value'] ?? ''), $house, $start, $end, $yearFilter)),
+            'house' => response()->json($this->drilldownHouseLow((string) ($data['value'] ?? ''), $house, $start, $end, $yearFilter)),
+            'underperformance_house' => response()->json($this->drilldownUnderperformanceHouse((string) ($data['value'] ?? ''), $house, $start, $end, $yearFilter)),
+            'term_comparison' => response()->json($this->drilldownTermComparison(
+                is_array($data['value'] ?? null) ? $data['value'] : [],
+                $house,
+                $start,
+                $end,
+                $yearFilter
+            )),
+            'contribution_spread' => response()->json($this->drilldownContributionSpread((string) ($data['value'] ?? ''), $house, $start, $end, $yearFilter)),
             'teacher' => response()->json($this->drilldownTeacherStudents((string) ($data['value'] ?? ''), $house, $start, $end, $yearFilter)),
             'teacher_bucket' => response()->json($this->tuDrilldownTeacherBucketList(
                 is_array($data['value'] ?? null) ? $data['value'] : [],
@@ -278,6 +322,138 @@ class ReportController extends Controller
             'risk_segment' => response()->json($this->drilldownPayloadRiskSegment($data, $house, $start, $end, $yearFilter)),
             default => response()->json(['rows' => []]),
         };
+    }
+
+    /**
+     * @return array{title: string, rows: \Illuminate\Support\Collection<int, object>|array}
+     */
+    private function drilldownUnderperformanceHouse(string $houseName, string $filterHouse, Carbon $start, Carbon $end, string $yearFilter): array
+    {
+        if ($houseName === '') {
+            return ['title' => 'Underperformance drilldown', 'rows' => []];
+        }
+        if ($filterHouse !== 'All' && $filterHouse !== $houseName) {
+            return ['title' => 'Underperformance drilldown', 'rows' => []];
+        }
+
+        $base = DB::table('students as s')
+            ->join('houses as h', 's.house_id', '=', 'h.id')
+            ->leftJoin('point_transactions as pt', function ($join) use ($start, $end) {
+                $join->on('pt.student_id', '=', 's.id');
+                $this->pcTransactionsInRangeWeekday($join, $start, $end, 'pt');
+            })
+            ->when($yearFilter !== 'All', fn ($q) => $q->where('s.year_level', (int) $yearFilter))
+            ->selectRaw("COALESCE(h.name, 'Unknown') as house_name")
+            ->selectRaw('s.id as student_id')
+            ->selectRaw('s.first_name, s.last_name, s.year_level')
+            ->selectRaw('COALESCE(SUM(pt.amount), 0) as total_points')
+            ->groupBy('s.id', 'h.name', 's.first_name', 's.last_name', 's.year_level')
+            ->get();
+
+        $avg = (float) ($base->avg('total_points') ?? 0);
+        $rows = $base
+            ->filter(fn ($r) => $r->house_name === $houseName && (float) $r->total_points < $avg)
+            ->sortBy('total_points')
+            ->values()
+            ->map(fn ($r) => (object) [
+                'first_name' => $r->first_name,
+                'last_name' => $r->last_name,
+                'year_level' => $r->year_level,
+                'house_name' => $r->house_name,
+                'house_points' => (int) $r->total_points,
+            ]);
+
+        return [
+            'title' => 'Low-engagement students in '.$houseName,
+            'rows' => $rows,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $value
+     * @return array{title: string, rows: \Illuminate\Support\Collection<int, object>|array}
+     */
+    private function drilldownTermComparison(array $value, string $filterHouse, Carbon $start, Carbon $end, string $yearFilter): array
+    {
+        $houseName = trim((string) ($value['house'] ?? ''));
+        $term = trim((string) ($value['term'] ?? 'this_term'));
+        if ($houseName === '') {
+            return ['title' => 'Term comparison drilldown', 'rows' => []];
+        }
+        if ($filterHouse !== 'All' && $filterHouse !== $houseName) {
+            return ['title' => 'Term comparison drilldown', 'rows' => []];
+        }
+
+        $now = Carbon::now();
+        $year = (int) $now->year;
+        $currentTerm = $this->termNumberFromMonth((int) $now->month);
+        [$currStart, $currEnd] = $this->termDateRange($year, $currentTerm);
+        if ($currentTerm === 1) {
+            [$prevStart, $prevEnd] = $this->termDateRange($year - 1, 4);
+        } else {
+            [$prevStart, $prevEnd] = $this->termDateRange($year, $currentTerm - 1);
+        }
+        $range = $term === 'previous_term' ? [$prevStart, $prevEnd] : [$currStart, $currEnd];
+
+        $rows = DB::table('point_transactions as pt')
+            ->join('students as s', 'pt.student_id', '=', 's.id')
+            ->join('houses as h', 's.house_id', '=', 'h.id')
+            ->where('h.name', $houseName)
+            ->whereBetween('pt.created_at', $range)
+            ->when($yearFilter !== 'All', fn ($q) => $q->where('s.year_level', (int) $yearFilter))
+            ->select(
+                's.first_name',
+                's.last_name',
+                's.year_level',
+                'pt.amount',
+                'pt.category',
+                'pt.created_at'
+            )
+            ->orderByDesc('pt.created_at')
+            ->limit(300)
+            ->get();
+
+        return [
+            'title' => 'Transactions in '.$houseName.' ('.($term === 'previous_term' ? 'Previous Term' : 'This Term').')',
+            'rows' => $rows,
+        ];
+    }
+
+    /**
+     * @return array{title: string, rows: \Illuminate\Support\Collection<int, object>|array}
+     */
+    private function drilldownContributionSpread(string $houseName, string $filterHouse, Carbon $start, Carbon $end, string $yearFilter): array
+    {
+        if ($houseName === '') {
+            return ['title' => 'Contribution spread drilldown', 'rows' => []];
+        }
+        if ($filterHouse !== 'All' && $filterHouse !== $houseName) {
+            return ['title' => 'Contribution spread drilldown', 'rows' => []];
+        }
+
+        $rows = DB::table('students as s')
+            ->join('houses as h', 's.house_id', '=', 'h.id')
+            ->leftJoin('point_transactions as pt', function ($join) use ($start, $end) {
+                $join->on('pt.student_id', '=', 's.id');
+                $this->pcTransactionsInRangeWeekday($join, $start, $end, 'pt');
+            })
+            ->where('h.name', $houseName)
+            ->when($yearFilter !== 'All', fn ($q) => $q->where('s.year_level', (int) $yearFilter))
+            ->select(
+                's.first_name',
+                's.last_name',
+                's.year_level',
+                DB::raw('COALESCE(SUM(pt.amount), 0) as total_points'),
+                DB::raw('COUNT(pt.id) as transactions')
+            )
+            ->groupBy('s.id', 's.first_name', 's.last_name', 's.year_level')
+            ->orderByDesc(DB::raw('COALESCE(SUM(pt.amount), 0)'))
+            ->get();
+
+        return [
+            'title' => 'Contribution spread in '.$houseName,
+            'rows' => $rows,
+        ];
     }
 
     private function drilldownPayloadDate(array $data, string $house, Carbon $start, Carbon $end, string $yearFilter): array
