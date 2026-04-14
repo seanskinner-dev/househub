@@ -662,14 +662,30 @@
 
         .leaderboard-list {
             margin-top: 14px;
-            padding: 0 6px;
+            padding: 0 40px;
+            position: relative;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-auto-flow: column;
+            grid-template-rows: repeat(5, 1fr);
+            gap: 24px;
+        }
+
+        .leaderboard-list::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 1px;
+            background: rgba(255,255,255,0.08);
         }
 
         .student-card {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 14px 18px;
+            padding: 12px 16px;
             border-radius: 18px;
             background: linear-gradient(
                 135deg,
@@ -689,6 +705,7 @@
             backdrop-filter: blur(6px);
             color: #ffffff;
             text-shadow: 0 2px 8px rgba(0,0,0,0.45);
+            height: 100%;
         }
 
         .student-card::before {
