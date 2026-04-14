@@ -16,6 +16,7 @@
 
         body {
             font-family: 'Montserrat', sans-serif;
+            overflow-x: hidden;
         }
 
         *, *::before, *::after { box-sizing: inherit; }
@@ -25,6 +26,7 @@
             height: 100%;
             width: 100vw;
             overflow: hidden;
+            padding: 0 20px;
             color: #fff;
             transition: background 1s ease;
             animation: bgDrift 20s ease-in-out infinite;
@@ -938,6 +940,20 @@
             grid-auto-flow: column;
             grid-template-rows: repeat(6, 1fr);
             gap: 24px;
+            max-width: 1100px;
+            margin-left: auto;
+            margin-right: auto;
+            box-sizing: border-box;
+        }
+
+        .leaderboard-list,
+        .streaks-list,
+        .streak-list {
+            max-width: 1100px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 0 40px;
+            box-sizing: border-box;
         }
 
         .leaderboard-list::after {
@@ -954,12 +970,13 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 24px;
-            padding: 0 60px;
+            padding: 0 40px;
             width: 100%;
-            max-width: 1240px;
+            max-width: 1100px;
             margin: 14px auto 0;
             flex: 1;
             min-height: 0;
+            box-sizing: border-box;
         }
 
         .leaderboard-column {
@@ -988,6 +1005,8 @@
             color: #ffffff;
             text-shadow: 0 2px 8px rgba(0,0,0,0.45);
             height: 100%;
+            width: 100%;
+            max-width: 100%;
             animation: studentPulse 5.2s ease-in-out infinite;
         }
 
