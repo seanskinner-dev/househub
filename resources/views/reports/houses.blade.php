@@ -95,6 +95,11 @@
                 return d.innerHTML;
             }
 
+            function friendlyLabel(key) {
+                var map = { first_name: 'First Name', last_name: 'Last Name', year_level: 'Year Level', activity_count: 'Activity', name: 'Name' };
+                return map[key] || String(key).replace(/_/g, ' ').replace(/\b\w/g, function (s) { return s.toUpperCase(); });
+            }
+
             function drillDown(payload) {
                 var meta = document.querySelector('meta[name="csrf-token"]');
                 var token = meta ? meta.getAttribute('content') : '';
@@ -129,13 +134,25 @@
                 } else {
                     empty.style.display = 'none';
                     wrap.style.display = 'block';
-                    var keys = Object.keys(rows[0]);
+                    var normalized = rows.map(function (r) {
+                        var c = Object.assign({}, r);
+                        if (Object.prototype.hasOwnProperty.call(c, 'first_name') && Object.prototype.hasOwnProperty.call(c, 'last_name')) {
+                            c.name = ((c.first_name || '') + ' ' + (c.last_name || '')).trim() || '—';
+                            delete c.first_name;
+                            delete c.last_name;
+                        }
+                        return c;
+                    });
+                    var keys = Object.keys(normalized[0]);
                     thead.innerHTML = keys.map(function (k) {
-                        return '<th style="text-align:left;padding:8px 10px;border-bottom:2px solid #334155;">' + escapeHtml(k) + '</th>';
+                        return '<th style="text-align:left;padding:8px 10px;border-bottom:2px solid #334155;">' + escapeHtml(friendlyLabel(k)) + '</th>';
                     }).join('');
-                    tbody.innerHTML = rows.map(function (r) {
+                    tbody.innerHTML = normalized.map(function (r) {
                         return '<tr style="border-bottom:1px solid #334155;">' + keys.map(function (k) {
                             var v = r[k];
+                            if (k === 'name' && r.id != null) {
+                                return '<td style="padding:8px 10px;"><a href="/students/' + encodeURIComponent(String(r.id)) + '" class="student-link">' + escapeHtml(v == null ? '' : String(v)) + '</a></td>';
+                            }
                             return '<td style="padding:8px 10px;">' + escapeHtml(v == null ? '' : String(v)) + '</td>';
                         }).join('') + '</tr>';
                     }).join('');

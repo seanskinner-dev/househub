@@ -153,6 +153,17 @@
         .hh-card .card-body {
             background: transparent !important;
         }
+
+        .student-link {
+            color: #93c5fd;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .student-link:hover {
+            color: #bfdbfe;
+            text-decoration: underline;
+        }
     </style>
 </head>
 

@@ -9,6 +9,22 @@
         #pc-report-grid .row {
             margin-bottom: 20px;
         }
+
+        .student-link {
+            color: #93c5fd;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .student-link:hover {
+            text-decoration: underline;
+            color: #bfdbfe;
+        }
+
+        .btn-add { background: #22c55e; color: white; border: none; }
+        .btn-sub { background: #ef4444; color: white; border: none; }
+        .btn-award { background: #f59e0b; color: white; border: none; }
+        .btn-commend { background: #0ea5e9; color: white; border: none; }
     </style>
 
     <h1 style="font-size: 2rem; margin-bottom: 0.75rem; font-weight: 700;">At-Risk Students</h1>
@@ -166,6 +182,73 @@ document.addEventListener("DOMContentLoaded", function () {
         return dataset.series.map(v => Number(v) || 0);
     }
 
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#39;');
+    }
+
+    function friendlyLabel(key) {
+        const map = {
+            first_name: 'First Name',
+            last_name: 'Last Name',
+            year_level: 'Year Level',
+            activity_count: 'Activity',
+            name: 'Name',
+            house_name: 'House'
+        };
+        return map[key] || key.replaceAll('_', ' ').replace(/\b\w/g, s => s.toUpperCase());
+    }
+
+    function normalizedRows(rows) {
+        return rows.map(function (row) {
+            const clone = { ...row };
+            if (Object.prototype.hasOwnProperty.call(clone, 'first_name') && Object.prototype.hasOwnProperty.call(clone, 'last_name')) {
+                clone.name = ((clone.first_name || '') + ' ' + (clone.last_name || '')).trim() || '—';
+                delete clone.first_name;
+                delete clone.last_name;
+            }
+            return clone;
+        });
+    }
+
+    function showToast(message) {
+        const existing = document.getElementById('pc-toast');
+        const toast = existing || document.createElement('div');
+        if (!existing) {
+            toast.id = 'pc-toast';
+            toast.style.cssText = 'position:fixed;right:20px;bottom:20px;background:#0f172a;color:#e2e8f0;border:1px solid #334155;padding:10px 14px;border-radius:8px;z-index:1200;display:none;';
+            document.body.appendChild(toast);
+        }
+        toast.textContent = message;
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 1500);
+    }
+
+    function sendPoint(studentId, amount) {
+        fetch('/points', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({
+                student_id: studentId,
+                amount: amount
+            })
+        })
+            .then(res => res.json())
+            .then(() => {
+                showToast('Points updated');
+            })
+            .catch(() => {
+                showToast('Unable to update points');
+            });
+    }
+
     function renderDrillDownModal(data) {
         const title = data.title || 'Details';
         const rows = data.rows || [];
@@ -180,11 +263,35 @@ document.addEventListener("DOMContentLoaded", function () {
             theadRow.innerHTML = '';
             tbody.innerHTML = '';
         } else {
-            const keys = Object.keys(rows[0]);
+            const normalized = normalizedRows(rows);
+            const keys = Object.keys(normalized[0]);
+            const hasStudentRows = keys.includes('name') && normalized.some(r => r.id != null);
+            const isAtRisk = String(title).toLowerCase().includes('at risk');
+            const headers = isAtRisk && hasStudentRows ? [...keys, 'actions'] : keys;
             emptyEl.style.display = 'none';
             wrapEl.style.display = 'block';
-            theadRow.innerHTML = keys.map(k => `<th style="text-align:left;padding:10px 12px;border-bottom:2px solid #334155;">${String(k)}</th>`).join('');
-            tbody.innerHTML = rows.map(row => `<tr style="border-bottom:1px solid #334155;">${keys.map(k => `<td style="padding:10px 12px;">${String(row[k] ?? '')}</td>`).join('')}</tr>`).join('');
+            theadRow.innerHTML = headers.map(k => `<th style="text-align:left;padding:10px 12px;border-bottom:2px solid #334155;">${escapeHtml(friendlyLabel(String(k)))}</th>`).join('');
+            tbody.innerHTML = normalized.map(function (row) {
+                const cells = keys.map(function (k) {
+                    if (k === 'name' && row.id != null) {
+                        return `<td style="padding:10px 12px;"><a href="/students/${encodeURIComponent(String(row.id))}" class="student-link">${escapeHtml(row[k] ?? '')}</a></td>`;
+                    }
+                    return `<td style="padding:10px 12px;">${escapeHtml(row[k] ?? '')}</td>`;
+                });
+                if (isAtRisk && hasStudentRows) {
+                    cells.push(
+                        `<td style="padding:10px 12px;">
+                            <div class="d-flex gap-2">
+                              <button class="btn-add btn btn-sm" data-id="${escapeHtml(String(row.id ?? ''))}">+1</button>
+                              <button class="btn-sub btn btn-sm" data-id="${escapeHtml(String(row.id ?? ''))}">-1</button>
+                              <button class="btn-award btn btn-sm" data-id="${escapeHtml(String(row.id ?? ''))}">🏆</button>
+                              <button class="btn-commend btn btn-sm" data-id="${escapeHtml(String(row.id ?? ''))}">⭐</button>
+                            </div>
+                        </td>`
+                    );
+                }
+                return `<tr style="border-bottom:1px solid #334155;">${cells.join('')}</tr>`;
+            }).join('');
         }
         modalBackdrop.style.display = 'flex';
     }
@@ -405,6 +512,30 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     modalBackdrop.addEventListener('click', function (e) {
         if (e.target.id === 'pc-modal-backdrop') modalBackdrop.style.display = 'none';
+    });
+    document.addEventListener('click', function(e) {
+      if (e.target.classList.contains('btn-add')) {
+        sendPoint(e.target.dataset.id, 1);
+      }
+      if (e.target.classList.contains('btn-sub')) {
+        sendPoint(e.target.dataset.id, -1);
+      }
+      if (e.target.classList.contains('btn-award')) {
+        const studentId = e.target.dataset.id;
+        if (typeof window.openAwardModal === 'function') {
+            window.openAwardModal(studentId);
+        } else {
+            window.dispatchEvent(new CustomEvent('award:open', { detail: { student_id: studentId } }));
+        }
+      }
+      if (e.target.classList.contains('btn-commend')) {
+        const studentId = e.target.dataset.id;
+        if (typeof window.openCommendationModal === 'function') {
+            window.openCommendationModal(studentId);
+        } else {
+            window.dispatchEvent(new CustomEvent('commendation:open', { detail: { student_id: studentId } }));
+        }
+      }
     });
     document.getElementById('pc-apply').addEventListener('click', function () {
         loadAndRender().catch(err => console.error('PC load failed', err));

@@ -687,6 +687,7 @@ class ReportController extends Controller
 
         $rows = $query
             ->select(
+                'students.id',
                 'students.first_name',
                 'students.last_name',
                 DB::raw('SUM(point_transactions.amount) as total_points')
@@ -730,7 +731,7 @@ class ReportController extends Controller
             })
             ->where('h.name', $houseName)
             ->when($yearFilter !== 'All', fn ($q) => $q->where('s.year_level', (int) $yearFilter))
-            ->select('s.first_name', 's.last_name', 's.year_level', DB::raw('COUNT(pt.id) as weekday_awards'))
+            ->select('s.id', 's.first_name', 's.last_name', 's.year_level', DB::raw('COUNT(pt.id) as weekday_awards'))
             ->groupBy('s.id', 's.first_name', 's.last_name', 's.year_level')
             ->havingRaw('COUNT(pt.id) <= 5')
             ->orderByRaw('COUNT(pt.id) ASC')
@@ -1015,6 +1016,7 @@ class ReportController extends Controller
         $rows = $query
             ->groupBy('students.id', 'students.first_name', 'students.last_name', 'students.year_level')
             ->select(
+                'students.id',
                 'students.first_name',
                 'students.last_name',
                 'students.year_level',
@@ -1056,6 +1058,7 @@ class ReportController extends Controller
 
         $query->groupBy('students.id', 'students.first_name', 'students.last_name', 'students.year_level')
             ->select(
+                'students.id',
                 'students.first_name',
                 'students.last_name',
                 'students.year_level',

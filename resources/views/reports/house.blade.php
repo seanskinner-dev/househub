@@ -87,6 +87,11 @@
             const thisTerm = data.map(h => Number(h.this_term ?? h.term_total ?? 0));
             const previousTerm = data.map(h => Number(h.previous_term ?? h.last_term_total ?? 0));
 
+            function friendlyLabel(key) {
+                const map = { first_name: 'First Name', last_name: 'Last Name', year_level: 'Year Level', activity_count: 'Activity', name: 'Name' };
+                return map[key] || key.replace(/_/g, ' ').replace(/\b\w/g, s => s.toUpperCase());
+            }
+
             function renderDrillDownModal(data) {
                 const rows = data.rows || [];
                 document.getElementById('house-modal-title').textContent = data.title || 'Details';
@@ -102,11 +107,23 @@
                 } else {
                     empty.style.display = 'none';
                     wrap.style.display = 'block';
-                    const keys = Object.keys(rows[0]);
-                    thead.innerHTML = keys.map(k => '<th style="text-align:left;padding:8px 10px;border-bottom:2px solid #334155;">' + k + '</th>').join('');
-                    tbody.innerHTML = rows.map(function (r) {
+                    const normalized = rows.map(function (r) {
+                        const c = { ...r };
+                        if (Object.prototype.hasOwnProperty.call(c, 'first_name') && Object.prototype.hasOwnProperty.call(c, 'last_name')) {
+                            c.name = ((c.first_name || '') + ' ' + (c.last_name || '')).trim() || '—';
+                            delete c.first_name;
+                            delete c.last_name;
+                        }
+                        return c;
+                    });
+                    const keys = Object.keys(normalized[0]);
+                    thead.innerHTML = keys.map(k => '<th style="text-align:left;padding:8px 10px;border-bottom:2px solid #334155;">' + friendlyLabel(k) + '</th>').join('');
+                    tbody.innerHTML = normalized.map(function (r) {
                         return '<tr style="border-bottom:1px solid #334155;">' + keys.map(function (k) {
                             const v = r[k];
+                            if (k === 'name' && r.id != null) {
+                                return '<td style="padding:8px 10px;"><a href="/students/' + encodeURIComponent(String(r.id)) + '" class="student-link">' + (v == null ? '' : String(v)) + '</a></td>';
+                            }
                             return '<td style="padding:8px 10px;">' + (v == null ? '' : String(v)) + '</td>';
                         }).join('') + '</tr>';
                     }).join('');
