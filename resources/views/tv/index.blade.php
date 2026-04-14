@@ -633,16 +633,16 @@
             height: 100%;
             display: flex;
             flex-direction: column;
-            padding: 36px 48px;
+            padding: 20px 30px;
             background: #0f172a;
             color: #ffffff;
         }
 
         .screen-title {
-            font-size: 4.5rem;
+            font-size: 3rem;
             font-weight: 900;
             margin: 0;
-            margin-top: 40px;
+            margin-top: 10px;
             text-align: center;
             letter-spacing: 1px;
         }
@@ -650,25 +650,28 @@
         .leaderboard-list {
             display: flex;
             flex-direction: column;
-            gap: 14px;
-            margin-top: 40px;
-            padding: 0 60px;
+            gap: 8px;
+            margin-top: 20px;
+            padding: 0 40px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
             flex: 1;
             justify-content: center;
         }
 
-        .student-card {
+        .leaderboard-list .student-card {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 18px 26px;
-            border-radius: 18px;
+            padding: 14px 20px;
+            border-radius: 16px;
             background: linear-gradient(
                 135deg,
                 rgba(30, 41, 59, 0.9),
                 rgba(2, 6, 23, 0.95)
             );
-            font-size: 2.2rem;
+            font-size: 1.9rem;
             font-weight: 700;
             position: relative;
             overflow: hidden;
@@ -709,17 +712,17 @@
             gap: 20px;
         }
 
-        .student-emoji {
-            font-size: 2rem;
+        .leaderboard-list .student-emoji {
+            font-size: 1.6rem;
         }
 
-        .student-name {
-            font-size: 2.4rem;
+        .leaderboard-list .student-name {
+            font-size: 2rem;
             letter-spacing: 0.5px;
         }
 
-        .student-rank {
-            font-size: 1.6rem;
+        .leaderboard-list .student-rank {
+            font-size: 1.3rem;
             opacity: 0.6;
         }
 
@@ -877,7 +880,7 @@
 
             @php
                 $leader = $topStudents[0] ?? null;
-                $list = $topStudents->slice(1, 5)->values();
+                $list = $topStudents->slice(1, 9)->values();
             @endphp
 
             <div class="top-title">
@@ -1050,7 +1053,7 @@
 
     <div class="tv-screen" id="screen-top-gryffindor">
         <div class="screen-inner gryffindor">
-            <h1 class="screen-title">Top 6 - Gryffindor</h1>
+            <h1 class="screen-title">Top 10 - Gryffindor</h1>
             <div class="leaderboard-list">
                 @foreach($topGryffindor as $index => $student)
                     @php
@@ -1070,7 +1073,7 @@
 
     <div class="tv-screen" id="screen-top-slytherin">
         <div class="screen-inner slytherin">
-            <h1 class="screen-title">Top 6 - Slytherin</h1>
+            <h1 class="screen-title">Top 10 - Slytherin</h1>
             <div class="leaderboard-list">
                 @foreach($topSlytherin as $index => $student)
                     @php
@@ -1090,7 +1093,7 @@
 
     <div class="tv-screen" id="screen-top-ravenclaw">
         <div class="screen-inner ravenclaw">
-            <h1 class="screen-title">Top 6 - Ravenclaw</h1>
+            <h1 class="screen-title">Top 10 - Ravenclaw</h1>
             <div class="leaderboard-list">
                 @foreach($topRavenclaw as $index => $student)
                     @php
@@ -1110,7 +1113,7 @@
 
     <div class="tv-screen" id="screen-top-hufflepuff">
         <div class="screen-inner hufflepuff">
-            <h1 class="screen-title">Top 6 - Hufflepuff</h1>
+            <h1 class="screen-title">Top 10 - Hufflepuff</h1>
             <div class="leaderboard-list">
                 @foreach($topHufflepuff as $index => $student)
                     @php

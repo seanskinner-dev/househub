@@ -350,7 +350,7 @@ class PointController extends Controller
 
         $topStudents = \App\Models\Student::with('house')
             ->orderByDesc('house_points')
-            ->limit(6)
+            ->limit(10)
             ->get();
 
         $topTeachers = DB::table('point_transactions')
@@ -526,7 +526,7 @@ class PointController extends Controller
                 ->select('students.first_name', 'students.last_name', 'students.house_points', 'houses.name as house_name')
                 ->where('houses.name', $houseName)
                 ->orderByDesc('students.house_points')
-                ->limit(6)
+                ->limit(10)
                 ->get();
         };
 
