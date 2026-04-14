@@ -2261,5 +2261,16 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const el = document.querySelector('.tv-container');
+    if (!el) return;
+
+    el.style.background = "url('/weather/rain/rain1.jpg') center/cover no-repeat";
+
+    console.log('TEST BACKGROUND APPLIED');
+});
+</script>
+
 </body>
 </html>
