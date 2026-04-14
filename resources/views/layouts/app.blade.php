@@ -238,11 +238,6 @@
             fill: #f8fafc !important;
         }
 
-        .apexcharts-data-labels rect {
-            fill: transparent !important;
-            stroke: none !important;
-        }
-
         .btn-add,
         .btn-sub {
             background-color: transparent !important;
@@ -1225,6 +1220,46 @@
                     ...(merged.stroke || {}),
                     width: 2,
                     colors: ['#020617']
+                };
+            }
+
+            if (options.chart && options.chart.type === 'line') {
+                merged.dataLabels = {
+                    ...(merged.dataLabels || {}),
+                    ...(options.dataLabels || {}),
+                    enabled: true,
+                    offsetY: -12,
+                    style: {
+                        ...((merged.dataLabels && merged.dataLabels.style) || {}),
+                        ...((options.dataLabels && options.dataLabels.style) || {}),
+                        colors: ['#f8fafc'],
+                        fontSize: '11px',
+                        fontWeight: 600
+                    },
+                    background: {
+                        ...((merged.dataLabels && merged.dataLabels.background) || {}),
+                        ...((options.dataLabels && options.dataLabels.background) || {}),
+                        enabled: true,
+                        foreColor: '#f8fafc',
+                        borderRadius: 6,
+                        padding: 4,
+                        opacity: 1,
+                        borderWidth: 0,
+                        fillColor: '#0f172a'
+                    }
+                };
+                merged.markers = {
+                    ...(merged.markers || {}),
+                    ...(options.markers || {}),
+                    size: 5,
+                    strokeWidth: 2,
+                    strokeColors: '#0f172a'
+                };
+                merged.stroke = {
+                    ...(merged.stroke || {}),
+                    ...(options.stroke || {}),
+                    width: 3,
+                    curve: 'smooth'
                 };
             }
 
