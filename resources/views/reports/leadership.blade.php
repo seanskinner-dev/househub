@@ -431,7 +431,23 @@
                             }
                         }
                     },
-                    stroke: { colors: ['#0f172a'] },
+                    dataLabels: {
+                        enabled: true,
+                        offset: 20,
+                        style: {
+                            colors: ['#f8fafc'],
+                            fontSize: '12px',
+                            fontWeight: 600
+                        },
+                        background: {
+                            enabled: true,
+                            fillColor: '#0f172a',
+                            borderRadius: 6,
+                            padding: 4,
+                            opacity: 1
+                        }
+                    },
+                    stroke: { colors: ['#0f172a'], width: 2 },
                     fill: { opacity: 0.85 },
                     colors: ['#ef4444', '#f59e0b', '#22c55e'],
                     legend: { position: 'bottom', fontSize: '14px' },
