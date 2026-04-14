@@ -1844,6 +1844,30 @@ document.addEventListener("DOMContentLoaded", function () {
         const recessEl = document.getElementById('weather-recess');
         const lunchEl = document.getElementById('weather-lunch');
 
+        function updateBreakIcons(type) {
+            if (!recessEl || !lunchEl) return;
+
+            recessEl.classList.remove('rain', 'dry');
+            lunchEl.classList.remove('rain', 'dry');
+
+            if (type === 'rain' || type === 'storm') {
+                recessEl.innerText = '🌧️';
+                lunchEl.innerText = '🌧️';
+                recessEl.classList.add('rain');
+                lunchEl.classList.add('rain');
+            } else if (type === 'cloud') {
+                recessEl.innerText = '⛅';
+                lunchEl.innerText = '⛅';
+                recessEl.classList.add('dry');
+                lunchEl.classList.add('dry');
+            } else {
+                recessEl.innerText = '☀️';
+                lunchEl.innerText = '☀️';
+                recessEl.classList.add('dry');
+                lunchEl.classList.add('dry');
+            }
+        }
+
         function ensureRainDrops(count) {
             if (!rainLayerEl) return;
             if (rainLayerEl.dataset.count === String(count)) return;
@@ -1900,7 +1924,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 let text = 'Clear';
                 let icon = '☀️';
                 let severityClass = 'weather-good';
-                let isWet = false;
 
                 if (code >= 1 && code <= 3) {
                     state = 'cloud';
@@ -1916,7 +1939,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     text = 'Rain';
                     icon = '🌧️';
                     severityClass = 'weather-bad';
-                    isWet = true;
                 } else if (code >= 71 && code <= 77) {
                     state = 'cloud';
                     text = 'Snow';
@@ -1927,7 +1949,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     text = 'Heavy rain / storm';
                     icon = '⛈️';
                     severityClass = 'weather-bad';
-                    isWet = true;
                 }
 
                 clearAllStates();
@@ -1976,16 +1997,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     if (rainLayerEl) rainLayerEl.classList.add('active');
                 }
 
-                if (recessEl && lunchEl) {
-                    const statusClass = isWet ? 'rain' : 'dry';
-                    const statusIcon = isWet ? '🌧️' : '☀️';
-                    recessEl.textContent = statusIcon;
-                    lunchEl.textContent = statusIcon;
-                    recessEl.classList.remove('rain', 'dry');
-                    lunchEl.classList.remove('rain', 'dry');
-                    recessEl.classList.add(statusClass);
-                    lunchEl.classList.add(statusClass);
-                }
+                updateBreakIcons(state);
 
                 setWeatherBackground(state);
             })
