@@ -667,7 +667,7 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             grid-auto-flow: column;
-            grid-template-rows: repeat(5, 1fr);
+            grid-template-rows: repeat(6, 1fr);
             gap: 24px;
         }
 
@@ -698,9 +698,8 @@
             position: relative;
             overflow: hidden;
             box-shadow:
-                0 10px 30px rgba(0,0,0,0.7),
-                0 0 22px var(--house-color),
-                0 0 8px rgba(255,255,255,0.05);
+                0 8px 25px rgba(0,0,0,0.7),
+                0 0 20px var(--house-color);
             backdrop-filter: blur(6px);
             color: #ffffff;
             text-shadow: 0 2px 8px rgba(0,0,0,0.45);
@@ -710,12 +709,12 @@
         .student-card::before {
             content: "";
             position: absolute;
-            left: -60px;
+            left: -50px;
             top: 0;
-            width: 160px;
+            width: 140px;
             height: 100%;
             background: radial-gradient(circle, var(--house-color), transparent 70%);
-            opacity: 0.18;
+            opacity: 0.25;
         }
 
         .student-left {
@@ -787,10 +786,6 @@
 
         .student-card.is-compact .student-rank {
             font-size: 0.95rem;
-        }
-
-        .student-card[data-house="Hufflepuff"] {
-            color: #ff4444;
         }
 
         .banner-container {
@@ -1050,7 +1045,7 @@
 
             @php
                 $leader = $topStudents[0] ?? null;
-                $list = $topStudents->slice(1, 9)->values();
+                $list = $topStudents->slice(1, 10)->values();
             @endphp
 
             <div class="top-title">
