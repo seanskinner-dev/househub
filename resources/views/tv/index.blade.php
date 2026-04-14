@@ -516,7 +516,7 @@
         .weather-card {
             width: 100%;
             max-width: 980px;
-            background: rgba(0,0,0,0.45);
+            background: rgba(0, 0, 0, 0.2);
             backdrop-filter: blur(10px);
             border-radius: 24px;
             padding: 40px;
