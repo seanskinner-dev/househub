@@ -822,9 +822,9 @@
         .leaderboard-list {
             display: flex;
             flex-direction: column;
-            gap: 28px;
-            margin-top: 60px;
-            padding: 0 80px;
+            gap: 14px;
+            margin-top: 40px;
+            padding: 0 60px;
             flex: 1;
             justify-content: center;
         }
@@ -833,34 +833,44 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 32px 40px;
-            border-radius: 22px;
-            background: #1e293b;
-            font-size: 2.8rem;
+            padding: 18px 26px;
+            border-radius: 18px;
+            background: linear-gradient(
+                135deg,
+                rgba(30, 41, 59, 0.9),
+                rgba(2, 6, 23, 0.95)
+            );
+            font-size: 2.2rem;
             font-weight: 700;
             position: relative;
             overflow: hidden;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            box-shadow: 0 0 0px var(--house-color);
+            box-shadow:
+                0 10px 30px rgba(0,0,0,0.6),
+                inset 0 1px 0 rgba(255,255,255,0.05);
+            backdrop-filter: blur(6px);
         }
 
         .student-card::before {
             content: "";
             position: absolute;
-            left: 0;
+            left: -40px;
             top: 0;
-            width: 12px;
+            width: 120px;
             height: 100%;
-            background: var(--house-color);
-        }
-
-        .student-card:hover {
-            transform: scale(1.03);
+            background: radial-gradient(circle, var(--house-color), transparent 70%);
+            opacity: 0.25;
         }
 
         .leaderboard-list .student-card:first-child {
-            transform: scale(1.05);
-            box-shadow: 0 0 40px var(--house-color);
+            transform: scale(1.03);
+            background: linear-gradient(
+                135deg,
+                rgba(255,255,255,0.08),
+                rgba(2, 6, 23, 1)
+            );
+            box-shadow:
+                0 0 40px var(--house-color),
+                0 12px 40px rgba(0,0,0,0.8);
         }
 
         .student-left {
@@ -870,17 +880,17 @@
         }
 
         .student-emoji {
-            font-size: 2.6rem;
+            font-size: 2rem;
         }
 
         .student-name {
-            font-size: 3rem;
+            font-size: 2.4rem;
             letter-spacing: 0.5px;
         }
 
         .student-rank {
-            font-size: 2.2rem;
-            opacity: 0.8;
+            font-size: 1.6rem;
+            opacity: 0.6;
         }
 
         .screen-inner.gryffindor,
