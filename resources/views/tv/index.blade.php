@@ -1215,7 +1215,7 @@
         .screen-inner.gryffindor,
         .screen-inner.slytherin,
         .screen-inner.ravenclaw,
-        .screen-inner.hufflepuff { background: #0a0a0a; color: #fff; }
+        .screen-inner.hufflepuff { background: transparent; color: #fff; }
     </style>
 </head>
 
