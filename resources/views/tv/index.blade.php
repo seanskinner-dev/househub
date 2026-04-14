@@ -87,6 +87,7 @@
             box-sizing: border-box;
             position: relative;
             z-index: 1;
+            background: transparent !important;
         }
 
         .tv-layout {
@@ -899,7 +900,7 @@
             display: flex;
             flex-direction: column;
             padding: 18px 28px;
-            background: transparent;
+            background: transparent !important;
             color: #ffffff;
         }
 
