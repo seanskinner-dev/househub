@@ -348,10 +348,14 @@ class PointController extends Controller
             return Carbon::parse($d)->format('D');
         });
 
-        $topStudents = \App\Models\Student::query()
-            ->leftJoin('houses', 'students.house_id', '=', 'houses.id')
-            ->select('students.*', 'houses.name as house_name', 'houses.colour_hex as house_colour')
-            ->with('house')
+        $topStudents = DB::table('students')
+            ->join('houses', 'students.house_id', '=', 'houses.id')
+            ->select(
+                'students.*',
+                DB::raw("TRIM(COALESCE(students.first_name, '') || ' ' || COALESCE(students.last_name, '')) as name"),
+                'houses.name as house_name',
+                'houses.colour_hex as house_colour'
+            )
             ->orderByDesc('students.house_points')
             ->limit(10)
             ->get();
