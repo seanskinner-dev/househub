@@ -53,22 +53,8 @@
         </div>
     </div>
 
-    <div class="row mb-4">
-      <div class="col-md-6 col-lg-3">
-        <div class="card hh-card h-100">
-          <div class="card-body">
-            <h5 class="mb-2">At Risk Students</h5>
-            <p class="text-muted small mb-3">
-              Shows current student risk levels based on engagement and points. Click a segment to view students.
-            </p>
-            <div id="risk-distribution" style="min-height: 220px;"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <div id="pc-report-grid">
-        <div class="row">
+        <div class="row mb-4">
             <div class="col-md-6">
                 <div class="card hh-card mb-4 shadow-sm h-100">
                     <div class="card-body">
@@ -82,6 +68,20 @@
             </div>
 
             <div class="col-md-6">
+                <div class="card hh-card h-100">
+                    <div class="card-body">
+                        <h5 class="mb-2">At Risk Students</h5>
+                        <p class="text-muted small mb-3">
+                            Shows current student risk levels based on engagement and points. Click a segment to view students.
+                        </p>
+                        <div id="risk-distribution" style="min-height: 220px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6">
                 <div class="card hh-card mb-4 shadow-sm h-100">
                     <div class="card-body">
                         <h5>Year Level Distribution</h5>
@@ -92,9 +92,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-
-        <div class="row">
             <div class="col-md-6">
                 <div class="card hh-card mb-4 shadow-sm h-100">
                     <div class="card-body">
