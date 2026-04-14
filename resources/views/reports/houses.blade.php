@@ -216,8 +216,8 @@
             }
 
             function renderRisk(data) {
-                var houses = (data.house_breakdown && data.house_breakdown.categories) ? data.house_breakdown.categories : [];
-                var source = chartDataSeries(data.house_breakdown ? data.house_breakdown.series : []);
+                var houses = (data.underperformance_index && data.underperformance_index.categories) ? data.underperformance_index.categories : [];
+                var source = chartDataSeries(data.underperformance_index ? data.underperformance_index.series : []);
                 var values = source.map(function (v) { return Math.min(100, Math.floor(100 / (Number(v) + 1))); });
 
                 charts.risk = new ApexCharts(document.querySelector('#house-risk'), {
