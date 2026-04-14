@@ -22,12 +22,15 @@
 
         .tv-container {
             position: relative;
-            height: 100vh;
+            height: 100%;
             width: 100vw;
             overflow: hidden;
             color: #fff;
             transition: background 1s ease;
             animation: bgDrift 20s ease-in-out infinite;
+            background:
+                radial-gradient(circle at center, rgba(0,0,0,0) 60%, rgba(0,0,0,0.8) 100%),
+                #0a0a0a;
         }
 
         /* .tv-container::after {
@@ -894,7 +897,7 @@
             display: flex;
             flex-direction: column;
             padding: 18px 28px;
-            background: transparent !important;
+            background: transparent;
             color: #ffffff;
         }
 
@@ -1211,10 +1214,15 @@
             50% { transform: scale(1.06); }
         }
 
-        .screen-inner.gryffindor { background: linear-gradient(180deg, rgba(116, 0, 1, 0.35), rgba(10, 10, 10, 0.35)); color: #fff; }
-        .screen-inner.slytherin { background: linear-gradient(180deg, rgba(26, 71, 42, 0.35), rgba(10, 10, 10, 0.35)); color: #fff; }
-        .screen-inner.ravenclaw { background: linear-gradient(180deg, rgba(14, 26, 64, 0.38), rgba(10, 10, 10, 0.35)); color: #fff; }
-        .screen-inner.hufflepuff { background: linear-gradient(180deg, rgba(255, 204, 0, 0.28), rgba(10, 10, 10, 0.35)); color: #fff; }
+        html, body, .tv-container {
+            height: 100%;
+            margin: 0;
+        }
+
+        .tv-screen,
+        .screen-inner {
+            background: transparent !important;
+        }
     </style>
 </head>
 
