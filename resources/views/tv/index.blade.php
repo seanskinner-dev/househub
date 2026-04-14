@@ -1,7 +1,3 @@
-<div style="background:red;color:white;position:fixed;top:0;left:0;z-index:9999;">
-    TV VIEW CONFIRMED
-</div>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -33,18 +29,6 @@
             color: #fff;
             transition: background 1s ease;
             animation: bgDrift 20s ease-in-out infinite;
-        }
-
-        #tv-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 0;
-            background: #0a0a0a;
-            background-size: cover;
-            background-position: center;
         }
 
         /* .tv-container::after {
@@ -1243,13 +1227,6 @@
 <body>
 
 <div class="tv-container">
-    <div style="color:white;position:absolute;z-index:9999;">
-        INSIDE CONTAINER
-    </div>
-    <div id="tv-bg"></div>
-    <div id="debug-test" style="color:white; position:absolute; z-index:9999;">
-        CONTENT SHOULD BE HERE
-    </div>
     @php
         if (!function_exists('houseMeta')) {
             function houseMeta($house) {
@@ -1883,6 +1860,11 @@ document.addEventListener("DOMContentLoaded", function () {
         screens.forEach((s, i) => {
             s.style.display = (i === index) ? 'flex' : 'none';
         });
+        document.querySelectorAll('.tv-screen').forEach(s => {
+            if (s.id !== 'screen-weather') {
+                s.style.background = '#0a0a0a';
+            }
+        });
     }
 
     function nextScreen() {
@@ -1944,14 +1926,14 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function setWeatherBackground(type) {
-        const bg = document.getElementById('tv-bg');
-        if (!bg) return;
+        const screen = document.getElementById('screen-weather');
+        if (!screen) return;
 
-        const image = getRandomBackground(type);
+        const bg = getRandomBackground(type);
 
-        bg.style.background = `
+        screen.style.background = `
         linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.35)),
-        url('${image}') center/cover no-repeat
+        url('${bg}') center/cover no-repeat
     `;
     }
 
