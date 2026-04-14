@@ -186,7 +186,7 @@
 
                 houseApexOpts = window.hhApplyApexDefaults({
                 chart: {
-                    type: 'radar',
+                    type: 'bar',
                     height: 320,
                     events: {
                         dataPointSelection: function(event, chartContext, config) {
@@ -197,11 +197,60 @@
                         }
                     }
                 },
+                plotOptions: {
+                    bar: {
+                        horizontal: true,
+                        borderRadius: 6,
+                        barHeight: '50%'
+                    }
+                },
                 series: [{
                     name: 'Contribution',
                     data: contribution
                 }],
-                labels: names,
+                xaxis: {
+                    categories: names,
+                    labels: {
+                        style: {
+                            colors: '#94a3b8'
+                        }
+                    }
+                },
+                yaxis: {
+                    labels: {
+                        style: {
+                            colors: '#e2e8f0',
+                            fontSize: '13px'
+                        }
+                    }
+                },
+                dataLabels: {
+                    enabled: true,
+                    offsetX: 10,
+                    style: {
+                        colors: ['#f8fafc'],
+                        fontSize: '12px',
+                        fontWeight: 600
+                    },
+                    background: {
+                        enabled: true,
+                        fillColor: '#0f172a',
+                        borderRadius: 6,
+                        padding: 4,
+                        opacity: 1
+                    },
+                    formatter: function (val) {
+                        return String(val);
+                    }
+                },
+                tooltip: {
+                    theme: 'dark',
+                    y: {
+                        formatter: function (val) {
+                            return String(val) + ' points';
+                        }
+                    }
+                },
                 title: { text: 'Contribution Spread' }
                 });
                 new ApexCharts(document.querySelector("#house-contribution"), houseApexOpts).render();

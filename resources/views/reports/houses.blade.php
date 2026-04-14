@@ -178,7 +178,7 @@
 
                 charts.contribution = new ApexCharts(document.querySelector('#house-contribution'), window.hhApplyApexDefaults({
                     chart: {
-                        type: 'radar',
+                        type: 'bar',
                         height: 320,
                         toolbar: { show: false },
                         events: {
@@ -190,13 +190,59 @@
                             }
                         }
                     },
+                    plotOptions: {
+                        bar: {
+                            horizontal: true,
+                            borderRadius: 6,
+                            barHeight: '50%'
+                        }
+                    },
                     series: [{ name: 'Estimated contributors', data: values }],
-                    labels: houses,
-                    stroke: { width: 2 },
-                    fill: { opacity: 0.25 },
+                    xaxis: {
+                        categories: houses,
+                        labels: {
+                            style: {
+                                colors: '#94a3b8'
+                            }
+                        }
+                    },
+                    yaxis: {
+                        labels: {
+                            style: {
+                                colors: '#e2e8f0',
+                                fontSize: '13px'
+                            }
+                        }
+                    },
+                    dataLabels: {
+                        enabled: true,
+                        offsetX: 10,
+                        style: {
+                            colors: ['#f8fafc'],
+                            fontSize: '12px',
+                            fontWeight: 600
+                        },
+                        background: {
+                            enabled: true,
+                            fillColor: '#0f172a',
+                            borderRadius: 6,
+                            padding: 4,
+                            opacity: 1
+                        },
+                        formatter: function (val) {
+                            return String(val);
+                        }
+                    },
                     colors: ['#f59e0b'],
                     title: { text: 'Contribution Spread (click to inspect non-contributors)' },
-                    tooltip: { theme: 'dark' }
+                    tooltip: {
+                        theme: 'dark',
+                        y: {
+                            formatter: function (val) {
+                                return String(val) + ' points';
+                            }
+                        }
+                    }
                 }));
                 charts.contribution.render();
             }
