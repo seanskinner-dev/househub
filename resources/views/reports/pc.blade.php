@@ -134,10 +134,13 @@
             <div id="pc-modal-body" style="padding: 16px 20px;">
                 <p id="pc-drilldown-empty" style="opacity:0.9;margin:0;display:none;">No rows for this selection.</p>
                 <div id="pc-drilldown-wrap" style="display:none; overflow-x: auto;">
-                    <table id="pc-drilldown-table" class="report-drilldown-table" style="font-size:0.95rem;">
-                        <thead><tr id="pc-drilldown-thead-row"></tr></thead>
-                        <tbody id="pc-drilldown-tbody"></tbody>
-                    </table>
+                    <div id="pc-drilldown-single-wrap">
+                        <table id="pc-drilldown-table" class="report-drilldown-table" style="font-size:0.95rem;">
+                            <thead><tr id="pc-drilldown-thead-row"></tr></thead>
+                            <tbody id="pc-drilldown-tbody"></tbody>
+                        </table>
+                    </div>
+                    <div id="pc-drilldown-grouped-host" style="display:none;"></div>
                 </div>
             </div>
         </div>
@@ -191,6 +194,8 @@ document.addEventListener("DOMContentLoaded", function () {
             title: document.getElementById('pc-modal-title'),
             empty: document.getElementById('pc-drilldown-empty'),
             wrap: document.getElementById('pc-drilldown-wrap'),
+            singleTableWrap: document.getElementById('pc-drilldown-single-wrap'),
+            groupedHost: document.getElementById('pc-drilldown-grouped-host'),
             theadRow: document.getElementById('pc-drilldown-thead-row'),
             tbody: document.getElementById('pc-drilldown-tbody'),
             table: document.getElementById('pc-drilldown-table')
@@ -268,6 +273,14 @@ document.addEventListener("DOMContentLoaded", function () {
                     dataPointSelection: function (event, chartContext, cfg) {
                         const value = categories[cfg.dataPointIndex];
                         if (!value) return;
+                        if (containerId === 'engagement-health') {
+                            if (value === 'Medium' || value === 'High') {
+                                drillDown({ type: 'risk_segment_combined' });
+                            } else {
+                                drillDown({ type: 'risk_segment', value: value });
+                            }
+                            return;
+                        }
                         const mappedType = drilldownMap[containerId] === 'house' ? 'house_low' : drilldownMap[containerId];
                         drillDown({ type: mappedType, value: value });
                     }

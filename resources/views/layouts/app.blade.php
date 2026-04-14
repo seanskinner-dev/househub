@@ -265,11 +265,19 @@
         window.formatReportChartDate = function (d) {
             if (d == null || d === '') return '';
             var s = String(d).trim();
+            if (s.indexOf('T') !== -1) {
+                s = s.split('T')[0];
+            } else if (s.indexOf(' ') !== -1) {
+                s = s.split(' ')[0];
+            }
+            if (s.length > 10) {
+                s = s.slice(0, 10);
+            }
             var m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
             if (m) {
                 return m[3] + '/' + m[2];
             }
-            var dt = new Date(s.indexOf('T') === -1 ? s + 'T00:00:00' : s);
+            var dt = new Date(s.length === 10 ? s + 'T00:00:00' : s);
             if (!isNaN(dt.getTime())) {
                 var dd = String(dt.getDate()).padStart(2, '0');
                 var mm = String(dt.getMonth() + 1).padStart(2, '0');
@@ -288,6 +296,39 @@
                     .replace(/>/g, '&gt;')
                     .replace(/"/g, '&quot;')
                     .replace(/'/g, '&#39;');
+            }
+
+            function drilldownDateOnlyPart(dateRaw) {
+                if (dateRaw == null || dateRaw === '') return '';
+                var ds = String(dateRaw).trim();
+                if (ds.indexOf('T') !== -1) {
+                    ds = ds.split('T')[0];
+                } else if (ds.indexOf(' ') !== -1) {
+                    ds = ds.split(' ')[0];
+                }
+                return ds.length >= 10 ? ds.slice(0, 10) : ds;
+            }
+
+            function pickDrilldownMetric(r) {
+                var checks = [
+                    { key: 'activity_count', kind: 'activity' },
+                    { key: 'weekday_awards', kind: 'activity' },
+                    { key: 'total_actions', kind: 'activity' },
+                    { key: 'total_points', kind: 'points' },
+                    { key: 'house_points', kind: 'points' },
+                    { key: 'amount', kind: 'points' },
+                    { key: 'points_in_range', kind: 'points' },
+                    { key: 'total', kind: 'points' },
+                    { key: 'points (range)', kind: 'points' },
+                    { key: 'points (weekdays)', kind: 'points' }
+                ];
+                for (var i = 0; i < checks.length; i++) {
+                    var c = checks[i];
+                    if (Object.prototype.hasOwnProperty.call(r, c.key) && r[c.key] != null) {
+                        return { val: r[c.key], kind: c.kind };
+                    }
+                }
+                return { val: '', kind: 'activity' };
             }
 
             function mapDrilldownRowToStandard(raw) {
@@ -311,14 +352,8 @@
 
                 var yl = r.year_level != null ? String(r.year_level) : '';
 
-                var act = r.activity_count != null ? r.activity_count
-                    : (r.weekday_awards != null ? r.weekday_awards
-                        : (r.total_actions != null ? r.total_actions
-                            : (r.total_points != null ? r.total_points
-                                : (r.amount != null ? r.amount
-                                    : (r.points_in_range != null ? r.points_in_range
-                                        : (r.total != null ? r.total
-                                            : (r['points (weekdays)'] != null ? r['points (weekdays)'] : '')))))));
+                var picked = pickDrilldownMetric(r);
+                var act = picked.val;
                 if (act !== null && act !== undefined && typeof act !== 'string') {
                     act = String(act);
                 }
@@ -326,18 +361,51 @@
                 var dateRaw = r.created_at != null ? r.created_at : (r.date != null ? r.date : null);
                 var dateStr = '';
                 if (dateRaw != null && dateRaw !== '') {
-                    var ds = String(dateRaw);
-                    var slice = ds.length >= 10 ? ds.slice(0, 10) : ds;
+                    var slice = drilldownDateOnlyPart(dateRaw);
                     dateStr = typeof window.formatReportChartDate === 'function' ? window.formatReportChartDate(slice) : slice;
                 }
 
                 return {
                     _studentId: sid,
+                    _metricKind: picked.kind,
                     name: name || '—',
                     year_level: yl,
                     activity_count: act === null || act === undefined ? '' : String(act),
                     date: dateStr
                 };
+            }
+
+            function inferMetricColumnLabel(mappedRows) {
+                var anyPoints = false;
+                var anyActivity = false;
+                for (var i = 0; i < mappedRows.length; i++) {
+                    if (mappedRows[i]._metricKind === 'points') {
+                        anyPoints = true;
+                    } else {
+                        anyActivity = true;
+                    }
+                }
+                if (anyPoints && !anyActivity) {
+                    return 'Points';
+                }
+                if (anyActivity && !anyPoints) {
+                    return 'Activity';
+                }
+                if (anyPoints && anyActivity) {
+                    return 'Points';
+                }
+                return 'Activity';
+            }
+
+            function buildDrilldownTheadHtml(metricLabel) {
+                var ml = escapeReportHtml(metricLabel);
+                return (
+                    '<th data-sort-key="name" class="report-sort-th" style="text-align:left;padding:12px 14px;border-bottom:2px solid #334155;">Name</th>' +
+                    '<th data-sort-key="year_level" class="report-sort-th" style="text-align:left;padding:12px 14px;border-bottom:2px solid #334155;">Year Level</th>' +
+                    '<th data-sort-key="activity_count" class="report-sort-th" style="text-align:left;padding:12px 14px;border-bottom:2px solid #334155;">' + ml + '</th>' +
+                    '<th data-sort-key="date" class="report-sort-th" style="text-align:left;padding:12px 14px;border-bottom:2px solid #334155;">Date</th>' +
+                    '<th class="text-end" style="padding:12px 14px;border-bottom:2px solid #334155;">Actions</th>'
+                );
             }
 
             function reportShowToast(message) {
@@ -369,6 +437,10 @@
                     .catch(function () { reportShowToast('Unable to update points'); });
             }
 
+            function studentIdUsable(sid) {
+                return sid != null && sid !== '' && String(sid) !== 'undefined';
+            }
+
             function renderStandardDrilldownBody(tbody, rows) {
                 tbody.innerHTML = rows.map(function (row) {
                     var sid = row._studentId;
@@ -376,13 +448,14 @@
                     var yl = escapeReportHtml(row.year_level || '');
                     var ac = escapeReportHtml(row.activity_count || '');
                     var dt = escapeReportHtml(row.date || '');
-                    var nameCell = sid != null
+                    var nameCell = studentIdUsable(sid)
                         ? '<td class="td-name" style="text-align:left;padding:12px 14px;vertical-align:middle;"><a href="/students/' + encodeURIComponent(String(sid)) + '" class="student-link">' + nm + '</a></td>'
                         : '<td class="td-name" style="text-align:left;padding:12px 14px;vertical-align:middle;">' + nm + '</td>';
-                    var dis = sid == null ? ' disabled' : '';
-                    var dataId = sid != null ? escapeReportHtml(String(sid)) : '';
+                    var canAct = studentIdUsable(sid);
+                    var dis = canAct ? '' : ' disabled';
+                    var dataId = canAct ? escapeReportHtml(String(sid)) : '';
                     var actions =
-                        '<td class="td-actions" style="text-align:right;padding:12px 14px;vertical-align:middle;">' +
+                        '<td class="td-actions text-end" style="padding:12px 14px;vertical-align:middle;">' +
                         '<div class="d-flex gap-2 justify-content-end flex-wrap">' +
                         '<button type="button" class="btn-sub btn btn-sm"' + dis + ' data-id="' + dataId + '">-1</button>' +
                         '<button type="button" class="btn-add btn btn-sm"' + dis + ' data-id="' + dataId + '">+1</button>' +
@@ -424,19 +497,126 @@
             }
 
             /**
-             * @param data {{ title?: string, rows?: array, student_breakdown?: array }}
-             * @param els {{ title: Element, empty: Element, wrap: Element, theadRow: Element, tbody: Element, table: Element }}
+             * @param data {{ title?: string, rows?: array, student_breakdown?: array, groups?: array }}
+             * @param els {{ title: Element, empty: Element, wrap: Element, theadRow: Element, tbody: Element, table: Element, singleTableWrap?: Element, groupedHost?: Element }}
              */
             window.renderStudentTable = function (data, els) {
                 var title = (data && data.title) ? data.title : 'Details';
-                var rawRows = (data && data.rows) ? data.rows : ((data && data.student_breakdown) ? data.student_breakdown : []);
                 if (els.title) {
                     els.title.textContent = title;
                 }
+
+                function clearGroupedSortIds(baseId, groupCount) {
+                    var k;
+                    for (k = 0; k < groupCount; k++) {
+                        window._reportDrilldownSortState.delete(baseId + '-g' + k);
+                    }
+                }
+
+                function resetGroupedUi() {
+                    if (els.groupedHost) {
+                        els.groupedHost.style.display = 'none';
+                        els.groupedHost.innerHTML = '';
+                    }
+                    if (els.singleTableWrap) {
+                        els.singleTableWrap.style.display = 'block';
+                    }
+                }
+
+                if (data && data.groups && Array.isArray(data.groups) && data.groups.length) {
+                    if (!els.groupedHost || !els.singleTableWrap) {
+                        var flat = [];
+                        for (var gi = 0; gi < data.groups.length; gi++) {
+                            var gr = data.groups[gi] && data.groups[gi].rows;
+                            if (gr && gr.length) {
+                                flat = flat.concat(gr);
+                            }
+                        }
+                        data = { title: title, rows: flat };
+                    } else {
+                        var totalG = 0;
+                        for (var t = 0; t < data.groups.length; t++) {
+                            var rw = data.groups[t] && data.groups[t].rows;
+                            totalG += (rw && rw.length) ? rw.length : 0;
+                        }
+                        if (totalG === 0) {
+                            window._reportDrilldownSortState.delete(els.table.id);
+                            clearGroupedSortIds(els.table.id, data.groups.length);
+                            if (els.empty) els.empty.style.display = 'block';
+                            if (els.wrap) {
+                                els.wrap.style.display = 'none';
+                                els.wrap.classList.remove('hh-card', 'p-3');
+                            }
+                            els.theadRow.innerHTML = '';
+                            els.tbody.innerHTML = '';
+                            resetGroupedUi();
+                            return;
+                        }
+                        clearGroupedSortIds(els.table.id, data.groups.length);
+                        if (els.empty) els.empty.style.display = 'none';
+                        if (els.wrap) {
+                            els.wrap.style.display = 'block';
+                            els.wrap.classList.add('hh-card', 'p-3');
+                        }
+                        els.singleTableWrap.style.display = 'none';
+                        els.groupedHost.style.display = 'block';
+                        els.groupedHost.innerHTML = '';
+                        window._reportDrilldownSortState.delete(els.table.id);
+
+                        var allForLabel = [];
+                        for (var u = 0; u < data.groups.length; u++) {
+                            var chunk = (data.groups[u] && data.groups[u].rows) ? data.groups[u].rows : [];
+                            for (var v = 0; v < chunk.length; v++) {
+                                allForLabel.push(chunk[v]);
+                            }
+                        }
+                        var metricLabelG = inferMetricColumnLabel(allForLabel.map(mapDrilldownRowToStandard));
+
+                        for (var idx = 0; idx < data.groups.length; idx++) {
+                            var group = data.groups[idx];
+                            var h6 = document.createElement('h6');
+                            h6.className = (group && group.heading_class) ? group.heading_class : 'mt-3 mb-2 text-warning';
+                            h6.textContent = (group && group.heading) ? group.heading : '';
+                            els.groupedHost.appendChild(h6);
+
+                            var tbl = document.createElement('table');
+                            var subId = els.table.id + '-g' + idx;
+                            tbl.id = subId;
+                            tbl.className = 'report-drilldown-table';
+                            tbl.style.fontSize = '0.95rem';
+                            tbl.innerHTML = '<thead><tr></tr></thead><tbody></tbody>';
+                            var trh = tbl.querySelector('thead tr');
+                            trh.innerHTML = buildDrilldownTheadHtml(metricLabelG);
+                            var tbod = tbl.querySelector('tbody');
+                            var rawG = (group && group.rows) ? group.rows : [];
+                            var mappedG = rawG.map(mapDrilldownRowToStandard);
+                            if (mappedG.length === 0) {
+                                tbod.innerHTML = '<tr class="report-drilldown-row"><td colspan="5" class="text-white-50 small" style="padding:12px 14px;">No students in this group.</td></tr>';
+                            } else {
+                                renderStandardDrilldownBody(tbod, mappedG);
+                                var curG = { key: null, direction: 'asc' };
+                                window._reportDrilldownSortState.set(subId, {
+                                    rows: mappedG,
+                                    currentSort: curG,
+                                    els: { tbody: tbod, table: tbl }
+                                });
+                            }
+                            els.groupedHost.appendChild(tbl);
+                        }
+                        return;
+                    }
+                }
+
+                resetGroupedUi();
+
+                var rawRows = (data && data.rows) ? data.rows : ((data && data.student_breakdown) ? data.student_breakdown : []);
                 if (!rawRows.length) {
                     window._reportDrilldownSortState.delete(els.table.id);
                     if (els.empty) els.empty.style.display = 'block';
-                    if (els.wrap) els.wrap.style.display = 'none';
+                    if (els.wrap) {
+                        els.wrap.style.display = 'none';
+                        els.wrap.classList.remove('hh-card', 'p-3');
+                    }
                     els.theadRow.innerHTML = '';
                     els.tbody.innerHTML = '';
                     return;
@@ -447,15 +627,11 @@
                     els.wrap.classList.add('hh-card', 'p-3');
                 }
                 var mapped = rawRows.map(mapDrilldownRowToStandard);
+                var metricLabel = inferMetricColumnLabel(mapped);
                 var currentSort = { key: null, direction: 'asc' };
                 window._reportDrilldownSortState.set(els.table.id, { rows: mapped, currentSort: currentSort, els: els });
 
-                els.theadRow.innerHTML =
-                    '<th data-sort-key="name" class="report-sort-th" style="text-align:left;padding:12px 14px;border-bottom:2px solid #334155;">Name</th>' +
-                    '<th data-sort-key="year_level" class="report-sort-th" style="text-align:left;padding:12px 14px;border-bottom:2px solid #334155;">Year Level</th>' +
-                    '<th data-sort-key="activity_count" class="report-sort-th" style="text-align:left;padding:12px 14px;border-bottom:2px solid #334155;">Activity</th>' +
-                    '<th data-sort-key="date" class="report-sort-th" style="text-align:left;padding:12px 14px;border-bottom:2px solid #334155;">Date</th>' +
-                    '<th style="text-align:right;padding:12px 14px;border-bottom:2px solid #334155;">Actions</th>';
+                els.theadRow.innerHTML = buildDrilldownTheadHtml(metricLabel);
 
                 renderStandardDrilldownBody(els.tbody, mapped);
             };

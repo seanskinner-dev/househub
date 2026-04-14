@@ -116,10 +116,13 @@
             <div id="lr-modal-body" style="padding: 16px 20px;">
                 <p id="lr-drilldown-empty" style="opacity:0.9;margin:0;display:none;">No rows for this selection.</p>
                 <div id="lr-drilldown-wrap" style="display:none; overflow-x: auto;">
-                    <table id="lr-drilldown-table" class="report-drilldown-table" style="font-size:0.95rem;">
-                        <thead><tr id="lr-drilldown-thead-row"></tr></thead>
-                        <tbody id="lr-drilldown-tbody"></tbody>
-                    </table>
+                    <div id="lr-drilldown-single-wrap">
+                        <table id="lr-drilldown-table" class="report-drilldown-table" style="font-size:0.95rem;">
+                            <thead><tr id="lr-drilldown-thead-row"></tr></thead>
+                            <tbody id="lr-drilldown-tbody"></tbody>
+                        </table>
+                    </div>
+                    <div id="lr-drilldown-grouped-host" style="display:none;"></div>
                 </div>
             </div>
         </div>
@@ -221,6 +224,8 @@
                     title: document.getElementById('lr-modal-title'),
                     empty: document.getElementById('lr-drilldown-empty'),
                     wrap: document.getElementById('lr-drilldown-wrap'),
+                    singleTableWrap: document.getElementById('lr-drilldown-single-wrap'),
+                    groupedHost: document.getElementById('lr-drilldown-grouped-host'),
                     theadRow: document.getElementById('lr-drilldown-thead-row'),
                     tbody: document.getElementById('lr-drilldown-tbody'),
                     table: document.getElementById('lr-drilldown-table')
@@ -415,7 +420,13 @@
                                 var idx = config.dataPointIndex;
                                 var lbl = labels[idx];
                                 if (lbl) {
-                                    drillDown({ type: 'risk_segment', value: String(lbl) });
+                                    var s = String(lbl);
+                                    var sl = s.toLowerCase();
+                                    if (sl === 'medium risk' || sl === 'high risk') {
+                                        drillDown({ type: 'risk_segment_combined' });
+                                    } else {
+                                        drillDown({ type: 'risk_segment', value: s });
+                                    }
                                 }
                             }
                         }

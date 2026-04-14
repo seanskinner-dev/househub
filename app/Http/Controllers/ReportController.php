@@ -439,6 +439,7 @@ class ReportController extends Controller
             )),
             'year_level' => response()->json($this->drilldownPayloadYearLevel($data, $house, $start, $end, $yearFilter)),
             'risk_segment' => response()->json($this->drilldownPayloadRiskSegment($data, $house, $start, $end, $yearFilter)),
+            'risk_segment_combined' => response()->json($this->drilldownPcRiskMediumHighCombined($house, $start, $end, $yearFilter)),
             default => response()->json(['rows' => []]),
         };
     }
@@ -617,6 +618,7 @@ class ReportController extends Controller
             ->when($yearFilter !== 'All', fn ($q) => $q->where('s.year_level', (int) $yearFilter))
             ->groupBy('s.id', 's.first_name', 's.last_name', 's.year_level', 'h.name')
             ->select(
+                's.id',
                 's.first_name',
                 's.last_name',
                 's.year_level',
@@ -769,6 +771,7 @@ class ReportController extends Controller
 
         $rows = $query
             ->select(
+                'students.id',
                 'students.first_name',
                 'students.last_name',
                 'students.year_level',
@@ -1038,6 +1041,35 @@ class ReportController extends Controller
      *
      * @return array{title: string, rows: \Illuminate\Support\Collection<int, object>}
      */
+    /**
+     * Pastoral donut: medium + high weekday transaction-count bands (excludes low / healthy).
+     *
+     * @return array{title: string, groups: list<array{heading: string, heading_class: string, rows: list<mixed>}>}
+     */
+    private function drilldownPcRiskMediumHighCombined(string $house, Carbon $start, Carbon $end, string $yearFilter): array
+    {
+        $medium = $this->pcDrilldownEngagementActivity('Medium', $house, $start, $end, $yearFilter);
+        $high = $this->pcDrilldownEngagementActivity('High', $house, $start, $end, $yearFilter);
+        $mediumRows = $medium['rows'] ?? collect();
+        $highRows = $high['rows'] ?? collect();
+
+        return [
+            'title' => 'At-risk students (weekday engagement)',
+            'groups' => [
+                [
+                    'heading' => 'Medium Risk',
+                    'heading_class' => 'mt-3 mb-2 text-warning',
+                    'rows' => $mediumRows instanceof \Illuminate\Support\Collection ? $mediumRows->values()->all() : (array) $mediumRows,
+                ],
+                [
+                    'heading' => 'High Risk',
+                    'heading_class' => 'mt-3 mb-2 text-danger',
+                    'rows' => $highRows instanceof \Illuminate\Support\Collection ? $highRows->values()->all() : (array) $highRows,
+                ],
+            ],
+        ];
+    }
+
     private function pcDrilldownEngagementActivity(string $bucket, string $house, Carbon $start, Carbon $end, string $yearFilter = 'All'): array
     {
         $query = DB::table('students')
@@ -1095,6 +1127,7 @@ class ReportController extends Controller
                 $join->on('students.id', '=', 'pw.student_id');
                 $this->pcTransactionsInRangeWeekday($join, $start, $end, 'pw');
             })
+            ->selectRaw('students.id as id')
             ->selectRaw('TRIM(CONCAT(students.first_name, \' \', students.last_name)) as name')
             ->selectRaw('h.name as house_name')
             ->selectRaw('SUM(pw.amount) as points_in_range')
@@ -1102,6 +1135,7 @@ class ReportController extends Controller
             ->orderBy('name');
 
         $rows = $q->get()->map(fn ($r) => [
+            'id' => (int) $r->id,
             'name' => $r->name,
             'house' => $r->house_name ?? '—',
             'points (range)' => (int) $r->points_in_range,
@@ -1146,6 +1180,7 @@ class ReportController extends Controller
 
         $rows = $query
             ->select(
+                'students.id',
                 'students.first_name',
                 'students.last_name',
                 'students.year_level',
@@ -1176,12 +1211,14 @@ class ReportController extends Controller
             })
             ->whereBetween('pt.created_at', [$start, $end])
             ->whereRaw('EXTRACT(DOW FROM pt.created_at::timestamp) BETWEEN 1 AND 5')
+            ->selectRaw('s.id as id')
             ->selectRaw('TRIM(CONCAT(s.first_name, \' \', s.last_name)) as name')
             ->selectRaw('SUM(pt.amount) as total')
             ->groupBy('s.id', 's.first_name', 's.last_name')
             ->orderByDesc('total');
 
         $rows = $q->get()->map(fn ($r) => [
+            'id' => (int) $r->id,
             'name' => $r->name,
             'points (weekdays)' => (int) $r->total,
         ])->all();
