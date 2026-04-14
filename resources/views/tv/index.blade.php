@@ -512,18 +512,6 @@
             width: 100%;
         }
 
-        .weather-card {
-            width: 100%;
-            max-width: 980px;
-            background: rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(10px);
-            border-radius: 24px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
         .weather-main {
             width: 100%;
             position: relative;
@@ -653,6 +641,13 @@
             position: relative;
             z-index: 3;
             color: #facc15;
+        }
+
+        .weather-temp,
+        .weather-description {
+            text-shadow:
+                0 6px 30px rgba(0,0,0,0.9),
+                0 0 10px rgba(0,0,0,0.6);
         }
 
         .weather-good {
@@ -1578,51 +1573,48 @@
             @endphp
 
             <div class="weather-hero">
-                <div class="weather-card">
-                    <div class="weather-main">
-                        <div class="weather-animation-layer">
-                            <div id="rain-layer" class="rain-layer"></div>
-                        </div>
-                        <div id="weather-icon" class="weather-icon">
-                            <span id="weather-icon-primary" class="icon-primary">☀️</span>
-                            <span id="weather-icon-sun" class="sun">☀️</span>
-                            <span id="weather-icon-cloud" class="cloud">☁️</span>
-                            <div id="sparkle-layer" class="sparkle-layer"></div>
-                            <div id="lightning-layer" class="lightning-layer"></div>
-                        </div>
-
-                        <div id="weather-temp" class="weather-temp-main weather-temp">
-                            {{ $weather[1]['temp'] }}°
-                        </div>
-
-                        <div id="weather-description" class="weather-description {{ $severityClass }}">
-                            {{ $desc }}
-                        </div>
-
-                        <div id="weather-alert" class="weather-alert hidden"></div>
+                <div class="weather-main">
+                    <div class="weather-animation-layer">
+                        <div id="rain-layer" class="rain-layer"></div>
+                    </div>
+                    <div id="weather-icon" class="weather-icon">
+                        <span id="weather-icon-primary" class="icon-primary">☀️</span>
+                        <span id="weather-icon-sun" class="sun">☀️</span>
+                        <span id="weather-icon-cloud" class="cloud">☁️</span>
+                        <div id="sparkle-layer" class="sparkle-layer"></div>
+                        <div id="lightning-layer" class="lightning-layer"></div>
                     </div>
 
-                    <div class="break-container">
+                    <div id="weather-temp" class="weather-temp-main weather-temp">
+                        {{ $weather[1]['temp'] }}°
+                    </div>
 
-                        @php
-                            $recessRain = (collect($weather)->firstWhere('label', 'RECESS') ?? [])['rain'] ?? 0;
-                            $lunchRain = (collect($weather)->firstWhere('label', 'LUNCH') ?? [])['rain'] ?? 0;
-                        @endphp
+                    <div id="weather-description" class="weather-description {{ $severityClass }}">
+                        {{ $desc }}
+                    </div>
 
-                        <div class="break-card {{ $recessRain >= 40 ? 'rain' : 'dry' }}" id="recess-card">
-                            <div class="label">RECESS</div>
-                            <div id="weather-recess" class="{{ $recessRain >= 40 ? 'rain' : 'dry' }}">
-                                {{ $recessRain >= 40 ? '🌧' : '☀️' }}
-                            </div>
+                    <div id="weather-alert" class="weather-alert hidden"></div>
+                </div>
+
+                <div class="break-container">
+
+                    @php
+                        $recessRain = (collect($weather)->firstWhere('label', 'RECESS') ?? [])['rain'] ?? 0;
+                        $lunchRain = (collect($weather)->firstWhere('label', 'LUNCH') ?? [])['rain'] ?? 0;
+                    @endphp
+
+                    <div class="break-card {{ $recessRain >= 40 ? 'rain' : 'dry' }}" id="recess-card">
+                        <div class="label">RECESS</div>
+                        <div id="weather-recess" class="{{ $recessRain >= 40 ? 'rain' : 'dry' }}">
+                            {{ $recessRain >= 40 ? '🌧' : '☀️' }}
                         </div>
+                    </div>
 
-                        <div class="break-card {{ $lunchRain >= 40 ? 'rain' : 'dry' }}" id="lunch-card">
-                            <div class="label">LUNCH</div>
-                            <div id="weather-lunch" class="{{ $lunchRain >= 40 ? 'rain' : 'dry' }}">
-                                {{ $lunchRain >= 40 ? '🌧' : '☀️' }}
-                            </div>
+                    <div class="break-card {{ $lunchRain >= 40 ? 'rain' : 'dry' }}" id="lunch-card">
+                        <div class="label">LUNCH</div>
+                        <div id="weather-lunch" class="{{ $lunchRain >= 40 ? 'rain' : 'dry' }}">
+                            {{ $lunchRain >= 40 ? '🌧' : '☀️' }}
                         </div>
-
                     </div>
                 </div>
             </div>
