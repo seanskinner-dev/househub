@@ -55,26 +55,15 @@
 
     <div id="pc-report-grid">
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-12">
                 <div class="card hh-card mb-4 shadow-sm h-100">
                     <div class="card-body">
-                        <h5>Engagement Health</h5>
+                        <h5>At Risk</h5>
                         <p class="small text-white-50">
-                            Shows the proportion of students actively receiving points versus those at risk. Focus on reducing the high-risk group to improve overall engagement.
+                            Shows the proportion of students at risk based on engagement levels.
+                            Focus on reducing the high-risk group to improve overall student outcomes.
                         </p>
                         <div id="engagement-health"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-6">
-                <div class="card hh-card h-100">
-                    <div class="card-body">
-                        <h5 class="mb-2">At Risk Students</h5>
-                        <p class="text-muted small mb-3">
-                            Shows current student risk levels based on engagement and points. Click a segment to view students.
-                        </p>
-                        <div id="risk-distribution" style="min-height: 220px;"></div>
                     </div>
                 </div>
             </div>
