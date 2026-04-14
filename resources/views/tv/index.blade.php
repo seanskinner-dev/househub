@@ -508,7 +508,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            min-height: 0;
+            min-height: 100vh;
             width: 100%;
         }
 
@@ -1842,20 +1842,8 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
         const nextScreenId = screens[index] ? screens[index].id : '';
-        if (nextScreenId !== 'screen-weather') {
-            const bg = document.getElementById('tv-bg');
-            if (bg) {
-                bg.style.background = '#0a0a0a';
-            }
-        }
         screens.forEach((s, i) => {
             s.style.display = (i === index) ? 'flex' : 'none';
-        });
-        document.querySelectorAll('.tv-screen').forEach(s => {
-            if (s.style.display !== 'flex') return;
-            if (s.id !== 'screen-weather') {
-                s.style.background = '#0a0a0a';
-            }
         });
     }
 
@@ -1922,13 +1910,13 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function setWeatherBackground(type) {
-        const screen = getActiveScreen();
-        if (!screen) return;
-        if (screen.id !== 'screen-weather') return;
-        screen.style.backgroundImage = "url('/weather/rain/rain1.jpg')";
-        screen.style.backgroundSize = "cover";
-        screen.style.backgroundPosition = "center";
-        screen.style.backgroundRepeat = "no-repeat";
+        const hero = document.querySelector('.weather-hero');
+        if (!hero) return;
+
+        hero.style.backgroundImage = "url('/weather/rain/rain1.jpg')";
+        hero.style.backgroundSize = "cover";
+        hero.style.backgroundPosition = "center";
+        hero.style.backgroundRepeat = "no-repeat";
     }
 
     function updateWeatherBackground() {
