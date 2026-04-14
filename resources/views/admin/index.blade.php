@@ -104,11 +104,11 @@
         <input type="hidden" id="csrf-token" value="{{ csrf_token() }}">
 
         <section aria-labelledby="bmm-heading">
-            <h2 id="bmm-heading">Broadcast Message Mode</h2>
+            <h2 id="bmm-heading">Office Message Mode</h2>
             <label for="bmm-message">Message</label>
-            <textarea id="bmm-message" placeholder="Broadcast message for displays…"></textarea>
+            <textarea id="bmm-message" placeholder="Office message for displays…"></textarea>
             <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                <button type="button" class="btn-primary" id="bmm-send">Send broadcast</button>
+                <button type="button" class="btn-primary" id="bmm-send">Send office message</button>
                 <button type="button" class="btn-muted" id="clear-omm-btn">Clear</button>
             </div>
             <div class="status muted" id="bmm-status" aria-live="polite"></div>
@@ -116,17 +116,32 @@
 
         <section aria-labelledby="em-heading">
             <h2 id="em-heading">Emergency Mode</h2>
-            <p class="sub" style="margin-top:-8px;margin-bottom:12px;">Placeholder — no backend yet.</p>
-            <label for="em-note">Emergency note</label>
-            <textarea id="em-note" placeholder="Reserved for future use…"></textarea>
-            <button type="button" class="btn-muted" id="em-btn">Submit (placeholder)</button>
+            <label for="em-code">Emergency Code</label>
+            <select id="em-code" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #475569;background:#0f172a;color:#f8fafc;font-size:0.95rem;margin-bottom:12px;">
+                <option value="Code Red">Code Red</option>
+                <option value="Code Blue">Code Blue</option>
+                <option value="Code Yellow">Code Yellow</option>
+                <option value="Code Black">Code Black</option>
+                <option value="Code Orange">Code Orange</option>
+                <option value="Lockdown">Lockdown</option>
+                <option value="Evacuation">Evacuation</option>
+            </select>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <button type="button" class="btn-primary" id="em-trigger-btn">Trigger Emergency</button>
+                <button type="button" class="btn-muted" id="em-clear-btn">Clear Emergency</button>
+            </div>
             <div class="status muted" id="em-status" aria-live="polite"></div>
         </section>
 
         <section aria-labelledby="mp-heading">
-            <h2 id="mp-heading">Manual Points</h2>
-            <label for="mp-student-id">Student ID</label>
-            <input type="number" id="mp-student-id" min="1" step="1" placeholder="e.g. 42">
+            <h2 id="mp-heading">House Points</h2>
+            <label for="mp-house-id">House</label>
+            <select id="mp-house-id" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #475569;background:#0f172a;color:#f8fafc;font-size:0.95rem;margin-bottom:12px;" required>
+                <option value="">Select house</option>
+                @foreach(($houses ?? []) as $house)
+                    <option value="{{ $house->id }}">{{ $house->name }}</option>
+                @endforeach
+            </select>
             <label for="mp-amount">Amount</label>
             <input type="number" id="mp-amount" step="1" placeholder="e.g. 5 or -2">
             <button type="button" class="btn-primary" id="mp-send">Post points</button>
@@ -169,7 +184,7 @@
                         setStatus(el, msg, 'err');
                         return;
                     }
-                    setStatus(el, 'Broadcast saved (id ' + (data.id != null ? data.id : '?') + ').', 'ok');
+                    setStatus(el, 'Office message saved (id ' + (data.id != null ? data.id : '?') + ').', 'ok');
                 } catch (e) {
                     setStatus(el, 'Network error.', 'err');
                 }
@@ -199,23 +214,70 @@
                 }
             });
 
-            document.getElementById('em-btn').addEventListener('click', function () {
+            document.getElementById('em-trigger-btn').addEventListener('click', async function () {
                 const el = document.getElementById('em-status');
-                setStatus(el, 'Emergency Mode is not wired up yet.', 'muted');
+                const code = document.getElementById('em-code').value;
+                setStatus(el, 'Triggering emergency…', 'muted');
+                try {
+                    const res = await fetch('/emergency-mode', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': csrf,
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({ code: code })
+                    });
+                    const data = await res.json().catch(function () { return {}; });
+                    if (!res.ok) {
+                        setStatus(el, data.message || 'Unable to trigger emergency mode.', 'err');
+                        return;
+                    }
+                    setStatus(el, 'Emergency mode active: ' + code, 'ok');
+                } catch (e) {
+                    setStatus(el, 'Network error.', 'err');
+                }
+            });
+
+            document.getElementById('em-clear-btn').addEventListener('click', async function () {
+                const el = document.getElementById('em-status');
+                setStatus(el, 'Clearing emergency…', 'muted');
+                try {
+                    const res = await fetch('/emergency-mode/clear', {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': csrf,
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        credentials: 'same-origin'
+                    });
+                    if (!res.ok) {
+                        setStatus(el, 'Unable to clear emergency mode.', 'err');
+                        return;
+                    }
+                    setStatus(el, 'Emergency mode cleared.', 'ok');
+                } catch (e) {
+                    setStatus(el, 'Network error.', 'err');
+                }
             });
 
             document.getElementById('mp-send').addEventListener('click', async function () {
-                const sid = document.getElementById('mp-student-id').value.trim();
+                const houseId = document.getElementById('mp-house-id').value.trim();
                 const amountRaw = document.getElementById('mp-amount').value.trim();
                 const el = document.getElementById('mp-status');
-                if (!sid || amountRaw === '') {
-                    setStatus(el, 'Student ID and amount are required.', 'err');
+                if (!houseId || amountRaw === '') {
+                    setStatus(el, 'House and amount are required.', 'err');
                     return;
                 }
                 setStatus(el, 'Posting…', 'muted');
                 const fd = new FormData();
-                fd.append('student_id', sid);
+                fd.append('house_id', houseId);
                 fd.append('amount', amountRaw);
+                fd.append('category', 'manual');
+                fd.append('manual_mode', 'house_only');
                 try {
                     const res = await fetch('/points', {
                         method: 'POST',
@@ -232,7 +294,7 @@
                         setStatus(el, data.message || 'Request failed (' + res.status + ').', 'err');
                         return;
                     }
-                    setStatus(el, 'OK — amount ' + data.amount + (data.student ? ' for ' + data.student : '') + '.', 'ok');
+                    setStatus(el, 'OK — amount ' + data.amount + (data.house ? ' for ' + data.house : '') + '.', 'ok');
                 } catch (e) {
                     setStatus(el, 'Network error.', 'err');
                 }

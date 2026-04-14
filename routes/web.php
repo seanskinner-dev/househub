@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\BroadcastMessageController;
 use App\Http\Controllers\OfficeMessageController;
 use App\Http\Controllers\ProfileController;
@@ -50,10 +51,12 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/office-messages/{id}', [OfficeMessageController::class, 'update'])->name('office-messages.update');
 
     // =============================
-    // BROADCAST MESSAGE MODE
+    // OFFICE MESSAGE MODE
     // =============================
     Route::post('/broadcast-messages', [BroadcastMessageController::class, 'store'])->name('broadcast-messages.store');
     Route::post('/omm/clear', [BroadcastMessageController::class, 'clear'])->name('omm.clear');
+    Route::post('/emergency-mode', [BroadcastMessageController::class, 'storeEmergency'])->name('emergency.store');
+    Route::post('/emergency-mode/clear', [BroadcastMessageController::class, 'clearEmergency'])->name('emergency.clear');
 
     // =============================
     // STUDENT PROFILE
@@ -112,7 +115,12 @@ Route::middleware(['auth'])->group(function () {
     // ADMIN
     // =============================
     Route::get('/admin', function () {
-        return view('admin.index');
+        $houses = DB::table('houses')
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.index', ['houses' => $houses]);
     })->name('admin.index');
 
 });

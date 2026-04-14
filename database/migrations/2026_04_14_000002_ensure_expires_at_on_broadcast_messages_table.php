@@ -1,0 +1,26 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        if (! Schema::hasColumn('broadcast_messages', 'expires_at')) {
+            Schema::table('broadcast_messages', function (Blueprint $table) {
+                $table->timestamp('expires_at')->nullable()->after('message');
+            });
+        }
+    }
+
+    public function down(): void
+    {
+        if (Schema::hasColumn('broadcast_messages', 'expires_at')) {
+            Schema::table('broadcast_messages', function (Blueprint $table) {
+                $table->dropColumn('expires_at');
+            });
+        }
+    }
+};

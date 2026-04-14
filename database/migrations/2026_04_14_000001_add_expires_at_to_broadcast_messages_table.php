@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('broadcast_messages', function (Blueprint $table) {
-            $table->timestamp('expires_at')->nullable()->after('created_at');
+            $table->timestamp('expires_at')->nullable()->after('message');
         });
     }
 

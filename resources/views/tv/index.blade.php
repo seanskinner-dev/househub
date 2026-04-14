@@ -60,6 +60,8 @@
             position: fixed;
             inset: 0;
             display: none;
+            flex-direction: column;
+            gap: 18px;
             align-items: center;
             justify-content: center;
             background: #dc2626;
@@ -69,6 +71,12 @@
             text-align: center;
             padding: 40px;
             z-index: 10000;
+        }
+
+        #emergencyScreen .em-sub {
+            font-size: clamp(18px, 2.2vw, 32px);
+            font-weight: 700;
+            opacity: 0.95;
         }
 
         .tv-screen {
@@ -1013,6 +1021,7 @@
 
     <div id="emergencyScreen" style="display:none;">
         <div id="emergencyText"></div>
+        <div class="em-sub">Follow instructions from staff</div>
     </div>
 
     <div id="broadcastBanner" class="tv-broadcast-banner" role="status" aria-live="polite"></div>
@@ -1587,6 +1596,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let currentScreen = 0;
     let ommExpiryTimeout = null;
+    let emergencyActive = false;
 
     function shuffle(array) {
         for (let i = array.length - 1; i > 0; i--) {
@@ -1602,12 +1612,17 @@ document.addEventListener("DOMContentLoaded", function () {
     const broadcastBanner = document.getElementById('broadcastBanner');
 
     function showScreen(index) {
+        if (emergencyActive) {
+            screens.forEach(function (s) { s.style.display = 'none'; });
+            return;
+        }
         screens.forEach((s, i) => {
             s.style.display = (i === index) ? 'flex' : 'none';
         });
     }
 
     function nextScreen() {
+        if (emergencyActive) return;
         currentScreen++;
         if (currentScreen >= screens.length) {
             shuffle(screens);
@@ -1689,18 +1704,33 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(function (data) {
                 const message = data && data.message ? String(data.message) : '';
                 const expiresAt = data && data.expires_at ? String(data.expires_at) : '';
+                var emergencyColorMap = {
+                    'Code Red': '#dc2626',
+                    'Code Blue': '#2563eb',
+                    'Code Yellow': '#eab308',
+                    'Code Black': '#111827',
+                    'Code Orange': '#f97316',
+                    'Lockdown': '#7c3aed',
+                    'Evacuation': '#16a34a'
+                };
 
                 if (message && message.startsWith('EMERGENCY:')) {
+                    const code = message.slice('EMERGENCY:'.length).trim();
+                    const emergencyBg = emergencyColorMap[code] || '#dc2626';
+                    emergencyActive = true;
+                    screens.forEach(function (s) { s.style.display = 'none'; });
                     if (emergencyScreen) {
                         emergencyScreen.style.display = 'flex';
+                        emergencyScreen.style.background = emergencyBg;
                     }
                     if (emergencyText) {
-                        emergencyText.innerText = message.slice('EMERGENCY:'.length).trim();
+                        emergencyText.innerText = code;
                     }
                     if (broadcastBanner) {
                         broadcastBanner.style.display = 'none';
                     }
                 } else {
+                    emergencyActive = false;
                     if (emergencyScreen) {
                         emergencyScreen.style.display = 'none';
                     }
@@ -1742,6 +1772,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             })
             .catch(function () {
+                emergencyActive = false;
                 if (broadcastBanner) {
                     broadcastBanner.style.display = 'none';
                 }

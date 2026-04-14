@@ -21,14 +21,14 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <h2 class="text-xl font-semibold mb-4">Quick Points</h2>
+                <h2 class="text-xl font-semibold mb-4">House Points</h2>
                 <form action="{{ route('points.store') }}" method="POST">
                     @csrf
                     <div class="mb-4">
-                        <label class="block text-sm font-medium mb-1">Student</label>
-                        <select name="student_id" class="w-full border p-2 rounded">
-                            @foreach($students as $student)
-                                <option value="{{ $student->id }}">{{ $student->last_name }}, {{ $student->first_name }} ({{ $student->house_name }})</option>
+                        <label class="block text-sm font-medium mb-1">House</label>
+                        <select name="house_id" class="w-full border p-2 rounded" required>
+                            @foreach($houses as $house)
+                                <option value="{{ $house->id }}">{{ $house->name }}</option>
                             @endforeach
                         </select>
                     </div>

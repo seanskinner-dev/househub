@@ -98,7 +98,10 @@ class PointController extends Controller
                 ];
             }
 
-            if ($request->filled('student_id')) {
+            $manualMode = (string) $request->input('manual_mode', '');
+            $isHouseOnlyManual = strtolower(trim($manualMode)) === 'house_only';
+
+            if ($request->filled('student_id') && ! $isHouseOnlyManual) {
 
                 $student = DB::table('students')
                     ->where('id', $request->student_id)
