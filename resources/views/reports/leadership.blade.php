@@ -311,38 +311,77 @@
 
             function renderHeatmap(data) {
                 var cats = (data.trend && data.trend.categories) ? data.trend.categories : [];
-                var ser = (data.trend && data.trend.series) ? data.trend.series : [];
-                window.lrHeatmapRawDates = cats.slice();
-                var points = cats.map(function (c, i) {
-                    var disp = typeof window.formatReportChartDate === 'function' ? window.formatReportChartDate(c) : String(c);
-                    return { x: disp, y: Number(ser[i]) || 0 };
+                var seriesPayload = (data.trend && data.trend.series) ? data.trend.series : [];
+                var sourceValues;
+                if (
+                    Array.isArray(seriesPayload) &&
+                    seriesPayload.length > 0 &&
+                    typeof seriesPayload[0] === 'object' &&
+                    seriesPayload[0] !== null &&
+                    Array.isArray(seriesPayload[0].data)
+                ) {
+                    sourceValues = seriesPayload[0].data.map(function (v) { return Number(v) || 0; });
+                } else {
+                    sourceValues = (seriesPayload || []).map(function (v) { return Number(v) || 0; });
+                }
+
+                var weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+                var totalsByDay = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0 };
+                cats.forEach(function (rawDate, i) {
+                    var value = sourceValues[i] || 0;
+                    var dt = new Date(String(rawDate));
+                    if (isNaN(dt.getTime())) {
+                        return;
+                    }
+                    var dayIndex = dt.getDay();
+                    var key = null;
+                    if (dayIndex === 1) key = 'Mon';
+                    if (dayIndex === 2) key = 'Tue';
+                    if (dayIndex === 3) key = 'Wed';
+                    if (dayIndex === 4) key = 'Thu';
+                    if (dayIndex === 5) key = 'Fri';
+                    if (key) {
+                        totalsByDay[key] += value;
+                    }
                 });
 
                 var options = {
-                    series: [{ name: 'Weekday points', data: points }],
+                    series: [{
+                        name: 'Activity',
+                        data: weekdays.map(function (d) {
+                            return { x: d, y: totalsByDay[d] || 0 };
+                        })
+                    }],
                     chart: {
                         type: 'heatmap',
                         height: 320,
                         fontFamily: commonFont.fontFamily,
                         foreColor: commonFont.foreColor,
-                        toolbar: { show: false },
-                        events: {
-                            dataPointSelection: function (event, chartContext, config) {
-                                stopEvent(event);
-                                var di = config.dataPointIndex;
-                                var raw = window.lrHeatmapRawDates && window.lrHeatmapRawDates[di] != null
-                                    ? window.lrHeatmapRawDates[di]
-                                    : null;
-                                if (raw) {
-                                    drillDown({ type: 'date', value: String(raw) });
-                                }
+                        toolbar: { show: false }
+                    },
+                    dataLabels: { enabled: false },
+                    xaxis: { categories: weekdays, type: 'category', labels: { rotate: 0 } },
+                    plotOptions: {
+                        heatmap: {
+                            radius: 6,
+                            colorScale: {
+                                ranges: [
+                                    { from: 0, to: 20, color: '#020617' },
+                                    { from: 21, to: 60, color: '#1e293b' },
+                                    { from: 61, to: 120, color: '#0ea5e9' },
+                                    { from: 121, to: 200, color: '#22c55e' }
+                                ]
                             }
                         }
                     },
-                    dataLabels: { enabled: true },
-                    colors: ['#0ea5e9'],
-                    xaxis: { type: 'category', labels: { rotate: -45 } },
-                    tooltip: { theme: 'dark' },
+                    tooltip: {
+                        theme: 'dark',
+                        y: {
+                            formatter: function (val) {
+                                return String(val) + ' points';
+                            }
+                        }
+                    },
                     grid: { borderColor: '#334155' }
                 };
 
