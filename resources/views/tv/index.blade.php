@@ -32,6 +32,15 @@
             transition: background 1s ease;
         }
 
+        .tv-container::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.35);
+            pointer-events: none;
+            z-index: 0;
+        }
+
         .tv-broadcast-banner {
             position: fixed;
             top: 0;
@@ -69,6 +78,8 @@
             width: 100vw;
             overflow: hidden;
             box-sizing: border-box;
+            position: relative;
+            z-index: 1;
         }
 
         .tv-layout {
@@ -162,7 +173,7 @@
             color: #fff;
         }
         .house-card.ravenclaw {
-            background-color: #3b82f6;
+            background-color: #0e1a40;
             color: #fff;
         }
         .house-card.hufflepuff {
@@ -601,6 +612,35 @@
             justify-content: center;
             padding: clamp(16px, 2.5vw, 28px);
             text-shadow: 0 2px 12px rgba(0, 0, 0, 0.55);
+            border-radius: 24px;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow:
+                0 14px 38px rgba(0,0,0,0.68),
+                0 0 34px var(--house-color, rgba(255,255,255,0.22));
+            background-color: var(--house-color, #334155) !important;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .this-term-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.08), rgba(0,0,0,0.25));
+            pointer-events: none;
+        }
+
+        .this-term-card > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .this-term-card.winner {
+            transform: scale(1.03);
+            animation: houseLeaderPulse 4.8s ease-in-out infinite;
+            box-shadow:
+                0 16px 46px rgba(0,0,0,0.75),
+                0 0 56px var(--house-color, rgba(255,255,255,0.34));
         }
 
         .this-term-card .rank {
@@ -707,12 +747,8 @@
             align-items: center;
             padding: 12px 16px;
             border-radius: 18px;
-            background: linear-gradient(
-                145deg,
-                #1f1f1f,
-                #0a0a0a
-            );
-            border: 1px solid rgba(255,255,255,0.08);
+            background-color: var(--house-color, #334155);
+            border: 1px solid rgba(255,255,255,0.1);
             font-size: 1.55rem;
             font-weight: 700;
             position: relative;
@@ -735,6 +771,19 @@
             height: 100%;
             background: radial-gradient(circle, var(--house-color), transparent 70%);
             opacity: 0.25;
+        }
+
+        .student-card::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.08), rgba(0,0,0,0.25));
+            pointer-events: none;
+        }
+
+        .student-card > * {
+            position: relative;
+            z-index: 1;
         }
 
         .student-left {
@@ -783,6 +832,10 @@
                 0 14px 42px rgba(0,0,0,0.85);
         }
 
+        .student-card.is-top-1 .student-rank::before {
+            content: "👑 ";
+        }
+
         .student-card.is-top-2,
         .student-card.is-top-3 {
             box-shadow:
@@ -808,6 +861,17 @@
             font-size: 0.95rem;
         }
 
+        .student-card[data-house="Hufflepuff"] {
+            color: #111;
+            text-shadow: none;
+        }
+
+        .student-card[data-house="Hufflepuff"] .student-rank {
+            border-color: rgba(0,0,0,0.25);
+            background: rgba(255,255,255,0.35);
+            color: #111;
+        }
+
         .banner-container {
             display: flex;
             height: 100vh;
@@ -825,7 +889,7 @@
 
         .banner.gryffindor { --house-color: #740001; }
         .banner.slytherin { --house-color: #1a472a; }
-        .banner.ravenclaw { --house-color: #3b82f6; }
+        .banner.ravenclaw { --house-color: #0e1a40; }
         .banner.hufflepuff { --house-color: #ffcc00; }
 
         .banner-inner {
@@ -846,6 +910,32 @@
             box-shadow:
                 0 20px 60px rgba(0,0,0,0.8),
                 0 0 60px var(--house-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .banner-inner::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.08), rgba(0,0,0,0.35));
+        }
+
+        .banner-inner::after {
+            content: "";
+            position: absolute;
+            width: 64%;
+            height: 64%;
+            border-radius: 999px;
+            background: radial-gradient(circle, var(--house-color), transparent 68%);
+            opacity: 0.22;
+            filter: blur(8px);
+            pointer-events: none;
+        }
+
+        .banner-inner > * {
+            position: relative;
+            z-index: 1;
         }
 
         .banner.hufflepuff .banner-inner {
@@ -853,21 +943,33 @@
         }
 
         .banner-emoji {
-            font-size: 4rem;
+            font-size: clamp(7rem, 12vw, 11rem);
+            line-height: 1;
+            filter: drop-shadow(0 0 24px rgba(255,255,255,0.2));
+            animation: bannerPulse 4.6s ease-in-out infinite;
         }
 
-        .banner-name {
-            font-size: 2rem;
-            font-weight: 900;
-            letter-spacing: 0.08em;
-            text-align: center;
-            max-width: 90%;
-            word-wrap: break-word;
+        .banner-subtitle {
+            font-size: clamp(0.95rem, 1.55vw, 1.45rem);
+            font-weight: 800;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            opacity: 0.86;
         }
 
         .banner-points {
-            font-size: 5rem;
+            font-size: clamp(4rem, 7vw, 6rem);
             font-weight: 900;
+        }
+
+        @keyframes bannerPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.04); }
+        }
+
+        @keyframes houseLeaderPulse {
+            0%, 100% { transform: scale(1.03); }
+            50% { transform: scale(1.06); }
         }
 
         .screen-inner.gryffindor,
@@ -886,7 +988,7 @@
                 return match($house) {
                     'Gryffindor' => ['color' => '#740001', 'emoji' => '🦁'],
                     'Slytherin' => ['color' => '#1a472a', 'emoji' => '🐍'],
-                    'Ravenclaw' => ['color' => '#3b82f6', 'emoji' => '🦅'],
+                    'Ravenclaw' => ['color' => '#0e1a40', 'emoji' => '🦅'],
                     'Hufflepuff' => ['color' => '#ffcc00', 'emoji' => '🦡'],
                     default => ['color' => '#444', 'emoji' => '🏫'],
                 };
@@ -905,28 +1007,28 @@
             <div class="banner gryffindor">
                 <div class="banner-inner">
                     <div class="banner-emoji">🦁</div>
-                    <div class="banner-name">GRYFFINDOR</div>
+                    <div class="banner-subtitle">House Leader</div>
                     <div class="banner-points">{{ $gryffindorPoints }}</div>
                 </div>
             </div>
             <div class="banner slytherin">
                 <div class="banner-inner">
                     <div class="banner-emoji">🐍</div>
-                    <div class="banner-name">SLYTHERIN</div>
+                    <div class="banner-subtitle">Achievement</div>
                     <div class="banner-points">{{ $slytherinPoints }}</div>
                 </div>
             </div>
             <div class="banner ravenclaw">
                 <div class="banner-inner">
                     <div class="banner-emoji">🦅</div>
-                    <div class="banner-name">RAVENCLAW</div>
+                    <div class="banner-subtitle">House Leader</div>
                     <div class="banner-points">{{ $ravenclawPoints }}</div>
                 </div>
             </div>
             <div class="banner hufflepuff">
                 <div class="banner-inner">
                     <div class="banner-emoji">🦡</div>
-                    <div class="banner-name">HUFFLEPUFF</div>
+                    <div class="banner-subtitle">Achievement</div>
                     <div class="banner-points">{{ $hufflepuffPoints }}</div>
                 </div>
             </div>
@@ -1132,9 +1234,12 @@
 
             <div class="tv-this-term-grid">
                 @foreach($housePointsThisTerm as $entry)
+                    @php
+                        $houseMeta = houseMeta($entry['house'] ?? null);
+                    @endphp
                     <div
-                        class="house-card this-term-card"
-                        style="background-color: {{ $entry['colour_hex'] }};"
+                        class="house-card this-term-card{{ $loop->iteration === 1 ? ' winner' : '' }}"
+                        style="--house-color: {{ $houseMeta['color'] }};"
                     >
                         <div class="rank">#{{ $loop->iteration }}</div>
                         <div class="house-name">{{ strtoupper($entry['house']) }}</div>
@@ -1157,9 +1262,12 @@
 
             <div class="tv-this-term-grid">
                 @foreach(collect($housePointsThisYear)->take(4) as $entry)
+                    @php
+                        $houseMeta = houseMeta($entry['house'] ?? null);
+                    @endphp
                     <div
-                        class="house-card this-term-card"
-                        style="background-color: {{ $entry['colour_hex'] }};"
+                        class="house-card this-term-card{{ $loop->iteration === 1 ? ' winner' : '' }}"
+                        style="--house-color: {{ $houseMeta['color'] }};"
                     >
                         <div class="rank">#{{ $loop->iteration }}</div>
                         <div class="house-name">{{ strtoupper($entry['house']) }}</div>
@@ -1512,6 +1620,9 @@ document.addEventListener("DOMContentLoaded", function () {
     function updateWeatherBackground() {
         const container = document.querySelector('.tv-container');
         if (!container) return;
+        const fallbackBg = 'radial-gradient(circle at top, #111827, #020617)';
+
+        container.style.background = fallbackBg;
 
         fetch('https://api.open-meteo.com/v1/forecast?latitude=-42.88&longitude=147.32&current_weather=true')
             .then(res => res.json())
@@ -1528,13 +1639,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 } else if ([95, 96, 99].includes(code)) {
                     bg = 'radial-gradient(circle at top, #111827, #000)';
                 } else {
-                    bg = '#020617';
+                    bg = fallbackBg;
                 }
 
                 container.style.background = bg;
             })
             .catch(function () {
-                // keep existing background when weather fetch fails
+                container.style.background = fallbackBg;
             });
     }
 
