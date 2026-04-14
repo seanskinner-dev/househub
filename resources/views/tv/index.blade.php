@@ -26,8 +26,8 @@
             width: 100vw;
             overflow: hidden;
             background:
-                radial-gradient(circle at center, rgba(0,0,0,0) 60%, rgba(0,0,0,0.7) 100%),
-                #0f172a;
+                radial-gradient(circle at center, rgba(0,0,0,0) 60%, rgba(0,0,0,0.8) 100%),
+                #0a0a0a;
             color: #fff;
         }
 
@@ -161,7 +161,7 @@
             color: #fff;
         }
         .house-card.ravenclaw {
-            background-color: #0e1a40;
+            background-color: #3b82f6;
             color: #fff;
         }
         .house-card.hufflepuff {
@@ -628,7 +628,7 @@
             display: flex;
             flex-direction: column;
             padding: 18px 28px;
-            background: #0f172a;
+            background: #0a0a0a;
             color: #ffffff;
         }
 
@@ -689,8 +689,8 @@
             border-radius: 18px;
             background: linear-gradient(
                 145deg,
-                #1e293b,
-                #0f172a
+                #1f1f1f,
+                #0a0a0a
             );
             border: 1px solid rgba(255,255,255,0.08);
             font-size: 1.55rem;
@@ -698,8 +698,9 @@
             position: relative;
             overflow: hidden;
             box-shadow:
-                0 8px 22px rgba(0,0,0,0.55),
-                0 0 18px var(--house-color);
+                0 10px 30px rgba(0,0,0,0.7),
+                0 0 22px var(--house-color),
+                0 0 8px rgba(255,255,255,0.05);
             backdrop-filter: blur(6px);
             color: #ffffff;
             text-shadow: 0 2px 8px rgba(0,0,0,0.45);
@@ -789,20 +790,71 @@
         }
 
         .student-card[data-house="Hufflepuff"] {
-            color: #111827;
-            text-shadow: none;
+            color: #ff4444;
         }
 
-        .student-card[data-house="Hufflepuff"] .student-rank {
-            border-color: rgba(17,24,39,0.35);
-            background: rgba(255,255,255,0.35);
-            color: #111827;
+        .banner-container {
+            display: flex;
+            height: 100vh;
+            gap: 12px;
+            padding: 12px;
+        }
+
+        .banner {
+            --house-color: #475569;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .banner.gryffindor { --house-color: #740001; }
+        .banner.slytherin { --house-color: #1a472a; }
+        .banner.ravenclaw { --house-color: #3b82f6; }
+        .banner.hufflepuff { --house-color: #ffcc00; }
+
+        .banner-inner {
+            width: 85%;
+            height: 90%;
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            color: #fff;
+            background: linear-gradient(
+                180deg,
+                var(--house-color),
+                #000
+            );
+            box-shadow:
+                0 20px 60px rgba(0,0,0,0.8),
+                0 0 60px var(--house-color);
+        }
+
+        .banner.hufflepuff .banner-inner {
+            color: #111;
+        }
+
+        .banner-emoji {
+            font-size: 4rem;
+        }
+
+        .banner-name {
+            font-size: 2.5rem;
+            font-weight: 900;
+        }
+
+        .banner-points {
+            font-size: 5rem;
+            font-weight: 900;
         }
 
         .screen-inner.gryffindor,
         .screen-inner.slytherin,
         .screen-inner.ravenclaw,
-        .screen-inner.hufflepuff { background: #0f172a; color: #fff; }
+        .screen-inner.hufflepuff { background: #0a0a0a; color: #fff; }
     </style>
 </head>
 
@@ -815,7 +867,7 @@
                 return match($house) {
                     'Gryffindor' => ['color' => '#740001', 'emoji' => '🦁'],
                     'Slytherin' => ['color' => '#1a472a', 'emoji' => '🐍'],
-                    'Ravenclaw' => ['color' => '#0e1a40', 'emoji' => '🦅'],
+                    'Ravenclaw' => ['color' => '#3b82f6', 'emoji' => '🦅'],
                     'Hufflepuff' => ['color' => '#ffcc00', 'emoji' => '🦡'],
                     default => ['color' => '#444', 'emoji' => '🏫'],
                 };
@@ -828,6 +880,39 @@
     </div>
 
     <div id="broadcastBanner" class="tv-broadcast-banner" role="status" aria-live="polite"></div>
+
+    <section class="tv-screen" id="screen-house-banners">
+        <div class="banner-container">
+            <div class="banner gryffindor">
+                <div class="banner-inner">
+                    <div class="banner-emoji">🦁</div>
+                    <div class="banner-name">GRYFFINDOR</div>
+                    <div class="banner-points">{{ $gryffindorPoints }}</div>
+                </div>
+            </div>
+            <div class="banner slytherin">
+                <div class="banner-inner">
+                    <div class="banner-emoji">🐍</div>
+                    <div class="banner-name">SLYTHERIN</div>
+                    <div class="banner-points">{{ $slytherinPoints }}</div>
+                </div>
+            </div>
+            <div class="banner ravenclaw">
+                <div class="banner-inner">
+                    <div class="banner-emoji">🦅</div>
+                    <div class="banner-name">RAVENCLAW</div>
+                    <div class="banner-points">{{ $ravenclawPoints }}</div>
+                </div>
+            </div>
+            <div class="banner hufflepuff">
+                <div class="banner-inner">
+                    <div class="banner-emoji">🦡</div>
+                    <div class="banner-name">HUFFLEPUFF</div>
+                    <div class="banner-points">{{ $hufflepuffPoints }}</div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <div class="tv-screen" id="screen-1">
         <div class="tv-layout">

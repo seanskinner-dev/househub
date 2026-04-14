@@ -315,7 +315,7 @@ class PointController extends Controller
         $houseMap = [
             'Gryffindor' => '#740001',
             'Slytherin'  => '#1a472a',
-            'Ravenclaw'  => '#0e1a40',
+            'Ravenclaw'  => '#3b82f6',
             'Hufflepuff' => '#ffcc00',
         ];
 
@@ -466,6 +466,11 @@ class PointController extends Controller
                 'colour_hex' => $hex,
             ];
         })->values()->all();
+        $houseTotalsLookup = collect($housePointsThisYear)->keyBy('house');
+        $gryffindorPoints = (int) (($houseTotalsLookup->get('Gryffindor')['total'] ?? 0));
+        $slytherinPoints = (int) (($houseTotalsLookup->get('Slytherin')['total'] ?? 0));
+        $ravenclawPoints = (int) (($houseTotalsLookup->get('Ravenclaw')['total'] ?? 0));
+        $hufflepuffPoints = (int) (($houseTotalsLookup->get('Hufflepuff')['total'] ?? 0));
 
         $weather = Cache::remember('tv_weather', 600, function () {
             $fallback = [
@@ -548,6 +553,10 @@ class PointController extends Controller
             'topSlytherin' => $topSlytherin,
             'topRavenclaw' => $topRavenclaw,
             'topHufflepuff' => $topHufflepuff,
+            'gryffindorPoints' => $gryffindorPoints,
+            'slytherinPoints' => $slytherinPoints,
+            'ravenclawPoints' => $ravenclawPoints,
+            'hufflepuffPoints' => $hufflepuffPoints,
         ]);
     }
 }
