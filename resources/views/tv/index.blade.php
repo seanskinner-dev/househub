@@ -688,20 +688,18 @@
             padding: 12px 16px;
             border-radius: 18px;
             background: linear-gradient(
-                135deg,
-                color-mix(in srgb, var(--house-color) 48%, #0f172a 52%),
-                rgba(2, 6, 23, 0.96)
+                145deg,
+                #1e293b,
+                #0f172a
             );
-            border: 1px solid color-mix(in srgb, var(--house-color) 60%, #94a3b8 40%);
+            border: 1px solid rgba(255,255,255,0.08);
             font-size: 1.55rem;
             font-weight: 700;
             position: relative;
             overflow: hidden;
             box-shadow:
                 0 8px 22px rgba(0,0,0,0.55),
-                0 0 20px rgba(255,255,255,0.03),
-                0 0 25px var(--house-color),
-                inset 0 1px 0 rgba(255,255,255,0.05);
+                0 0 18px var(--house-color);
             backdrop-filter: blur(6px);
             color: #ffffff;
             text-shadow: 0 2px 8px rgba(0,0,0,0.45);
@@ -716,7 +714,7 @@
             width: 160px;
             height: 100%;
             background: radial-gradient(circle, var(--house-color), transparent 70%);
-            opacity: 0.35;
+            opacity: 0.18;
         }
 
         .student-left {
