@@ -161,7 +161,7 @@
             color: #fff;
         }
         .house-card.ravenclaw {
-            background-color: #0e1a40;
+            background-color: #3b82f6;
             color: #fff;
         }
         .house-card.hufflepuff {
@@ -326,86 +326,12 @@
             gap: 28px;
         }
 
-        .streak-line {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 16px;
-        }
-
-        .streak-sep {
-            opacity: 0.5;
-        }
-
-        .streak-item {
+        .streak-list {
+            width: min(1200px, 92vw);
             display: flex;
             flex-direction: column;
-            animation: streakFadeIn 0.6s ease-out;
-        }
-
-        .streak-item:nth-child(2) {
-            animation-delay: 0.1s;
-        }
-
-        .streak-item:nth-child(3) {
-            animation-delay: 0.2s;
-        }
-
-        .streak-item:first-child {
-            transform: scale(1.1);
-            opacity: 1;
-        }
-
-        .streak-item:not(:first-child) {
-            opacity: 0.7;
-        }
-
-        .streak-item:first-child .streak-name {
-            animation: firePulse 2.5s ease-in-out infinite;
-        }
-
-        .streak-name {
-            font-size: clamp(36px, 5vw, 70px);
-            font-weight: 700;
-        }
-
-        .streak-value {
-            font-size: clamp(28px, 4vw, 50px);
-            font-weight: 900;
-            letter-spacing: 0.05em;
-            opacity: 0.8;
-        }
-
-        .streak-item.gryffindor .streak-name {
-            color: #ff4d4d;
-        }
-
-        .streak-item.slytherin .streak-name {
-            color: #4ade80;
-        }
-
-        .streak-item.ravenclaw .streak-name {
-            color: #60a5fa;
-        }
-
-        .streak-item.hufflepuff .streak-name {
-            color: #facc15;
-        }
-
-        .streak-item:first-child.gryffindor .streak-name {
-            text-shadow: 0 0 20px rgba(255, 77, 77, 0.6);
-        }
-
-        .streak-item:first-child.slytherin .streak-name {
-            text-shadow: 0 0 20px rgba(74, 222, 128, 0.6);
-        }
-
-        .streak-item:first-child.ravenclaw .streak-name {
-            text-shadow: 0 0 20px rgba(96, 165, 250, 0.6);
-        }
-
-        .streak-item:first-child.hufflepuff .streak-name {
-            text-shadow: 0 0 20px rgba(250, 204, 21, 0.6);
+            gap: 14px;
+            margin-top: 40px;
         }
 
         .activity-container {
@@ -444,25 +370,12 @@
         }
 
         .activity-list {
+            width: min(1200px, 92vw);
             display: flex;
             flex-direction: column;
-            gap: 24px;
+            gap: 14px;
+            margin-top: 40px;
         }
-
-        .activity-item {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            font-size: clamp(32px, 5vw, 60px);
-            font-weight: 700;
-            opacity: 0;
-            transform: translateY(20px);
-            animation: activityFadeIn 0.6s ease forwards;
-        }
-
-        .activity-item:nth-child(1) { animation-delay: 0.1s; }
-        .activity-item:nth-child(2) { animation-delay: 0.2s; }
-        .activity-item:nth-child(3) { animation-delay: 0.3s; }
 
         @keyframes activityFadeIn {
             to {
@@ -470,32 +383,6 @@
                 transform: translateY(0);
             }
         }
-
-        .activity-item strong {
-            animation: pulsePoints 2.5s ease-in-out infinite;
-        }
-
-        @keyframes pulsePoints {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-
-        .activity-points {
-            font-weight: 900;
-        }
-
-        .activity-sep {
-            opacity: 0.5;
-        }
-
-        .house {
-            font-weight: 700;
-        }
-
-        .house.gryffindor { color: #ef4444; }
-        .house.slytherin { color: #22c55e; }
-        .house.ravenclaw { color: #60a5fa; }
-        .house.hufflepuff { color: #facc15; }
 
         .top-container {
             flex: 1;
@@ -580,68 +467,9 @@
             overflow: hidden;
         }
 
-        .student-row {
-            font-size: clamp(26px, 3vw, 44px);
-            line-height: 1.1;
-            opacity: 0;
-            transform: translateY(20px);
-            animation: fadeUp 0.6s ease forwards;
-            transition: opacity 0.3s;
-        }
-
-        .student-row:nth-child(1) { animation-delay: 0.1s; }
-        .student-row:nth-child(2) { animation-delay: 0.2s; }
-        .student-row:nth-child(3) { animation-delay: 0.3s; }
-        .student-row:nth-child(4) { animation-delay: 0.4s; }
-
-        .student-row:hover {
-            opacity: 1;
-        }
-
-        @keyframes fadeUp {
-            to {
-                opacity: 0.7;
-                transform: translateY(0);
-            }
-        }
-
-        .top-item {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            font-weight: 700;
-        }
-
-        .student-row.top-item {
-            font-size: clamp(26px, 3vw, 44px);
-        }
-
-        .top-rank {
-            opacity: 0.6;
-        }
-
-        .top-sep {
-            opacity: 0.5;
-        }
-
-        .top-points {
-            font-weight: 900;
-        }
-
-        .top-item.gryffindor .top-name {
-            color: #ff4d4d;
-        }
-
-        .top-item.slytherin .top-name {
-            color: #4ade80;
-        }
-
-        .top-item.ravenclaw .top-name {
-            color: #60a5fa;
-        }
-
-        .top-item.hufflepuff .top-name {
-            color: #facc15;
+        .top-list {
+            gap: 14px;
+            width: min(1200px, 92vw);
         }
 
         .weather-container {
@@ -846,6 +674,8 @@
             overflow: hidden;
             box-shadow:
                 0 10px 30px rgba(0,0,0,0.6),
+                0 0 20px rgba(255,255,255,0.03),
+                0 0 25px var(--house-color),
                 inset 0 1px 0 rgba(255,255,255,0.05);
             backdrop-filter: blur(6px);
         }
@@ -853,12 +683,12 @@
         .student-card::before {
             content: "";
             position: absolute;
-            left: -40px;
+            left: -60px;
             top: 0;
-            width: 120px;
+            width: 160px;
             height: 100%;
             background: radial-gradient(circle, var(--house-color), transparent 70%);
-            opacity: 0.25;
+            opacity: 0.35;
         }
 
         .leaderboard-list .student-card:first-child {
@@ -909,7 +739,7 @@
                 return match($house) {
                     'Gryffindor' => ['color' => '#740001', 'emoji' => '🦁'],
                     'Slytherin' => ['color' => '#1a472a', 'emoji' => '🐍'],
-                    'Ravenclaw' => ['color' => '#0e1a40', 'emoji' => '🦅'],
+                    'Ravenclaw' => ['color' => '#3b82f6', 'emoji' => '🦅'],
                     'Hufflepuff' => ['color' => '#ffcc00', 'emoji' => '🦡'],
                     default => ['color' => '#444', 'emoji' => '🏫'],
                 };
@@ -976,31 +806,28 @@
             </div>
 
             <div class="streak-list">
-
-                <div class="streak-item gryffindor">
-                    <div class="streak-line">
-                        <span class="streak-name">🦁 JOSH</span>
-                        <span class="streak-sep">—</span>
-                        <span class="streak-value">5 DAY STREAK</span>
+                @php
+                    $streakData = collect([
+                        ['student_name' => 'JOSH', 'house_name' => 'Gryffindor', 'days' => 6],
+                        ['student_name' => 'EMMA', 'house_name' => 'Slytherin', 'days' => 5],
+                        ['student_name' => 'LIAM', 'house_name' => 'Ravenclaw', 'days' => 4],
+                        ['student_name' => 'AVA', 'house_name' => 'Hufflepuff', 'days' => 3],
+                        ['student_name' => 'NOAH', 'house_name' => 'Gryffindor', 'days' => 2],
+                        ['student_name' => 'MIA', 'house_name' => 'Ravenclaw', 'days' => 2],
+                    ])->take(6);
+                @endphp
+                @foreach($streakData as $streak)
+                    @php
+                        $meta = houseMeta($streak['house_name']);
+                    @endphp
+                    <div class="student-card" style="--house-color: {{ $meta['color'] }}">
+                        <div class="student-left">
+                            <span class="student-emoji">{{ $meta['emoji'] }}</span>
+                            <span class="student-name">{{ $streak['student_name'] }}</span>
+                        </div>
+                        <div class="student-rank">{{ $streak['days'] }} DAY STREAK</div>
                     </div>
-                </div>
-
-                <div class="streak-item slytherin">
-                    <div class="streak-line">
-                        <span class="streak-name">🐍 EMMA</span>
-                        <span class="streak-sep">—</span>
-                        <span class="streak-value">4 DAY STREAK</span>
-                    </div>
-                </div>
-
-                <div class="streak-item ravenclaw">
-                    <div class="streak-line">
-                        <span class="streak-name">🦅 LIAM</span>
-                        <span class="streak-sep">—</span>
-                        <span class="streak-value">3 DAY STREAK</span>
-                    </div>
-                </div>
-
+                @endforeach
             </div>
 
         </div>
@@ -1016,28 +843,28 @@
             </div>
 
             <div class="activity-list">
-
-                <div class="activity-item gryffindor">
-                    <strong class="activity-points">+1</strong>
-                    <span class="house gryffindor">🦁 Gryffindor</span>
-                    <span class="activity-sep">—</span>
-                    <span class="activity-student">Josh</span>
-                </div>
-
-                <div class="activity-item slytherin">
-                    <strong class="activity-points">+5</strong>
-                    <span class="house slytherin">🐍 Slytherin</span>
-                    <span class="activity-sep">—</span>
-                    <span class="activity-student">Emma</span>
-                </div>
-
-                <div class="activity-item ravenclaw">
-                    <strong class="activity-points">+1</strong>
-                    <span class="house ravenclaw">🦅 Ravenclaw</span>
-                    <span class="activity-sep">—</span>
-                    <span class="activity-student">Liam</span>
-                </div>
-
+                @php
+                    $activityData = collect([
+                        ['student_name' => 'JOSH', 'house_name' => 'Gryffindor', 'points' => 6],
+                        ['student_name' => 'EMMA', 'house_name' => 'Slytherin', 'points' => 5],
+                        ['student_name' => 'LIAM', 'house_name' => 'Ravenclaw', 'points' => 4],
+                        ['student_name' => 'AVA', 'house_name' => 'Hufflepuff', 'points' => 3],
+                        ['student_name' => 'NOAH', 'house_name' => 'Gryffindor', 'points' => 2],
+                        ['student_name' => 'MIA', 'house_name' => 'Ravenclaw', 'points' => 1],
+                    ])->take(6);
+                @endphp
+                @foreach($activityData as $activity)
+                    @php
+                        $meta = houseMeta($activity['house_name']);
+                    @endphp
+                    <div class="student-card" style="--house-color: {{ $meta['color'] }}">
+                        <div class="student-left">
+                            <span class="student-emoji">{{ $meta['emoji'] }}</span>
+                            <span class="student-name">{{ $activity['student_name'] }}</span>
+                        </div>
+                        <div class="student-rank">+{{ $activity['points'] }}</div>
+                    </div>
+                @endforeach
             </div>
 
         </div>
@@ -1050,7 +877,7 @@
 
             @php
                 $leader = $topStudents[0] ?? null;
-                $list = $topStudents->slice(1, 4)->values();
+                $list = $topStudents->slice(1, 5)->values();
             @endphp
 
             <div class="top-title">
@@ -1071,9 +898,16 @@
 
             <div class="top-list">
                 @foreach($list as $index => $student)
-                    <div class="student-row">
-                        {{ $index + 2 }}.
-                        {{ $student->name }} — {{ $student->house_points }} pts
+                    @php
+                        $houseName = optional($student->house)->name ?? ($student->house_name ?? null);
+                        $meta = houseMeta($houseName);
+                    @endphp
+                    <div class="student-card" style="--house-color: {{ $meta['color'] }}">
+                        <div class="student-left">
+                            <span class="student-emoji">{{ $meta['emoji'] }}</span>
+                            <span class="student-name">{{ $student->name }}</span>
+                        </div>
+                        <div class="student-rank">#{{ $index + 2 }}</div>
                     </div>
                 @endforeach
             </div>
@@ -1216,7 +1050,7 @@
 
     <div class="tv-screen" id="screen-top-gryffindor">
         <div class="screen-inner gryffindor">
-            <h1 class="screen-title">Top 10 - Gryffindor</h1>
+            <h1 class="screen-title">Top 6 - Gryffindor</h1>
             <div class="leaderboard-list">
                 @foreach($topGryffindor as $index => $student)
                     @php
@@ -1236,7 +1070,7 @@
 
     <div class="tv-screen" id="screen-top-slytherin">
         <div class="screen-inner slytherin">
-            <h1 class="screen-title">Top 10 - Slytherin</h1>
+            <h1 class="screen-title">Top 6 - Slytherin</h1>
             <div class="leaderboard-list">
                 @foreach($topSlytherin as $index => $student)
                     @php
@@ -1256,7 +1090,7 @@
 
     <div class="tv-screen" id="screen-top-ravenclaw">
         <div class="screen-inner ravenclaw">
-            <h1 class="screen-title">Top 10 - Ravenclaw</h1>
+            <h1 class="screen-title">Top 6 - Ravenclaw</h1>
             <div class="leaderboard-list">
                 @foreach($topRavenclaw as $index => $student)
                     @php
@@ -1276,7 +1110,7 @@
 
     <div class="tv-screen" id="screen-top-hufflepuff">
         <div class="screen-inner hufflepuff">
-            <h1 class="screen-title">Top 10 - Hufflepuff</h1>
+            <h1 class="screen-title">Top 6 - Hufflepuff</h1>
             <div class="leaderboard-list">
                 @foreach($topHufflepuff as $index => $student)
                     @php

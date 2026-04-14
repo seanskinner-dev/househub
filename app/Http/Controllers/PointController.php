@@ -38,7 +38,7 @@ class PointController extends Controller
                 'users.name as teacher'
             )
             ->orderByDesc('point_transactions.created_at')
-            ->limit(10)
+            ->limit(6)
             ->get();
 
         $houses = DB::table('houses')->get();
@@ -350,7 +350,7 @@ class PointController extends Controller
 
         $topStudents = \App\Models\Student::with('house')
             ->orderByDesc('house_points')
-            ->limit(5)
+            ->limit(6)
             ->get();
 
         $topTeachers = DB::table('point_transactions')
@@ -362,7 +362,7 @@ class PointController extends Controller
             ->where('point_transactions.created_at', '>=', now()->subDays(7))
             ->groupBy('users.name')
             ->orderByDesc('total')
-            ->limit(10)
+            ->limit(6)
             ->get();
 
         $termCaseSql = 'CASE '
@@ -526,7 +526,7 @@ class PointController extends Controller
                 ->select('students.first_name', 'students.last_name', 'students.house_points', 'houses.name as house_name')
                 ->where('houses.name', $houseName)
                 ->orderByDesc('students.house_points')
-                ->limit(10)
+                ->limit(6)
                 ->get();
         };
 
