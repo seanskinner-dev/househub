@@ -53,6 +53,7 @@ Route::middleware(['auth'])->group(function () {
     // BROADCAST MESSAGE MODE
     // =============================
     Route::post('/broadcast-messages', [BroadcastMessageController::class, 'store'])->name('broadcast-messages.store');
+    Route::post('/omm/clear', [BroadcastMessageController::class, 'clear'])->name('omm.clear');
 
     // =============================
     // STUDENT PROFILE

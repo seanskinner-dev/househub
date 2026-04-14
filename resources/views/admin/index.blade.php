@@ -107,7 +107,10 @@
             <h2 id="bmm-heading">Broadcast Message Mode</h2>
             <label for="bmm-message">Message</label>
             <textarea id="bmm-message" placeholder="Broadcast message for displays…"></textarea>
-            <button type="button" class="btn-primary" id="bmm-send">Send broadcast</button>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <button type="button" class="btn-primary" id="bmm-send">Send broadcast</button>
+                <button type="button" class="btn-muted" id="clear-omm-btn">Clear</button>
+            </div>
             <div class="status muted" id="bmm-status" aria-live="polite"></div>
         </section>
 
@@ -167,6 +170,30 @@
                         return;
                     }
                     setStatus(el, 'Broadcast saved (id ' + (data.id != null ? data.id : '?') + ').', 'ok');
+                } catch (e) {
+                    setStatus(el, 'Network error.', 'err');
+                }
+            });
+
+            document.getElementById('clear-omm-btn')?.addEventListener('click', async function () {
+                const el = document.getElementById('bmm-status');
+                setStatus(el, 'Clearing…', 'muted');
+                try {
+                    const res = await fetch('/omm/clear', {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': csrf,
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        credentials: 'same-origin'
+                    });
+                    if (!res.ok) {
+                        setStatus(el, 'Unable to clear message.', 'err');
+                        return;
+                    }
+                    setStatus(el, 'Message cleared.', 'ok');
+                    location.reload();
                 } catch (e) {
                     setStatus(el, 'Network error.', 'err');
                 }

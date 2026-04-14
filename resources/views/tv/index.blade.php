@@ -1224,6 +1224,7 @@
 document.addEventListener("DOMContentLoaded", function () {
 
     let currentScreen = 0;
+    let ommExpiryTimeout = null;
 
     function shuffle(array) {
         for (let i = array.length - 1; i > 0; i--) {
@@ -1293,6 +1294,7 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .then(function (data) {
                 const message = data && data.message ? String(data.message) : '';
+                const expiresAt = data && data.expires_at ? String(data.expires_at) : '';
 
                 if (message && message.startsWith('EMERGENCY:')) {
                     if (emergencyScreen) {
@@ -1314,6 +1316,33 @@ document.addEventListener("DOMContentLoaded", function () {
                             broadcastBanner.style.display = 'block';
                         } else {
                             broadcastBanner.style.display = 'none';
+                        }
+                    }
+                }
+
+                if (ommExpiryTimeout) {
+                    clearTimeout(ommExpiryTimeout);
+                    ommExpiryTimeout = null;
+                }
+                if (expiresAt) {
+                    const expiryTime = new Date(expiresAt).getTime();
+                    const nowMs = new Date().getTime();
+                    const timeLeft = expiryTime - nowMs;
+                    if (timeLeft > 0) {
+                        ommExpiryTimeout = setTimeout(function () {
+                            if (broadcastBanner) {
+                                broadcastBanner.style.display = 'none';
+                            }
+                            if (emergencyScreen) {
+                                emergencyScreen.style.display = 'none';
+                            }
+                        }, timeLeft);
+                    } else {
+                        if (broadcastBanner) {
+                            broadcastBanner.style.display = 'none';
+                        }
+                        if (emergencyScreen) {
+                            emergencyScreen.style.display = 'none';
                         }
                     }
                 }
