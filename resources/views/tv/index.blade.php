@@ -1,3 +1,7 @@
+<div style="background:red;color:white;position:fixed;top:0;left:0;z-index:9999;">
+    TV VIEW CONFIRMED
+</div>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1239,6 +1243,9 @@
 <body>
 
 <div class="tv-container">
+    <div style="color:white;position:absolute;z-index:9999;">
+        INSIDE CONTAINER
+    </div>
     <div id="tv-bg"></div>
     <div id="debug-test" style="color:white; position:absolute; z-index:9999;">
         CONTENT SHOULD BE HERE
