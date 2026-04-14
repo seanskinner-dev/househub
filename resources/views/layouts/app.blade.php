@@ -229,6 +229,20 @@
             fill: transparent !important;
         }
 
+        .apexcharts-data-label {
+            fill: #f8fafc !important;
+        }
+
+        .apexcharts-datalabel-label,
+        .apexcharts-datalabel-value {
+            fill: #f8fafc !important;
+        }
+
+        .apexcharts-data-labels rect {
+            fill: transparent !important;
+            stroke: none !important;
+        }
+
         .btn-add,
         .btn-sub {
             background-color: transparent !important;
@@ -1093,7 +1107,12 @@
             dataLabels: {
                 enabled: true,
                 style: {
-                    colors: ['#f8fafc']
+                    colors: ['#f8fafc'],
+                    fontSize: '12px',
+                    fontWeight: 600
+                },
+                background: {
+                    enabled: false
                 }
             },
 
@@ -1101,6 +1120,9 @@
                 theme: 'dark',
                 style: {
                     fontSize: '13px'
+                },
+                marker: {
+                    show: true
                 }
             },
 
@@ -1167,6 +1189,22 @@
                 }
             };
 
+            merged.dataLabels = {
+                ...(merged.dataLabels || {}),
+                ...(options.dataLabels || {}),
+                enabled: true,
+                style: {
+                    ...((merged.dataLabels && merged.dataLabels.style) || {}),
+                    ...((options.dataLabels && options.dataLabels.style) || {}),
+                    colors: ['#f8fafc']
+                },
+                background: {
+                    ...((merged.dataLabels && merged.dataLabels.background) || {}),
+                    ...((options.dataLabels && options.dataLabels.background) || {}),
+                    enabled: false
+                }
+            };
+
             if (options.chart && options.chart.type === 'heatmap') {
                 merged.plotOptions = merged.plotOptions || {};
                 merged.plotOptions.heatmap = {
@@ -1187,16 +1225,6 @@
                     ...(merged.stroke || {}),
                     width: 2,
                     colors: ['#020617']
-                };
-                merged.dataLabels = {
-                    ...(merged.dataLabels || {}),
-                    ...(options.dataLabels || {}),
-                    enabled: true,
-                    style: {
-                        ...((merged.dataLabels && merged.dataLabels.style) || {}),
-                        ...((options.dataLabels && options.dataLabels.style) || {}),
-                        colors: ['#f8fafc']
-                    }
                 };
             }
 
