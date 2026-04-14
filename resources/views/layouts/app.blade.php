@@ -234,7 +234,9 @@
             fill: transparent !important;
         }
 
-        .apexcharts-data-label {
+        .apexcharts-data-label,
+        .apexcharts-data-label text,
+        .apexcharts-point-annotation-label text {
             fill: #f8fafc !important;
         }
 
@@ -264,6 +266,7 @@
             fill: #f8fafc !important;
         }
 
+        .apexcharts-data-labels rect,
         .apexcharts-point-annotation-label rect,
         .apexcharts-xaxis-annotation-label rect,
         .apexcharts-yaxis-annotation-label rect {
