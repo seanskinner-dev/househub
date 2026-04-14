@@ -247,6 +247,34 @@
             fill: #f8fafc !important;
         }
 
+        .apexcharts-point-annotation-label,
+        .apexcharts-xaxis-annotation-label,
+        .apexcharts-yaxis-annotation-label {
+            background: #1e293b !important;
+            color: #f8fafc !important;
+            border: 1px solid #334155 !important;
+            border-radius: 6px !important;
+            padding: 4px 8px !important;
+            font-weight: 600 !important;
+        }
+
+        .apexcharts-point-annotation-label text,
+        .apexcharts-xaxis-annotation-label text,
+        .apexcharts-yaxis-annotation-label text {
+            fill: #f8fafc !important;
+        }
+
+        .apexcharts-point-annotation-label rect,
+        .apexcharts-xaxis-annotation-label rect,
+        .apexcharts-yaxis-annotation-label rect {
+            fill: #1e293b !important;
+            stroke: #334155 !important;
+        }
+
+        .apexcharts-point-annotation-label rect {
+            opacity: 0.95;
+        }
+
         .btn-add,
         .btn-sub {
             background-color: transparent !important;
