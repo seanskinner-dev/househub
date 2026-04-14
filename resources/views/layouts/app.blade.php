@@ -257,6 +257,41 @@
         {{ $slot ?? '' }}
     </div>
 
+    <div id="commendationModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:2000;align-items:center;justify-content:center;padding:16px;" aria-hidden="true">
+        <div role="dialog" aria-modal="true" aria-labelledby="commendationModalTitle" style="background:#1e293b;color:#f1f5f9;max-width:480px;width:100%;border-radius:10px;padding:20px;border:1px solid #334155;">
+            <h2 id="commendationModalTitle" class="h5 mb-3">Commendation</h2>
+            <input type="hidden" id="commendationModalStudentId" value="">
+            <label class="form-label small text-white-50" for="commendationModalText">Message</label>
+            <textarea id="commendationModalText" class="form-control mb-3" rows="4" style="background:#0f172a;border-color:#334155;color:#f1f5f9;" placeholder="Describe the commendation…"></textarea>
+            <div class="d-flex gap-2 justify-content-end">
+                <button type="button" class="btn btn-secondary btn-sm" id="commendationModalCancel">Cancel</button>
+                <button type="button" class="btn btn-primary btn-sm" id="commendationModalSubmit">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="awardModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:2000;align-items:center;justify-content:center;padding:16px;" aria-hidden="true">
+        <div role="dialog" aria-modal="true" aria-labelledby="awardModalTitle" style="background:#1e293b;color:#f1f5f9;max-width:480px;width:100%;border-radius:10px;padding:20px;border:1px solid #334155;">
+            <h2 id="awardModalTitle" class="h5 mb-3">Award</h2>
+            <input type="hidden" id="awardModalStudentId" value="">
+            <label class="form-label small text-white-50" for="awardModalName">Award</label>
+            <select id="awardModalName" class="form-select mb-2" style="background:#0f172a;border-color:#334155;color:#f1f5f9;">
+                <option value="Academic Excellence">Academic Excellence</option>
+                <option value="Sporting Achievement">Sporting Achievement</option>
+                <option value="Leadership">Leadership</option>
+                <option value="Community Service">Community Service</option>
+                <option value="Creative Arts">Creative Arts</option>
+                <option value="Other">Other (use description)</option>
+            </select>
+            <label class="form-label small text-white-50" for="awardModalDescription">Description</label>
+            <textarea id="awardModalDescription" class="form-control mb-3" rows="4" style="background:#0f172a;border-color:#334155;color:#f1f5f9;" placeholder="Why are they receiving this?"></textarea>
+            <div class="d-flex gap-2 justify-content-end">
+                <button type="button" class="btn btn-secondary btn-sm" id="awardModalCancel">Cancel</button>
+                <button type="button" class="btn btn-primary btn-sm" id="awardModalSubmit">Save</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script>
         if (typeof ApexCharts === 'undefined') {
@@ -289,6 +324,9 @@
         (function () {
             window._reportDrilldownSortState = window._reportDrilldownSortState || new Map();
 
+            var pointsCommendationUrl = @json(route('points.commendation'));
+            var pointsAwardUrl = @json(route('points.award'));
+
             function escapeReportHtml(value) {
                 return String(value == null ? '' : value)
                     .replace(/&/g, '&amp;')
@@ -297,6 +335,37 @@
                     .replace(/"/g, '&quot;')
                     .replace(/'/g, '&#39;');
             }
+
+            window.houseHubPrependRecentActivity = function (entry) {
+                if (!entry) {
+                    return;
+                }
+                var wrap = document.getElementById('recent-activity');
+                if (!wrap) {
+                    return;
+                }
+                var emptyMsg = wrap.querySelector('p.text-muted');
+                if (emptyMsg && emptyMsg.textContent && emptyMsg.textContent.indexOf('No recent') !== -1) {
+                    emptyMsg.remove();
+                }
+                var who = entry.who != null ? String(entry.who) : '—';
+                var amt = entry.amount != null ? Number(entry.amount) : 0;
+                var sign = amt > 0 ? '+' : '';
+                var cat = entry.category != null ? String(entry.category) : '';
+                var teacher = entry.teacher != null ? String(entry.teacher) : '';
+                var row = document.createElement('div');
+                row.className = 'mb-3 pb-2 border-bottom border-secondary';
+                row.style.borderColor = '#334155';
+                var html = '<div><strong>' + sign + amt + '</strong> ' + escapeReportHtml(who) + '</div>';
+                if (cat) {
+                    html += '<div class="text-muted" style="color: #94a3b8 !important;">' + escapeReportHtml(cat) + '</div>';
+                }
+                if (teacher) {
+                    html += '<div class="text-muted" style="color: #94a3b8 !important;">' + escapeReportHtml(teacher) + '</div>';
+                }
+                row.innerHTML = html;
+                wrap.insertBefore(row, wrap.firstChild);
+            };
 
             function drilldownDateOnlyPart(dateRaw) {
                 if (dateRaw == null || dateRaw === '') return '';
@@ -448,16 +517,29 @@
             function reportSendPoint(studentId, amount) {
                 var meta = document.querySelector('meta[name="csrf-token"]');
                 var token = meta ? meta.getAttribute('content') : '';
-                fetch('/points', {
+                fetch(@json(url('/points')), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRF-TOKEN': token
                     },
+                    credentials: 'same-origin',
                     body: JSON.stringify({ student_id: studentId, amount: amount })
                 })
-                    .then(function (res) { return res.json(); })
-                    .then(function () { reportShowToast('Points updated'); })
+                    .then(function (res) {
+                        if (!res.ok) {
+                            throw new Error('bad status');
+                        }
+                        return res.json();
+                    })
+                    .then(function (data) {
+                        if (data && data.recent_entry) {
+                            window.houseHubPrependRecentActivity(data.recent_entry);
+                        }
+                        reportShowToast('Points updated');
+                    })
                     .catch(function () { reportShowToast('Unable to update points'); });
             }
 
@@ -495,13 +577,14 @@
                     var canAct = studentIdUsable(sid);
                     var dis = canAct ? '' : ' disabled';
                     var dataId = canAct ? escapeReportHtml(String(sid)) : '';
+                    var dataStudentAttr = canAct ? ' data-student-id="' + dataId + '"' : '';
                     var actions =
                         '<td class="td-actions text-end" style="padding:12px 14px;vertical-align:middle;">' +
                         '<div class="d-flex gap-2 justify-content-end flex-wrap">' +
-                        '<button type="button" class="btn-sub btn btn-sm"' + dis + ' data-id="' + dataId + '">-1</button>' +
-                        '<button type="button" class="btn-add btn btn-sm"' + dis + ' data-id="' + dataId + '">+1</button>' +
-                        '<button type="button" class="btn-award btn btn-sm"' + dis + ' data-id="' + dataId + '">🏆</button>' +
-                        '<button type="button" class="btn-commend btn btn-sm"' + dis + ' data-id="' + dataId + '">⭐</button>' +
+                        '<button type="button" class="btn-sub btn btn-sm"' + dis + ' data-id="' + dataId + '"' + dataStudentAttr + '>-1</button>' +
+                        '<button type="button" class="btn-add btn btn-sm"' + dis + ' data-id="' + dataId + '"' + dataStudentAttr + '>+1</button>' +
+                        '<button type="button" class="btn-award btn btn-sm"' + dis + ' data-id="' + dataId + '"' + dataStudentAttr + '>🏆</button>' +
+                        '<button type="button" class="btn-commend btn btn-sm"' + dis + ' data-id="' + dataId + '"' + dataStudentAttr + '>⭐</button>' +
                         '</div></td>';
                     return '<tr class="report-drilldown-row">' + nameCell +
                         '<td style="text-align:left;padding:12px 14px;vertical-align:middle;">' + yl + '</td>' +
@@ -691,7 +774,8 @@
             document.addEventListener('click', function (e) {
                 var addBtn = e.target.closest('button.btn-add');
                 if (addBtn && !addBtn.disabled) {
-                    var id = addBtn.getAttribute('data-id');
+                    e.preventDefault();
+                    var id = addBtn.getAttribute('data-student-id') || addBtn.getAttribute('data-id');
                     if (id) {
                         reportSendPoint(id, 1);
                     }
@@ -699,7 +783,8 @@
                 }
                 var subBtn = e.target.closest('button.btn-sub');
                 if (subBtn && !subBtn.disabled) {
-                    var id2 = subBtn.getAttribute('data-id');
+                    e.preventDefault();
+                    var id2 = subBtn.getAttribute('data-student-id') || subBtn.getAttribute('data-id');
                     if (id2) {
                         reportSendPoint(id2, -1);
                     }
@@ -707,26 +792,196 @@
                 }
                 var awardBtn = e.target.closest('button.btn-award');
                 if (awardBtn && !awardBtn.disabled) {
-                    var id3 = awardBtn.getAttribute('data-id');
-                    if (id3 && typeof window.openAwardModal === 'function') {
+                    e.preventDefault();
+                    var id3 = awardBtn.getAttribute('data-student-id') || awardBtn.getAttribute('data-id');
+                    if (id3) {
                         window.openAwardModal(id3);
-                    } else if (id3) {
-                        window.dispatchEvent(new CustomEvent('award:open', { detail: { student_id: id3 } }));
                     }
                     return;
                 }
                 var commendBtn = e.target.closest('button.btn-commend');
                 if (commendBtn && !commendBtn.disabled) {
-                    var id4 = commendBtn.getAttribute('data-id');
-                    if (id4 && typeof window.openCommendationModal === 'function') {
+                    e.preventDefault();
+                    var id4 = commendBtn.getAttribute('data-student-id') || commendBtn.getAttribute('data-id');
+                    if (id4) {
                         window.openCommendationModal(id4);
-                    } else if (id4) {
-                        window.dispatchEvent(new CustomEvent('commendation:open', { detail: { student_id: id4 } }));
                     }
                 }
-            });
+            }, false);
+
+            document.addEventListener('click', function (e) {
+                var t = e.target.closest('button.btn-add, button.btn-sub');
+                if (t) {
+                    e.preventDefault();
+                }
+            }, true);
+
+            function houseHubCsrf() {
+                var m = document.querySelector('meta[name="csrf-token"]');
+                return m ? m.getAttribute('content') : '';
+            }
+
+            window.openCommendationModal = function (studentId) {
+                var sid = studentId != null ? String(studentId).trim() : '';
+                if (!sid) {
+                    return;
+                }
+                var inp = document.getElementById('commendationModalStudentId');
+                var ta = document.getElementById('commendationModalText');
+                var shell = document.getElementById('commendationModal');
+                if (!inp || !ta || !shell) {
+                    return;
+                }
+                inp.value = sid;
+                ta.value = '';
+                shell.style.display = 'flex';
+            };
+
+            function closeCommendationModal() {
+                var shell = document.getElementById('commendationModal');
+                if (shell) {
+                    shell.style.display = 'none';
+                }
+            }
+
+            window.openAwardModal = function (studentId) {
+                var sid = studentId != null ? String(studentId).trim() : '';
+                if (!sid) {
+                    return;
+                }
+                var inp = document.getElementById('awardModalStudentId');
+                var shell = document.getElementById('awardModal');
+                var desc = document.getElementById('awardModalDescription');
+                if (!inp || !shell) {
+                    return;
+                }
+                inp.value = sid;
+                if (desc) {
+                    desc.value = '';
+                }
+                shell.style.display = 'flex';
+            };
+
+            function closeAwardModal() {
+                var shell = document.getElementById('awardModal');
+                if (shell) {
+                    shell.style.display = 'none';
+                }
+            }
+
+            (function wireHouseHubModals() {
+                var cShell = document.getElementById('commendationModal');
+                if (cShell) {
+                    cShell.addEventListener('click', function (e) {
+                        if (e.target.id === 'commendationModal') {
+                            closeCommendationModal();
+                        }
+                    });
+                }
+                var cCancel = document.getElementById('commendationModalCancel');
+                if (cCancel) {
+                    cCancel.addEventListener('click', closeCommendationModal);
+                }
+                var cSubmit = document.getElementById('commendationModalSubmit');
+                if (cSubmit) {
+                    cSubmit.addEventListener('click', function () {
+                        var sid = document.getElementById('commendationModalStudentId').value;
+                        var desc = document.getElementById('commendationModalText').value.trim();
+                        if (!sid || !desc) {
+                            reportShowToast('Please enter a message');
+                            return;
+                        }
+                        fetch(pointsCommendationUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRF-TOKEN': houseHubCsrf()
+                            },
+                            credentials: 'same-origin',
+                            body: JSON.stringify({ student_id: Number(sid), description: desc })
+                        })
+                            .then(function (res) {
+                                if (!res.ok) {
+                                    throw new Error('bad');
+                                }
+                                return res.json();
+                            })
+                            .then(function (data) {
+                                closeCommendationModal();
+                                if (data && data.recent_entry) {
+                                    window.houseHubPrependRecentActivity(data.recent_entry);
+                                }
+                                reportShowToast('Commendation saved');
+                            })
+                            .catch(function () {
+                                reportShowToast('Could not save commendation');
+                            });
+                    });
+                }
+
+                var aShell = document.getElementById('awardModal');
+                if (aShell) {
+                    aShell.addEventListener('click', function (e) {
+                        if (e.target.id === 'awardModal') {
+                            closeAwardModal();
+                        }
+                    });
+                }
+                var aCancel = document.getElementById('awardModalCancel');
+                if (aCancel) {
+                    aCancel.addEventListener('click', closeAwardModal);
+                }
+                var aSubmit = document.getElementById('awardModalSubmit');
+                if (aSubmit) {
+                    aSubmit.addEventListener('click', function () {
+                        var sid = document.getElementById('awardModalStudentId').value;
+                        var nameEl = document.getElementById('awardModalName');
+                        var descEl = document.getElementById('awardModalDescription');
+                        var awardName = nameEl ? nameEl.value.trim() : '';
+                        var desc = descEl ? descEl.value.trim() : '';
+                        if (!sid || !awardName || !desc) {
+                            reportShowToast('Please complete all fields');
+                            return;
+                        }
+                        fetch(pointsAwardUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRF-TOKEN': houseHubCsrf()
+                            },
+                            credentials: 'same-origin',
+                            body: JSON.stringify({
+                                student_id: Number(sid),
+                                award_name: awardName,
+                                description: desc
+                            })
+                        })
+                            .then(function (res) {
+                                if (!res.ok) {
+                                    throw new Error('bad');
+                                }
+                                return res.json();
+                            })
+                            .then(function (data) {
+                                closeAwardModal();
+                                if (data && data.recent_entry) {
+                                    window.houseHubPrependRecentActivity(data.recent_entry);
+                                }
+                                reportShowToast('Award saved');
+                            })
+                            .catch(function () {
+                                reportShowToast('Could not save award');
+                            });
+                    });
+                }
+            })();
 
             window.reportSendPoint = reportSendPoint;
+            window.reportShowToast = reportShowToast;
         })();
 
         window.Apex = {

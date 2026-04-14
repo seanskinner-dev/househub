@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Award;
+use App\Models\Commendation;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
-use Carbon\Carbon;
 
 class PointController extends Controller
 {
@@ -56,31 +58,44 @@ class PointController extends Controller
 
             $student = null;
             $house = null;
+            $recentEntry = null;
 
-            // 🔧 FIX: handle house click WITHOUT early return
-            if ($request->filled('house_name')) {
-
-                $house = DB::table('houses')
-                    ->where('name', $request->house_name)
-                    ->first();
-
-                if ($house) {
-
-                    DB::table('houses')
-                        ->where('id', $house->id)
-                        ->increment('points', $amount);
-
-                    DB::table('point_transactions')->insert([
-                        'student_id' => null,
-                        'house_id' => $house->id,
-                        'amount' => $amount,
-                        'category' => 'house',
-                        'description' => 'House points',
-                        'awarded_by' => $userId,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
+            $resolveHouseFromRequest = function () use ($request) {
+                if ($request->filled('house_id')) {
+                    return DB::table('houses')->where('id', (int) $request->input('house_id'))->first();
                 }
+                if ($request->filled('house_name')) {
+                    return DB::table('houses')->where('name', $request->house_name)->first();
+                }
+
+                return null;
+            };
+
+            $house = $resolveHouseFromRequest();
+
+            if ($house && ! $request->filled('student_id')) {
+
+                DB::table('houses')
+                    ->where('id', $house->id)
+                    ->increment('points', $amount);
+
+                DB::table('point_transactions')->insert([
+                    'student_id' => null,
+                    'house_id' => $house->id,
+                    'amount' => $amount,
+                    'category' => 'manual',
+                    'description' => 'House points awarded',
+                    'awarded_by' => $userId,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                $recentEntry = [
+                    'amount' => $amount,
+                    'who' => $house->name,
+                    'category' => 'manual',
+                    'teacher' => $teacherName,
+                ];
             }
 
             if ($request->filled('student_id')) {
@@ -120,6 +135,13 @@ class PointController extends Controller
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);
+
+                    $recentEntry = [
+                        'amount' => $amount,
+                        'who' => trim(($student->first_name ?? '').' '.($student->last_name ?? '')),
+                        'category' => $request->input('type', 'manual'),
+                        'teacher' => $teacherName,
+                    ];
                 }
             }
 
@@ -127,11 +149,111 @@ class PointController extends Controller
             return response()->json([
                 'success' => true,
                 'amount' => $amount,
-                'student' => $student ? $student->first_name . ' ' . $student->last_name : null,
+                'student' => $student ? $student->first_name.' '.$student->last_name : null,
                 'house' => $house ? $house->name : null,
-                'teacher' => $teacherName
+                'teacher' => $teacherName,
+                'recent_entry' => $recentEntry,
             ]);
         });
+    }
+
+    public function storeCommendation(Request $request)
+    {
+        $data = $request->validate([
+            'student_id' => 'required|integer|exists:students,id',
+            'description' => 'required|string|max:5000',
+        ]);
+
+        $userId = auth()->id() ?? 1;
+        $teacherName = auth()->user()->name ?? 'System';
+
+        $student = DB::table('students')->where('id', $data['student_id'])->first();
+        if (! $student) {
+            return response()->json(['success' => false, 'message' => 'Student not found'], 404);
+        }
+
+        $houseId = $student->house_id ?? null;
+
+        DB::transaction(function () use ($data, $userId, $student, $houseId) {
+            Commendation::create([
+                'student_id' => $student->id,
+                'awarded_by' => $userId,
+            ]);
+
+            DB::table('point_transactions')->insert([
+                'student_id' => $student->id,
+                'house_id' => $houseId,
+                'amount' => 0,
+                'category' => 'commendation',
+                'description' => $data['description'],
+                'awarded_by' => $userId,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        });
+
+        $who = trim(($student->first_name ?? '').' '.($student->last_name ?? ''));
+
+        return response()->json([
+            'success' => true,
+            'recent_entry' => [
+                'amount' => 0,
+                'who' => $who,
+                'category' => 'commendation',
+                'teacher' => $teacherName,
+            ],
+        ]);
+    }
+
+    public function storeAward(Request $request)
+    {
+        $data = $request->validate([
+            'student_id' => 'required|integer|exists:students,id',
+            'award_name' => 'required|string|max:255',
+            'description' => 'required|string|max:5000',
+        ]);
+
+        $userId = auth()->id() ?? 1;
+        $teacherName = auth()->user()->name ?? 'System';
+
+        $student = DB::table('students')->where('id', $data['student_id'])->first();
+        if (! $student) {
+            return response()->json(['success' => false, 'message' => 'Student not found'], 404);
+        }
+
+        $houseId = $student->house_id ?? null;
+
+        DB::transaction(function () use ($data, $userId, $student, $houseId) {
+            Award::create([
+                'student_id' => $student->id,
+                'awarded_by' => $userId,
+                'name' => $data['award_name'],
+                'description' => $data['description'],
+            ]);
+
+            DB::table('point_transactions')->insert([
+                'student_id' => $student->id,
+                'house_id' => $houseId,
+                'amount' => 0,
+                'category' => 'award',
+                'description' => $data['award_name'].': '.$data['description'],
+                'awarded_by' => $userId,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        });
+
+        $who = trim(($student->first_name ?? '').' '.($student->last_name ?? ''));
+
+        return response()->json([
+            'success' => true,
+            'recent_entry' => [
+                'amount' => 0,
+                'who' => $who,
+                'category' => 'award: '.$data['award_name'],
+                'teacher' => $teacherName,
+            ],
+        ]);
     }
 
     public function showStudent($id)

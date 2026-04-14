@@ -40,6 +40,8 @@ Route::middleware(['auth'])->group(function () {
     // =============================
     Route::get('/points', [PointController::class, 'index'])->name('points.index');
     Route::post('/points', [PointController::class, 'store'])->name('points.store');
+    Route::post('/points/commendation', [PointController::class, 'storeCommendation'])->name('points.commendation');
+    Route::post('/points/award', [PointController::class, 'storeAward'])->name('points.award');
 
     // =============================
     // OFFICE MESSAGE MODE (OMM)

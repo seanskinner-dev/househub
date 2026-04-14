@@ -53,24 +53,28 @@
 
                             <div class="btn-group flex-shrink-0" role="group">
                                 <button type="button"
-                                        class="btn btn-sm btn-danger"
-                                        onclick="awardPoints({{ (int) $student->id }}, -1)">
+                                        class="btn btn-sm btn-danger btn-sub"
+                                        data-id="{{ (int) $student->id }}"
+                                        data-student-id="{{ (int) $student->id }}">
                                     −1
                                 </button>
                                 <button type="button"
-                                        class="btn btn-sm btn-success"
-                                        onclick="awardPoints({{ (int) $student->id }}, 1)">
+                                        class="btn btn-sm btn-success btn-add"
+                                        data-id="{{ (int) $student->id }}"
+                                        data-student-id="{{ (int) $student->id }}">
                                     +1
                                 </button>
                                 <button type="button"
-                                        class="btn btn-sm btn-secondary"
-                                        onclick="openCommendation({{ (int) $student->id }})"
+                                        class="btn btn-sm btn-secondary btn-commend"
+                                        data-id="{{ (int) $student->id }}"
+                                        data-student-id="{{ (int) $student->id }}"
                                         title="Commendation">
                                     ⭐
                                 </button>
                                 <button type="button"
-                                        class="btn btn-sm btn-warning text-dark"
-                                        onclick="openAward({{ (int) $student->id }})"
+                                        class="btn btn-sm btn-warning text-dark btn-award"
+                                        data-id="{{ (int) $student->id }}"
+                                        data-student-id="{{ (int) $student->id }}"
                                         title="Award">
                                     🏆
                                 </button>
@@ -134,26 +138,6 @@
             return m ? m.getAttribute('content') : '';
         }
 
-        function awardPoints(studentId, amount) {
-            fetch(@json(url('/points')), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': csrfToken()
-                },
-                credentials: 'same-origin',
-                body: JSON.stringify({
-                    student_id: studentId,
-                    amount: amount
-                })
-            })
-                .then(function (res) { return res.json(); })
-                .then(function () { window.location.reload(); })
-                .catch(function () {});
-        }
-
         function awardHouse(houseName) {
             fetch(@json(url('/points')), {
                 method: 'POST',
@@ -169,17 +153,25 @@
                     amount: 1
                 })
             })
-                .then(function (res) { return res.json(); })
-                .then(function () { window.location.reload(); })
-                .catch(function () {});
-        }
-
-        function openCommendation(id) {
-            alert('Commendation modal coming next (student id: ' + id + ')');
-        }
-
-        function openAward(id) {
-            alert('Award modal coming next (student id: ' + id + ')');
+                .then(function (res) {
+                    if (!res.ok) {
+                        throw new Error('bad');
+                    }
+                    return res.json();
+                })
+                .then(function (data) {
+                    if (data.recent_entry && typeof window.houseHubPrependRecentActivity === 'function') {
+                        window.houseHubPrependRecentActivity(data.recent_entry);
+                    }
+                    if (typeof window.reportShowToast === 'function') {
+                        window.reportShowToast('House points updated');
+                    }
+                })
+                .catch(function () {
+                    if (typeof window.reportShowToast === 'function') {
+                        window.reportShowToast('Unable to update house');
+                    }
+                });
         }
     </script>
 @endsection
