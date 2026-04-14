@@ -346,22 +346,7 @@
                     grid: { borderColor: '#334155' }
                 };
 
-                var finalOptions = window.hhApplyApexDefaults(options);
-                finalOptions.chart = finalOptions.chart || {};
-                finalOptions.chart.background = 'transparent';
-                finalOptions.plotOptions = finalOptions.plotOptions || {};
-                var prevHeat = finalOptions.plotOptions.heatmap || {};
-                finalOptions.plotOptions.heatmap = Object.assign({}, prevHeat, {
-                    useFillColorAsStroke: false,
-                    stroke: {
-                        width: 1,
-                        colors: ['#1e293b']
-                    }
-                });
-                finalOptions.fill = Object.assign({}, finalOptions.fill || {}, {
-                    colors: ['#0f172a']
-                });
-                lrCharts.heatmap = new ApexCharts(document.querySelector('#heatmap'), finalOptions);
+                lrCharts.heatmap = new ApexCharts(document.querySelector('#heatmap'), window.hhApplyApexDefaults(options));
                 lrCharts.heatmap.render();
             }
 

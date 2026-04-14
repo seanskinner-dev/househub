@@ -1072,30 +1072,92 @@
 
         window.hhApplyApexDefaults = function (options) {
             options = options || {};
-            return {
-                ...window.Apex,
+            const apex = window.Apex || {};
+
+            function mergeAxisWithLabelColor(baseAxis, optAxis) {
+                baseAxis = baseAxis || {};
+                optAxis = optAxis || {};
+                return {
+                    ...baseAxis,
+                    ...optAxis,
+                    labels: {
+                        ...(baseAxis.labels || {}),
+                        ...(optAxis.labels || {}),
+                        style: {
+                            ...((baseAxis.labels && baseAxis.labels.style) || {}),
+                            ...((optAxis.labels && optAxis.labels.style) || {}),
+                            colors: '#94a3b8'
+                        }
+                    }
+                };
+            }
+
+            let mergedYaxis;
+            if (Array.isArray(options.yaxis)) {
+                mergedYaxis = options.yaxis.map(function (axis) {
+                    return mergeAxisWithLabelColor(apex.yaxis, axis);
+                });
+            } else {
+                mergedYaxis = mergeAxisWithLabelColor(apex.yaxis, options.yaxis);
+            }
+
+            const merged = {
+                ...apex,
                 ...options,
                 chart: {
-                    ...window.Apex.chart,
-                    ...(options.chart || {})
-                },
-                xaxis: {
-                    ...window.Apex.xaxis,
-                    ...(options.xaxis || {})
-                },
-                yaxis: {
-                    ...window.Apex.yaxis,
-                    ...(options.yaxis || {})
+                    ...apex.chart,
+                    ...(options.chart || {}),
+                    background: 'transparent',
+                    foreColor: '#e2e8f0'
                 },
                 grid: {
-                    ...window.Apex.grid,
-                    ...(options.grid || {})
+                    ...apex.grid,
+                    ...(options.grid || {}),
+                    borderColor: '#334155'
                 },
+                xaxis: mergeAxisWithLabelColor(apex.xaxis, options.xaxis),
+                yaxis: mergedYaxis,
                 tooltip: {
-                    ...window.Apex.tooltip,
-                    ...(options.tooltip || {})
+                    ...apex.tooltip,
+                    ...(options.tooltip || {}),
+                    theme: 'dark'
                 }
             };
+
+            if (options.chart && options.chart.type === 'heatmap') {
+                merged.plotOptions = merged.plotOptions || {};
+                merged.plotOptions.heatmap = {
+                    ...(merged.plotOptions.heatmap || {}),
+                    shadeIntensity: 0.6,
+                    radius: 4,
+                    useFillColorAsStroke: false,
+                    colorScale: {
+                        ranges: [
+                            { from: 0, to: 50, color: '#0f172a' },
+                            { from: 51, to: 100, color: '#1e293b' },
+                            { from: 101, to: 150, color: '#0ea5e9' },
+                            { from: 151, to: 200, color: '#22c55e' }
+                        ]
+                    }
+                };
+                merged.stroke = {
+                    ...(merged.stroke || {}),
+                    width: 2,
+                    colors: ['#020617']
+                };
+                merged.dataLabels = {
+                    ...(merged.dataLabels || {}),
+                    ...(options.dataLabels || {}),
+                    enabled: true,
+                    style: {
+                        ...((merged.dataLabels && merged.dataLabels.style) || {}),
+                        ...((options.dataLabels && options.dataLabels.style) || {}),
+                        colors: ['#f8fafc']
+                    }
+                };
+            }
+
+            return merged;
         };
     </script>
     @stack('scripts')
