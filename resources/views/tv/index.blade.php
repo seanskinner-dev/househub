@@ -31,6 +31,16 @@
             animation: bgDrift 20s ease-in-out infinite;
         }
 
+        #tv-bg {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            background: #0a0a0a;
+            background-size: cover;
+            background-position: center;
+            transition: background 1s ease;
+        }
+
         .tv-container::after {
             content: '';
             position: absolute;
@@ -1227,6 +1237,7 @@
 <body>
 
 <div class="tv-container">
+    <div id="tv-bg"></div>
     <div id="debug-test" style="color:white; position:absolute; z-index:9999;">
         CONTENT SHOULD BE HERE
     </div>
@@ -1853,18 +1864,16 @@ document.addEventListener("DOMContentLoaded", function () {
             screens.forEach(function (s) { s.style.display = 'none'; });
             return;
         }
+        const nextScreenId = screens[index] ? screens[index].id : '';
+        if (nextScreenId !== 'screen-weather') {
+            const bg = document.getElementById('tv-bg');
+            if (bg) {
+                bg.style.background = '#0a0a0a';
+            }
+        }
         screens.forEach((s, i) => {
             s.style.display = (i === index) ? 'flex' : 'none';
         });
-        document.querySelectorAll('.tv-screen').forEach(s => {
-            if (s.id !== 'screen-weather') {
-                s.style.background = '';
-            }
-        });
-        const weatherScreen = document.getElementById('screen-weather');
-        if (weatherScreen && weatherScreen.style.display === 'none') {
-            weatherScreen.style.background = '';
-        }
     }
 
     function nextScreen() {
@@ -1926,14 +1935,14 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function setWeatherBackground(type) {
-        const screen = document.getElementById('screen-weather');
-        if (!screen) return;
+        const bg = document.getElementById('tv-bg');
+        if (!bg) return;
 
-        const bg = getRandomBackground(type);
+        const image = getRandomBackground(type);
 
-        screen.style.background = `
+        bg.style.background = `
         linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.35)),
-        url('${bg}') center/cover no-repeat
+        url('${image}') center/cover no-repeat
     `;
     }
 
@@ -2256,29 +2265,6 @@ document.addEventListener("DOMContentLoaded", function () {
 setInterval(function () {
     window.location.reload();
 }, 300000);
-</script>
-
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const weatherScreen = document.getElementById('screen-weather');
-    if (!weatherScreen || weatherScreen.style.display === 'none') return;
-
-    const el = document.querySelector('.tv-container');
-    if (!el) return;
-
-    el.style.background = "url('/weather/rain/rain1.jpg') center/cover no-repeat";
-});
-</script>
-
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const el = document.querySelector('.tv-container');
-    if (!el) return;
-
-    el.style.background = "url('/weather/rain/rain1.jpg') center/cover no-repeat";
-
-    console.log('TEST BACKGROUND APPLIED');
-});
 </script>
 
 </body>
