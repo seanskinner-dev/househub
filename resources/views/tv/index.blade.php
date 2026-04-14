@@ -29,6 +29,7 @@
                 radial-gradient(circle at center, rgba(0,0,0,0) 60%, rgba(0,0,0,0.8) 100%),
                 #0a0a0a;
             color: #fff;
+            transition: background 1s ease;
         }
 
         .tv-broadcast-banner {
@@ -681,6 +682,25 @@
             background: rgba(255,255,255,0.08);
         }
 
+        .leaderboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            padding: 0 60px;
+            width: 100%;
+            max-width: 1240px;
+            margin: 14px auto 0;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .leaderboard-column {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-height: 0;
+        }
+
         .student-card {
             display: flex;
             justify-content: space-between;
@@ -837,8 +857,12 @@
         }
 
         .banner-name {
-            font-size: 2.5rem;
+            font-size: 2rem;
             font-weight: 900;
+            letter-spacing: 0.08em;
+            text-align: center;
+            max-width: 90%;
+            word-wrap: break-word;
         }
 
         .banner-points {
@@ -1044,45 +1068,54 @@
         <div class="top-container">
 
             @php
-                $leader = $topStudents[0] ?? null;
-                $list = $topStudents->slice(1, 10)->values();
+                $left = $topStudents->slice(0, 5)->values();
+                $right = $topStudents->slice(5, 5)->values();
             @endphp
 
             <div class="top-title">
                 🏆 TOP STUDENTS
             </div>
 
-            @if($leader)
-                <div class="top-hero">
-                    <div class="crown">👑</div>
-                    <div class="hero-name">
-                        {{ $leader->name }}
-                    </div>
-                    <div class="hero-points">
-                        {{ $leader->house_points }} pts
-                    </div>
-                </div>
-            @endif
-
-            <div class="top-list">
-                @foreach($list as $index => $student)
-                    @php
-                        $houseName = optional($student->house)->name ?? ($student->house_name ?? null);
-                        $meta = houseMeta($houseName);
-                        $rankNumber = $index + 2;
-                        $rankClass = $rankNumber === 1 ? ' is-top-1' : ($rankNumber <= 3 ? ' is-top-2' : '');
-                    @endphp
-                    <div class="student-card{{ $rankClass }}" data-house="{{ $houseName }}" style="--house-color: {{ $meta['color'] }}">
-                        <div class="student-left">
-                            <span class="student-emoji">{{ $meta['emoji'] }}</span>
-                            <span>
-                                <span class="student-name">{{ $student->name }}</span>
-                                <span class="student-points">{{ (int) $student->house_points }} pts</span>
-                            </span>
+            <div class="leaderboard-grid">
+                <div class="leaderboard-column">
+                    @foreach($left as $index => $student)
+                        @php
+                            $houseName = optional($student->house)->name ?? ($student->house_name ?? null);
+                            $meta = houseMeta($houseName);
+                            $rankNumber = $index + 1;
+                            $rankClass = $rankNumber === 1 ? ' is-top-1' : ($rankNumber <= 3 ? ' is-top-2' : '');
+                        @endphp
+                        <div class="student-card{{ $rankClass }}" data-house="{{ $houseName }}" style="--house-color: {{ $meta['color'] }}">
+                            <div class="student-left">
+                                <span class="student-emoji">{{ $meta['emoji'] }}</span>
+                                <span>
+                                    <span class="student-name">{{ $student->name }}</span>
+                                    <span class="student-points">{{ (int) $student->house_points }} pts</span>
+                                </span>
+                            </div>
+                            <div class="student-rank">#{{ $rankNumber }}</div>
                         </div>
-                        <div class="student-rank">#{{ $rankNumber }}</div>
-                    </div>
-                @endforeach
+                    @endforeach
+                </div>
+                <div class="leaderboard-column">
+                    @foreach($right as $index => $student)
+                        @php
+                            $houseName = optional($student->house)->name ?? ($student->house_name ?? null);
+                            $meta = houseMeta($houseName);
+                            $rankNumber = $index + 6;
+                        @endphp
+                        <div class="student-card" data-house="{{ $houseName }}" style="--house-color: {{ $meta['color'] }}">
+                            <div class="student-left">
+                                <span class="student-emoji">{{ $meta['emoji'] }}</span>
+                                <span>
+                                    <span class="student-name">{{ $student->name }}</span>
+                                    <span class="student-points">{{ (int) $student->house_points }} pts</span>
+                                </span>
+                            </div>
+                            <div class="student-rank">#{{ $rankNumber }}</div>
+                        </div>
+                    @endforeach
+                </div>
             </div>
 
         </div>
@@ -1224,23 +1257,46 @@
     <div class="tv-screen" id="screen-top-gryffindor">
         <div class="screen-inner gryffindor">
             <h1 class="screen-title">Top 10 - Gryffindor</h1>
-            <div class="leaderboard-list">
-                @foreach($topGryffindor as $index => $student)
-                    @php
-                        $meta = houseMeta($student->house_name ?? 'Gryffindor');
-                        $rankClass = $loop->iteration === 1 ? ' is-top-1' : ($loop->iteration <= 3 ? ' is-top-2' : '');
-                    @endphp
-                    <div class="student-card{{ $rankClass }}" data-house="Gryffindor" style="--house-color: {{ $meta['color'] }}">
-                        <div class="student-left">
-                            <span class="student-emoji">{{ $meta['emoji'] }}</span>
-                            <span>
-                                <span class="student-name">{{ $student->first_name }} {{ $student->last_name }}</span>
-                                <span class="student-points">{{ (int) $student->house_points }} pts</span>
-                            </span>
+            @php
+                $left = $topGryffindor->slice(0, 5)->values();
+                $right = $topGryffindor->slice(5, 5)->values();
+            @endphp
+            <div class="leaderboard-grid">
+                <div class="leaderboard-column">
+                    @foreach($left as $index => $student)
+                        @php
+                            $meta = houseMeta($student->house_name ?? 'Gryffindor');
+                            $rankClass = $loop->iteration === 1 ? ' is-top-1' : ($loop->iteration <= 3 ? ' is-top-2' : '');
+                        @endphp
+                        <div class="student-card{{ $rankClass }}" data-house="Gryffindor" style="--house-color: {{ $meta['color'] }}">
+                            <div class="student-left">
+                                <span class="student-emoji">{{ $meta['emoji'] }}</span>
+                                <span>
+                                    <span class="student-name">{{ $student->first_name }} {{ $student->last_name }}</span>
+                                    <span class="student-points">{{ (int) $student->house_points }} pts</span>
+                                </span>
+                            </div>
+                            <div class="student-rank">#{{ $index + 1 }}</div>
                         </div>
-                        <div class="student-rank">#{{ $index + 1 }}</div>
-                    </div>
-                @endforeach
+                    @endforeach
+                </div>
+                <div class="leaderboard-column">
+                    @foreach($right as $index => $student)
+                        @php
+                            $meta = houseMeta($student->house_name ?? 'Gryffindor');
+                        @endphp
+                        <div class="student-card" data-house="Gryffindor" style="--house-color: {{ $meta['color'] }}">
+                            <div class="student-left">
+                                <span class="student-emoji">{{ $meta['emoji'] }}</span>
+                                <span>
+                                    <span class="student-name">{{ $student->first_name }} {{ $student->last_name }}</span>
+                                    <span class="student-points">{{ (int) $student->house_points }} pts</span>
+                                </span>
+                            </div>
+                            <div class="student-rank">#{{ $index + 6 }}</div>
+                        </div>
+                    @endforeach
+                </div>
             </div>
         </div>
     </div>
@@ -1248,23 +1304,46 @@
     <div class="tv-screen" id="screen-top-slytherin">
         <div class="screen-inner slytherin">
             <h1 class="screen-title">Top 10 - Slytherin</h1>
-            <div class="leaderboard-list">
-                @foreach($topSlytherin as $index => $student)
-                    @php
-                        $meta = houseMeta($student->house_name ?? 'Slytherin');
-                        $rankClass = $loop->iteration === 1 ? ' is-top-1' : ($loop->iteration <= 3 ? ' is-top-2' : '');
-                    @endphp
-                    <div class="student-card{{ $rankClass }}" data-house="Slytherin" style="--house-color: {{ $meta['color'] }}">
-                        <div class="student-left">
-                            <span class="student-emoji">{{ $meta['emoji'] }}</span>
-                            <span>
-                                <span class="student-name">{{ $student->first_name }} {{ $student->last_name }}</span>
-                                <span class="student-points">{{ (int) $student->house_points }} pts</span>
-                            </span>
+            @php
+                $left = $topSlytherin->slice(0, 5)->values();
+                $right = $topSlytherin->slice(5, 5)->values();
+            @endphp
+            <div class="leaderboard-grid">
+                <div class="leaderboard-column">
+                    @foreach($left as $index => $student)
+                        @php
+                            $meta = houseMeta($student->house_name ?? 'Slytherin');
+                            $rankClass = $loop->iteration === 1 ? ' is-top-1' : ($loop->iteration <= 3 ? ' is-top-2' : '');
+                        @endphp
+                        <div class="student-card{{ $rankClass }}" data-house="Slytherin" style="--house-color: {{ $meta['color'] }}">
+                            <div class="student-left">
+                                <span class="student-emoji">{{ $meta['emoji'] }}</span>
+                                <span>
+                                    <span class="student-name">{{ $student->first_name }} {{ $student->last_name }}</span>
+                                    <span class="student-points">{{ (int) $student->house_points }} pts</span>
+                                </span>
+                            </div>
+                            <div class="student-rank">#{{ $index + 1 }}</div>
                         </div>
-                        <div class="student-rank">#{{ $index + 1 }}</div>
-                    </div>
-                @endforeach
+                    @endforeach
+                </div>
+                <div class="leaderboard-column">
+                    @foreach($right as $index => $student)
+                        @php
+                            $meta = houseMeta($student->house_name ?? 'Slytherin');
+                        @endphp
+                        <div class="student-card" data-house="Slytherin" style="--house-color: {{ $meta['color'] }}">
+                            <div class="student-left">
+                                <span class="student-emoji">{{ $meta['emoji'] }}</span>
+                                <span>
+                                    <span class="student-name">{{ $student->first_name }} {{ $student->last_name }}</span>
+                                    <span class="student-points">{{ (int) $student->house_points }} pts</span>
+                                </span>
+                            </div>
+                            <div class="student-rank">#{{ $index + 6 }}</div>
+                        </div>
+                    @endforeach
+                </div>
             </div>
         </div>
     </div>
@@ -1272,23 +1351,46 @@
     <div class="tv-screen" id="screen-top-ravenclaw">
         <div class="screen-inner ravenclaw">
             <h1 class="screen-title">Top 10 - Ravenclaw</h1>
-            <div class="leaderboard-list">
-                @foreach($topRavenclaw as $index => $student)
-                    @php
-                        $meta = houseMeta($student->house_name ?? 'Ravenclaw');
-                        $rankClass = $loop->iteration === 1 ? ' is-top-1' : ($loop->iteration <= 3 ? ' is-top-2' : '');
-                    @endphp
-                    <div class="student-card{{ $rankClass }}" data-house="Ravenclaw" style="--house-color: {{ $meta['color'] }}">
-                        <div class="student-left">
-                            <span class="student-emoji">{{ $meta['emoji'] }}</span>
-                            <span>
-                                <span class="student-name">{{ $student->first_name }} {{ $student->last_name }}</span>
-                                <span class="student-points">{{ (int) $student->house_points }} pts</span>
-                            </span>
+            @php
+                $left = $topRavenclaw->slice(0, 5)->values();
+                $right = $topRavenclaw->slice(5, 5)->values();
+            @endphp
+            <div class="leaderboard-grid">
+                <div class="leaderboard-column">
+                    @foreach($left as $index => $student)
+                        @php
+                            $meta = houseMeta($student->house_name ?? 'Ravenclaw');
+                            $rankClass = $loop->iteration === 1 ? ' is-top-1' : ($loop->iteration <= 3 ? ' is-top-2' : '');
+                        @endphp
+                        <div class="student-card{{ $rankClass }}" data-house="Ravenclaw" style="--house-color: {{ $meta['color'] }}">
+                            <div class="student-left">
+                                <span class="student-emoji">{{ $meta['emoji'] }}</span>
+                                <span>
+                                    <span class="student-name">{{ $student->first_name }} {{ $student->last_name }}</span>
+                                    <span class="student-points">{{ (int) $student->house_points }} pts</span>
+                                </span>
+                            </div>
+                            <div class="student-rank">#{{ $index + 1 }}</div>
                         </div>
-                        <div class="student-rank">#{{ $index + 1 }}</div>
-                    </div>
-                @endforeach
+                    @endforeach
+                </div>
+                <div class="leaderboard-column">
+                    @foreach($right as $index => $student)
+                        @php
+                            $meta = houseMeta($student->house_name ?? 'Ravenclaw');
+                        @endphp
+                        <div class="student-card" data-house="Ravenclaw" style="--house-color: {{ $meta['color'] }}">
+                            <div class="student-left">
+                                <span class="student-emoji">{{ $meta['emoji'] }}</span>
+                                <span>
+                                    <span class="student-name">{{ $student->first_name }} {{ $student->last_name }}</span>
+                                    <span class="student-points">{{ (int) $student->house_points }} pts</span>
+                                </span>
+                            </div>
+                            <div class="student-rank">#{{ $index + 6 }}</div>
+                        </div>
+                    @endforeach
+                </div>
             </div>
         </div>
     </div>
@@ -1296,23 +1398,46 @@
     <div class="tv-screen" id="screen-top-hufflepuff">
         <div class="screen-inner hufflepuff">
             <h1 class="screen-title">Top 10 - Hufflepuff</h1>
-            <div class="leaderboard-list">
-                @foreach($topHufflepuff as $index => $student)
-                    @php
-                        $meta = houseMeta($student->house_name ?? 'Hufflepuff');
-                        $rankClass = $loop->iteration === 1 ? ' is-top-1' : ($loop->iteration <= 3 ? ' is-top-2' : '');
-                    @endphp
-                    <div class="student-card{{ $rankClass }}" data-house="Hufflepuff" style="--house-color: {{ $meta['color'] }}">
-                        <div class="student-left">
-                            <span class="student-emoji">{{ $meta['emoji'] }}</span>
-                            <span>
-                                <span class="student-name">{{ $student->first_name }} {{ $student->last_name }}</span>
-                                <span class="student-points">{{ (int) $student->house_points }} pts</span>
-                            </span>
+            @php
+                $left = $topHufflepuff->slice(0, 5)->values();
+                $right = $topHufflepuff->slice(5, 5)->values();
+            @endphp
+            <div class="leaderboard-grid">
+                <div class="leaderboard-column">
+                    @foreach($left as $index => $student)
+                        @php
+                            $meta = houseMeta($student->house_name ?? 'Hufflepuff');
+                            $rankClass = $loop->iteration === 1 ? ' is-top-1' : ($loop->iteration <= 3 ? ' is-top-2' : '');
+                        @endphp
+                        <div class="student-card{{ $rankClass }}" data-house="Hufflepuff" style="--house-color: {{ $meta['color'] }}">
+                            <div class="student-left">
+                                <span class="student-emoji">{{ $meta['emoji'] }}</span>
+                                <span>
+                                    <span class="student-name">{{ $student->first_name }} {{ $student->last_name }}</span>
+                                    <span class="student-points">{{ (int) $student->house_points }} pts</span>
+                                </span>
+                            </div>
+                            <div class="student-rank">#{{ $index + 1 }}</div>
                         </div>
-                        <div class="student-rank">#{{ $index + 1 }}</div>
-                    </div>
-                @endforeach
+                    @endforeach
+                </div>
+                <div class="leaderboard-column">
+                    @foreach($right as $index => $student)
+                        @php
+                            $meta = houseMeta($student->house_name ?? 'Hufflepuff');
+                        @endphp
+                        <div class="student-card" data-house="Hufflepuff" style="--house-color: {{ $meta['color'] }}">
+                            <div class="student-left">
+                                <span class="student-emoji">{{ $meta['emoji'] }}</span>
+                                <span>
+                                    <span class="student-name">{{ $student->first_name }} {{ $student->last_name }}</span>
+                                    <span class="student-points">{{ (int) $student->house_points }} pts</span>
+                                </span>
+                            </div>
+                            <div class="student-rank">#{{ $index + 6 }}</div>
+                        </div>
+                    @endforeach
+                </div>
             </div>
         </div>
     </div>
@@ -1383,6 +1508,35 @@ document.addEventListener("DOMContentLoaded", function () {
     setTimeout(() => {
         showScreen(0);
     }, 100);
+
+    function updateWeatherBackground() {
+        const container = document.querySelector('.tv-container');
+        if (!container) return;
+
+        fetch('https://api.open-meteo.com/v1/forecast?latitude=-42.88&longitude=147.32&current_weather=true')
+            .then(res => res.json())
+            .then(data => {
+                const code = data && data.current_weather ? data.current_weather.weathercode : null;
+                let bg;
+
+                if (code === 0) {
+                    bg = 'radial-gradient(circle at top, #1e293b, #020617)';
+                } else if ([1, 2, 3].includes(code)) {
+                    bg = 'radial-gradient(circle at top, #374151, #020617)';
+                } else if ([51, 53, 55, 61, 63, 65].includes(code)) {
+                    bg = 'radial-gradient(circle at top, #1e3a8a, #020617)';
+                } else if ([95, 96, 99].includes(code)) {
+                    bg = 'radial-gradient(circle at top, #111827, #000)';
+                } else {
+                    bg = '#020617';
+                }
+
+                container.style.background = bg;
+            })
+            .catch(function () {
+                // keep existing background when weather fetch fails
+            });
+    }
 
     function fetchBroadcast() {
         const emergencyScreen = document.getElementById('emergencyScreen');
@@ -1456,7 +1610,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     fetchBroadcast();
+    updateWeatherBackground();
     setInterval(fetchBroadcast, 5000);
+    setInterval(updateWeatherBackground, 300000);
 });
 </script>
 
