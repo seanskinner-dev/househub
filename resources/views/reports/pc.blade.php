@@ -56,7 +56,7 @@
     <div id="pc-report-grid">
         <div class="row">
             <div class="col-md-6">
-                <div class="card mb-4 shadow-sm h-100">
+                <div class="card hh-card mb-4 shadow-sm h-100">
                     <div class="card-body">
                         <h5>Engagement Health</h5>
                         <p class="small text-white-50">
@@ -68,7 +68,7 @@
             </div>
 
             <div class="col-md-6">
-                <div class="card mb-4 shadow-sm h-100">
+                <div class="card hh-card mb-4 shadow-sm h-100">
                     <div class="card-body">
                         <h5>Year Level Distribution</h5>
                         <p class="small text-white-50">
@@ -82,7 +82,7 @@
 
         <div class="row">
             <div class="col-md-6">
-                <div class="card mb-4 shadow-sm h-100">
+                <div class="card hh-card mb-4 shadow-sm h-100">
                     <div class="card-body">
                         <h5>Engagement Trend</h5>
                         <p class="small text-white-50">
@@ -94,7 +94,7 @@
             </div>
 
             <div class="col-md-6">
-                <div class="card mb-4 shadow-sm h-100">
+                <div class="card hh-card mb-4 shadow-sm h-100">
                     <div class="card-body">
                         <h5>Points by House</h5>
                         <p class="small text-white-50">

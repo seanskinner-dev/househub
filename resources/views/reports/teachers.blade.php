@@ -40,7 +40,7 @@
 
     <div class="row mb-4">
         <div class="col-md-6">
-            <div class="card mb-4 shadow-sm h-100">
+            <div class="card hh-card mb-4 shadow-sm h-100">
                 <div class="card-body">
                     <h5 class="mb-2">Student Distribution by Teacher</h5>
                     <p class="text-muted small mb-3">
@@ -51,7 +51,7 @@
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card mb-4 shadow-sm h-100">
+            <div class="card hh-card mb-4 shadow-sm h-100">
                 <div class="card-body">
                     <h5 class="mb-2">Staff Usage Frequency</h5>
                     <p class="text-muted small mb-3">
@@ -65,7 +65,7 @@
 
     <div class="row mb-4">
         <div class="col-md-6">
-            <div class="card mb-4 shadow-sm h-100">
+            <div class="card hh-card mb-4 shadow-sm h-100">
                 <div class="card-body">
                     <h5 class="mb-2">Weekday Points Trend</h5>
                     <p class="text-muted small mb-3">
@@ -76,7 +76,7 @@
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card mb-4 shadow-sm h-100">
+            <div class="card hh-card mb-4 shadow-sm h-100">
                 <div class="card-body">
                     <h5 class="mb-2">Low Usage Staff</h5>
                     <p class="text-muted small mb-3">

@@ -130,6 +130,29 @@
         .page-content .card .small {
             color: #94a3b8 !important;
         }
+
+        .hh-card {
+            background: linear-gradient(145deg, #1e293b, #0f172a) !important;
+            border: none !important;
+            border-radius: 12px;
+            color: #e2e8f0 !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .hh-card h5 {
+            color: #f8fafc !important;
+            font-weight: 600;
+        }
+
+        .hh-card p,
+        .hh-card .text-muted,
+        .hh-card .small {
+            color: #94a3b8 !important;
+        }
+
+        .hh-card .card-body {
+            background: transparent !important;
+        }
     </style>
 </head>
 
