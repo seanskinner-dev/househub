@@ -211,9 +211,61 @@
             console.error('ApexCharts failed to load');
         }
         window.Apex = {
+            colors: ['#0ea5e9', '#22c55e', '#f59e0b', '#ef4444', '#a855f7'],
             chart: {
-                background: 'transparent'
-            }
+                background: 'transparent',
+                toolbar: {
+                    show: false
+                }
+            },
+            tooltip: {
+                theme: 'dark',
+                fillSeriesColor: false,
+                style: {
+                    fontSize: '13px',
+                    fontFamily: 'inherit'
+                }
+            },
+            grid: {
+                borderColor: '#334155',
+                strokeDashArray: 4
+            },
+            xaxis: {
+                labels: {
+                    style: {
+                        colors: '#94a3b8',
+                        fontSize: '12px'
+                    }
+                }
+            },
+            yaxis: {
+                labels: {
+                    style: {
+                        colors: '#94a3b8',
+                        fontSize: '12px'
+                    }
+                }
+            },
+            legend: {
+                labels: {
+                    colors: '#cbd5f5'
+                }
+            },
+            dataLabels: {
+                enabled: true,
+                style: {
+                    colors: ['#f8fafc'],
+                    fontWeight: 600
+                }
+            },
+            states: {
+                hover: {
+                    filter: {
+                        type: 'lighten',
+                        value: 0.1
+                    }
+                }
+            },
         };
     </script>
     @stack('scripts')

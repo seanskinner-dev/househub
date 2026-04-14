@@ -47,7 +47,7 @@
             <input type="date" id="pc-end" name="end_date" style="padding: 10px 12px; font-size: 1rem; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff;">
         </div>
         <div>
-            <button type="button" id="pc-apply" style="padding: 11px 22px; font-size: 1rem; font-weight: 600; border: none; border-radius: 6px; background: #3b82f6; color: #fff; cursor: pointer;">
+            <button type="button" id="pc-apply" style="padding: 11px 22px; font-size: 1rem; font-weight: 600; border: none; border-radius: 6px; background: #0ea5e9; color: #fff; cursor: pointer;">
                 Apply
             </button>
         </div>
@@ -300,7 +300,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const riskColors = risk.categories.map(label => {
             const l = String(label).toLowerCase();
             if (l.includes('high')) return '#ef4444';
-            if (l.includes('medium')) return '#eab308';
+            if (l.includes('medium')) return '#f59e0b';
             return '#22c55e';
         });
 
@@ -374,3 +374,4 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 @endpush
+

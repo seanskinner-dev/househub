@@ -34,7 +34,7 @@
             </select>
         </div>
         <div>
-            <button type="button" id="tu-apply" style="padding: 10px 20px; font-size: 1rem; font-weight: 600; border: none; border-radius: 6px; background: #3b82f6; color: #fff; cursor: pointer;">Apply</button>
+            <button type="button" id="tu-apply" style="padding: 10px 20px; font-size: 1rem; font-weight: 600; border: none; border-radius: 6px; background: #0ea5e9; color: #fff; cursor: pointer;">Apply</button>
         </div>
     </div>
 
@@ -238,7 +238,7 @@
                             categories: names,
                             labels: { rotate: -35, style: { fontSize: '11px' } }
                         },
-                        colors: ['#3b82f6'],
+                        colors: ['#0ea5e9'],
                         plotOptions: { bar: { borderRadius: 4, columnWidth: '65%' } },
                         grid: { borderColor: '#334155' },
                         dataLabels: { enabled: true },
@@ -408,7 +408,7 @@
                         labels: { rotate: -35, style: { fontSize: '12px' } }
                     },
                     yaxis: { min: 0, labels: { style: { fontSize: '13px' } } },
-                    colors: ['#f97316'],
+                    colors: ['#f59e0b'],
                     plotOptions: { bar: { borderRadius: 4, horizontal: true } },
                     grid: { borderColor: '#334155' },
                     dataLabels: { enabled: true },
@@ -476,7 +476,7 @@
                     series: [{ name: 'Teachers', data: bucketCounts }],
                     xaxis: { categories: bucketKeys, labels: { style: { fontSize: '13px' } } },
                     yaxis: { min: 0, labels: { style: { fontSize: '13px' } } },
-                    colors: ['#64748b'],
+                    colors: ['#a855f7'],
                     plotOptions: { bar: { borderRadius: 4, columnWidth: '55%' } },
                     grid: { borderColor: '#334155' },
                     dataLabels: { enabled: true },
@@ -517,10 +517,10 @@
                             x: displayDates[worstIndex],
                             y: minValue,
                             seriesIndex: 0,
-                            marker: { size: 8, fillColor: '#ff4d4f' },
+                            marker: { size: 8, fillColor: '#ef4444' },
                             label: {
-                                borderColor: '#ff4d4f',
-                                style: { color: '#fff', background: '#ff4d4f' },
+                                borderColor: '#ef4444',
+                                style: { color: '#fff', background: '#ef4444' },
                                 text: 'Lowest Usage Day'
                             }
                         }
@@ -688,3 +688,4 @@
         })();
     </script>
 @endpush
+

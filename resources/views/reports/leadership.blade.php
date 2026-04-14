@@ -37,7 +37,7 @@
             </select>
         </div>
         <div>
-            <button type="button" id="lr-apply" style="padding: 11px 22px; font-size: 1rem; font-weight: 600; border: none; border-radius: 6px; background: #3b82f6; color: #fff; cursor: pointer;">
+            <button type="button" id="lr-apply" style="padding: 11px 22px; font-size: 1rem; font-weight: 600; border: none; border-radius: 6px; background: #0ea5e9; color: #fff; cursor: pointer;">
                 Apply
             </button>
         </div>
@@ -498,7 +498,7 @@
                     },
                     stroke: { colors: ['#0f172a'] },
                     fill: { opacity: 0.85 },
-                    colors: ['#b91c1c', '#d97706', '#15803d'],
+                    colors: ['#ef4444', '#f59e0b', '#22c55e'],
                     legend: { position: 'bottom', fontSize: '14px' },
                     tooltip: { theme: 'dark' },
                     yaxis: { show: false }
@@ -528,7 +528,7 @@
                         }
                     },
                     plotOptions: { bar: { borderRadius: 6, columnWidth: '38%' } },
-                    colors: ['#f97316'],
+                    colors: ['#f59e0b'],
                     xaxis: {
                         categories: ['No weekday points (in range)'],
                         labels: { style: { fontSize: '13px' } }
@@ -588,3 +588,4 @@
         })();
     </script>
 @endpush
+

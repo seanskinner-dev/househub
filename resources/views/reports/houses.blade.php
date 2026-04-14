@@ -208,7 +208,7 @@
                     labels: houses,
                     stroke: { width: 2 },
                     fill: { opacity: 0.25 },
-                    colors: ['#f97316'],
+                    colors: ['#f59e0b'],
                     title: { text: 'Contribution Spread (click to inspect non-contributors)' },
                     tooltip: { theme: 'dark' }
                 });
@@ -331,3 +331,4 @@
         })();
     </script>
 @endpush
+
