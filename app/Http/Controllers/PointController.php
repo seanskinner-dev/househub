@@ -520,6 +520,34 @@ class PointController extends Controller
             }
         });
 
+        $topGryffindor = \DB::table('students')
+            ->select('first_name', 'last_name', 'house_points')
+            ->where('house_name', 'Gryffindor')
+            ->orderByDesc('house_points')
+            ->limit(10)
+            ->get();
+
+        $topSlytherin = \DB::table('students')
+            ->select('first_name', 'last_name', 'house_points')
+            ->where('house_name', 'Slytherin')
+            ->orderByDesc('house_points')
+            ->limit(10)
+            ->get();
+
+        $topRavenclaw = \DB::table('students')
+            ->select('first_name', 'last_name', 'house_points')
+            ->where('house_name', 'Ravenclaw')
+            ->orderByDesc('house_points')
+            ->limit(10)
+            ->get();
+
+        $topHufflepuff = \DB::table('students')
+            ->select('first_name', 'last_name', 'house_points')
+            ->where('house_name', 'Hufflepuff')
+            ->orderByDesc('house_points')
+            ->limit(10)
+            ->get();
+
         return view('tv.index', [
             'series' => $apexSeries,
             'dates' => $labels,
@@ -529,6 +557,10 @@ class PointController extends Controller
             'housePointsByTerm' => $housePointsByTerm,
             'housePointsThisTerm' => $housePointsThisTerm,
             'housePointsThisYear' => $housePointsThisYear,
+            'topGryffindor' => $topGryffindor,
+            'topSlytherin' => $topSlytherin,
+            'topRavenclaw' => $topRavenclaw,
+            'topHufflepuff' => $topHufflepuff,
         ]);
     }
 }

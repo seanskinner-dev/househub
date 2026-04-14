@@ -799,6 +799,63 @@
             margin-top: 16px;
             line-height: 1;
         }
+
+        .screen-inner {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 36px 48px;
+        }
+
+        .screen-title {
+            font-size: clamp(54px, 6vw, 96px);
+            font-weight: 900;
+            margin: 0;
+            text-align: center;
+            letter-spacing: 0.02em;
+        }
+
+        .leaderboard-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-top: 40px;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .leaderboard-row {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            font-size: 2.5rem;
+            font-weight: 700;
+            padding: 20px 30px;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.08);
+            line-height: 1.1;
+        }
+
+        .leaderboard-row .rank {
+            width: 120px;
+            font-size: 2rem;
+            opacity: 0.8;
+            margin: 0;
+        }
+
+        .leaderboard-row .name {
+            flex: 1;
+        }
+
+        .screen-inner.gryffindor { background: #740001; color: #fff; }
+        .screen-inner.slytherin { background: #1a472a; color: #fff; }
+        .screen-inner.ravenclaw { background: #0e1a40; color: #fff; }
+        .screen-inner.hufflepuff { background: #ffcc00; color: #000; }
+
+        .screen-inner.hufflepuff .leaderboard-row {
+            background: rgba(0,0,0,0.12);
+        }
     </style>
 </head>
 
@@ -1101,6 +1158,62 @@
 
         </div>
 
+    </div>
+
+    <div class="tv-screen" id="screen-top-gryffindor">
+        <div class="screen-inner gryffindor">
+            <h1 class="screen-title">Top 10 - Gryffindor</h1>
+            <div class="leaderboard-list">
+                @foreach($topGryffindor as $index => $student)
+                    <div class="leaderboard-row">
+                        <span class="rank">#{{ $index + 1 }}</span>
+                        <span class="name">{{ $student->first_name }} {{ $student->last_name }}</span>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+
+    <div class="tv-screen" id="screen-top-slytherin">
+        <div class="screen-inner slytherin">
+            <h1 class="screen-title">Top 10 - Slytherin</h1>
+            <div class="leaderboard-list">
+                @foreach($topSlytherin as $index => $student)
+                    <div class="leaderboard-row">
+                        <span class="rank">#{{ $index + 1 }}</span>
+                        <span class="name">{{ $student->first_name }} {{ $student->last_name }}</span>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+
+    <div class="tv-screen" id="screen-top-ravenclaw">
+        <div class="screen-inner ravenclaw">
+            <h1 class="screen-title">Top 10 - Ravenclaw</h1>
+            <div class="leaderboard-list">
+                @foreach($topRavenclaw as $index => $student)
+                    <div class="leaderboard-row">
+                        <span class="rank">#{{ $index + 1 }}</span>
+                        <span class="name">{{ $student->first_name }} {{ $student->last_name }}</span>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+
+    <div class="tv-screen" id="screen-top-hufflepuff">
+        <div class="screen-inner hufflepuff">
+            <h1 class="screen-title">Top 10 - Hufflepuff</h1>
+            <div class="leaderboard-list">
+                @foreach($topHufflepuff as $index => $student)
+                    <div class="leaderboard-row">
+                        <span class="rank">#{{ $index + 1 }}</span>
+                        <span class="name">{{ $student->first_name }} {{ $student->last_name }}</span>
+                    </div>
+                @endforeach
+            </div>
+        </div>
     </div>
 
     <button type="button" id="nextBtn" class="next-btn">Next ▶</button>
