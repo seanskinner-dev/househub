@@ -224,6 +224,10 @@
         .apexcharts-yaxis-label {
             fill: #94a3b8 !important;
         }
+
+        .apexcharts-canvas svg rect[fill="#fefefe"] {
+            fill: transparent !important;
+        }
     </style>
 </head>
 
