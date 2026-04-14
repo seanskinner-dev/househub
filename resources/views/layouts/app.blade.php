@@ -207,9 +207,14 @@
         }
 
         .apexcharts-tooltip {
-            background: #0f172a !important;
-            color: #e2e8f0 !important;
+            background: #1e293b !important;
+            color: #f8fafc !important;
             border: 1px solid #334155 !important;
+        }
+
+        .apexcharts-tooltip-title {
+            background: #0f172a !important;
+            color: #f8fafc !important;
         }
 
         .apexcharts-xaxistooltip,
@@ -235,6 +240,10 @@
 
         .apexcharts-datalabel-label,
         .apexcharts-datalabel-value {
+            fill: #f8fafc !important;
+        }
+
+        .apexcharts-tooltip text {
             fill: #f8fafc !important;
         }
 
@@ -1114,10 +1123,19 @@
             tooltip: {
                 theme: 'dark',
                 style: {
-                    fontSize: '13px'
+                    fontSize: '13px',
+                    color: '#f8fafc'
                 },
                 marker: {
                     show: true
+                },
+                x: {
+                    show: true
+                },
+                y: {
+                    formatter: function (val) {
+                        return String(val) + ' points';
+                    }
                 }
             },
 
@@ -1224,6 +1242,30 @@
             }
 
             if (options.chart && options.chart.type === 'line') {
+                var existingAnnotations = merged.annotations || {};
+                var pointAnnotations = Array.isArray(existingAnnotations.points) ? existingAnnotations.points : [];
+                merged.annotations = {
+                    ...existingAnnotations,
+                    yaxis: Array.isArray(existingAnnotations.yaxis) ? existingAnnotations.yaxis : [],
+                    points: pointAnnotations.map(function (pt) {
+                        var p = pt || {};
+                        var lbl = p.label || {};
+                        var lblStyle = lbl.style || {};
+                        return {
+                            ...p,
+                            label: {
+                                ...lbl,
+                                style: {
+                                    ...lblStyle,
+                                    background: '#1e293b',
+                                    color: '#f8fafc',
+                                    borderColor: '#334155'
+                                }
+                            }
+                        };
+                    }),
+                    xaxis: Array.isArray(existingAnnotations.xaxis) ? existingAnnotations.xaxis : []
+                };
                 merged.dataLabels = {
                     ...(merged.dataLabels || {}),
                     ...(options.dataLabels || {}),
