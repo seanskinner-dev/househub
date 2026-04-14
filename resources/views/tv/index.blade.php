@@ -1848,7 +1848,10 @@ document.addEventListener("DOMContentLoaded", function () {
         const nextScreenId = screens[index] ? screens[index].id : '';
         const container = document.querySelector('.tv-container');
         if (nextScreenId !== 'screen-weather') {
-            container.style.background = '#0a0a0a';
+            const weatherScreen = document.getElementById('screen-weather');
+            if (weatherScreen) {
+                weatherScreen.style.background = '';
+            }
         }
         screens.forEach((s, i) => {
             s.style.display = (i === index) ? 'flex' : 'none';
@@ -1914,15 +1917,15 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function setWeatherBackground(type) {
-        const container = document.querySelector('.tv-container');
+        const el = document.getElementById('screen-weather');
         const activeScreen = document.querySelector('.tv-screen:not([style*="display: none"])');
 
-        if (!container) return;
+        if (!el) return;
 
         if (activeScreen && activeScreen.id === 'screen-weather') {
             const bg = getRandomBackground(type);
 
-            container.style.background = `
+            el.style.background = `
             linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.35)),
             url('${bg}') center/cover no-repeat
         `;
