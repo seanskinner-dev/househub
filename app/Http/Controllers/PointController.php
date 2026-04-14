@@ -520,33 +520,20 @@ class PointController extends Controller
             }
         });
 
-        $topGryffindor = \DB::table('students')
-            ->select('first_name', 'last_name', 'house_points')
-            ->where('house_name', 'Gryffindor')
-            ->orderByDesc('house_points')
-            ->limit(10)
-            ->get();
+        $topByHouse = function (string $houseName) {
+            return DB::table('students')
+                ->leftJoin('houses', 'students.house_id', '=', 'houses.id')
+                ->select('students.first_name', 'students.last_name', 'students.house_points')
+                ->where('houses.name', $houseName)
+                ->orderByDesc('students.house_points')
+                ->limit(10)
+                ->get();
+        };
 
-        $topSlytherin = \DB::table('students')
-            ->select('first_name', 'last_name', 'house_points')
-            ->where('house_name', 'Slytherin')
-            ->orderByDesc('house_points')
-            ->limit(10)
-            ->get();
-
-        $topRavenclaw = \DB::table('students')
-            ->select('first_name', 'last_name', 'house_points')
-            ->where('house_name', 'Ravenclaw')
-            ->orderByDesc('house_points')
-            ->limit(10)
-            ->get();
-
-        $topHufflepuff = \DB::table('students')
-            ->select('first_name', 'last_name', 'house_points')
-            ->where('house_name', 'Hufflepuff')
-            ->orderByDesc('house_points')
-            ->limit(10)
-            ->get();
+        $topGryffindor = $topByHouse('Gryffindor');
+        $topSlytherin = $topByHouse('Slytherin');
+        $topRavenclaw = $topByHouse('Ravenclaw');
+        $topHufflepuff = $topByHouse('Hufflepuff');
 
         return view('tv.index', [
             'series' => $apexSeries,
