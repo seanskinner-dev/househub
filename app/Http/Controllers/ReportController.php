@@ -95,13 +95,6 @@ class ReportController extends Controller
 
     public function reportChartData(Request $request)
     {
-        dd([
-            'transactions' => DB::table('point_transactions')->select('house_id', 'amount')->limit(20)->get(),
-            'transaction_count' => DB::table('point_transactions')->count(),
-            'students_sample' => DB::table('students')->select('id', 'house_id', 'house_points')->limit(20)->get(),
-            'houses' => DB::table('houses')->get()
-        ]);
-
         \Log::info('Report endpoint hit');
 
         $emptyDataset = function (string $name): array {
@@ -176,16 +169,17 @@ class ReportController extends Controller
 
             $houses = DB::table('houses')
                 ->leftJoin('students', 'houses.id', '=', 'students.house_id')
+                ->leftJoin('point_transactions', 'students.id', '=', 'point_transactions.student_id')
                 ->select(
                     'houses.name',
-                    DB::raw('COALESCE(SUM(students.house_points), 0) as total_points')
+                    DB::raw('COALESCE(SUM(point_transactions.amount), 0) as total_points')
                 )
                 ->groupBy('houses.name')
                 ->orderBy('houses.name')
                 ->get();
 
             $categories = $houses->pluck('name')->map(fn ($v) => (string) $v)->toArray();
-            $houseData = $houses->pluck('total_points')->map(fn ($v) => (int) ($v ?? 0))->toArray();
+            $houseData = $houses->pluck('total_points')->map(fn ($v) => (int) $v)->toArray();
 
             $data['house_breakdown'] = [
                 'categories' => $categories,
