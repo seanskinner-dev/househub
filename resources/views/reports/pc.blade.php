@@ -54,14 +54,14 @@
     </div>
 
     <div class="row mb-4">
-      <div class="col-12">
-        <div class="card hh-card">
+      <div class="col-md-6 col-lg-3">
+        <div class="card hh-card h-100">
           <div class="card-body">
             <h5 class="mb-2">At Risk Students</h5>
             <p class="text-muted small mb-3">
               Shows current student risk levels based on engagement and points. Click a segment to view students.
             </p>
-            <div id="risk-distribution" style="min-height: 320px;"></div>
+            <div id="risk-distribution" style="min-height: 220px;"></div>
           </div>
         </div>
       </div>
