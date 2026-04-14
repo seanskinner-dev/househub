@@ -86,7 +86,7 @@
             box-sizing: border-box;
             position: relative;
             z-index: 1;
-            background: transparent !important;
+            background: transparent;
         }
 
         .tv-layout {
