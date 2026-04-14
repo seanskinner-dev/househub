@@ -12,7 +12,7 @@
         body {
             margin: 0;
             font-family: Arial, sans-serif;
-            background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
+            background: #0f172a;
             color: white;
         }
 
@@ -1323,39 +1323,6 @@
 
             return merged;
         };
-    </script>
-    <script>
-        function getWeatherColour(type) {
-            if (type === 'rain') return '#1e293b';
-            if (type === 'storm') return '#111827';
-            if (type === 'cloud') return '#374151';
-            return '#0f172a';
-        }
-
-        document.addEventListener('DOMContentLoaded', function () {
-            const isTV = document.querySelector('.tv-container');
-            if (isTV) return;
-
-            fetch('https://api.open-meteo.com/v1/forecast?latitude=-42.88&longitude=147.33&current_weather=true')
-                .then(function (res) { return res.json(); })
-                .then(function (data) {
-                    const code = Number((data && data.current_weather && data.current_weather.weathercode) || 0);
-                    let weatherType = 'clear';
-                    if ((code >= 1 && code <= 3) || (code >= 45 && code <= 48) || (code >= 71 && code <= 77)) {
-                        weatherType = 'cloud';
-                    } else if (code >= 51 && code <= 67) {
-                        weatherType = 'rain';
-                    } else if (code >= 80 && code <= 99) {
-                        weatherType = 'storm';
-                    }
-
-                    const colour = getWeatherColour(weatherType);
-                    document.body.style.background = colour;
-                })
-                .catch(function () {
-                    document.body.style.background = getWeatherColour('clear');
-                });
-        });
     </script>
     @stack('scripts')
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
