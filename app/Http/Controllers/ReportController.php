@@ -100,6 +100,12 @@ class ReportController extends Controller
 
     private function getReportData(Request $request): array
     {
+        dd([
+            'transactions_count' => DB::table('point_transactions')->count(),
+            'students_with_points' => DB::table('students')->where('house_points', '>', 0)->count(),
+            'houses' => DB::table('houses')->get(),
+        ]);
+
         [$start, $end, $house, $yearFilter] = $this->pcParseFilters($request);
 
         $legacyDonut = $this->pcChartDonut($house, $start, $end, $yearFilter);
