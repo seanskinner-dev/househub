@@ -1293,6 +1293,75 @@
         .screen-inner {
             background: transparent !important;
         }
+
+        /* Final consistency pass */
+        .tv-screen {
+            position: absolute;
+            inset: 0;
+            background: #0a0a0a !important;
+        }
+
+        .screen-inner,
+        .tv-layout,
+        .top-container,
+        .streak-container,
+        .activity-container,
+        .tv-this-term-screen,
+        .weather-container {
+            background: transparent;
+        }
+
+        .house-card,
+        .student-card,
+        .this-term-card,
+        .break-card,
+        .banner-inner {
+            background: linear-gradient(145deg, rgba(20,20,20,0.95), rgba(10,10,10,0.95)) !important;
+            border-radius: 16px !important;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6) !important;
+        }
+
+        .screen-title,
+        .top-title,
+        .streak-title,
+        .activity-title,
+        .tv-this-term-title,
+        .house-name,
+        .student-name,
+        .banner-name {
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .student-points,
+        .student-rank,
+        .break-card .label,
+        .weather-break span:first-child,
+        .weather-description {
+            opacity: 0.8;
+        }
+
+        .student-points {
+            font-size: 1rem;
+        }
+
+        .house-card,
+        .student-card,
+        .this-term-card,
+        .break-card {
+            padding: 16px 20px;
+        }
+
+        .student-grid,
+        .leaderboard-grid,
+        .leaderboard-list,
+        .top-list,
+        .activity-list,
+        .streak-list,
+        .tv-this-term-grid,
+        .break-container {
+            gap: 10px 14px;
+        }
     </style>
 </head>
 
@@ -1511,9 +1580,8 @@
                             $style = $houseStyles[$house] ?? ['color' => '#444', 'emoji' => '🏫'];
                             $rankNumber = $index + 1;
                             $rankClass = $rankNumber === 1 ? ' is-top-1' : ($rankNumber <= 3 ? ' is-top-2' : '');
-                            $textColor = $house === 'Hufflepuff' ? '#111' : '#fff';
                         @endphp
-                        <div class="student-card{{ $rankClass }}" data-house="{{ $house }}" style="--house-color: {{ $style['color'] }}; color: {{ $textColor }};">
+                        <div class="student-card{{ $rankClass }}" data-house="{{ $house }}" style="--house-color: {{ $style['color'] }};">
                             <div class="student-left">
                                 <span class="student-emoji">{{ $style['emoji'] }}</span>
                                 <span>
@@ -1539,9 +1607,8 @@
                             $style = $houseStyles[$house] ?? ['color' => '#444', 'emoji' => '🏫'];
                             $rankNumber = $index + 6;
                             $rankClass = $rankNumber <= 3 ? ' is-top-2' : '';
-                            $textColor = $house === 'Hufflepuff' ? '#111' : '#fff';
                         @endphp
-                        <div class="student-card{{ $rankClass }}" data-house="{{ $house }}" style="--house-color: {{ $style['color'] }}; color: {{ $textColor }};">
+                        <div class="student-card{{ $rankClass }}" data-house="{{ $house }}" style="--house-color: {{ $style['color'] }};">
                             <div class="student-left">
                                 <span class="student-emoji">{{ $style['emoji'] }}</span>
                                 <span>
