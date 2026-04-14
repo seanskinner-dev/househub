@@ -205,6 +205,25 @@
             text-align: right;
             white-space: nowrap;
         }
+
+        .apexcharts-tooltip {
+            background: #0f172a !important;
+            color: #e2e8f0 !important;
+            border: 1px solid #334155 !important;
+        }
+
+        .apexcharts-xaxistooltip,
+        .apexcharts-yaxistooltip {
+            background: #0f172a !important;
+            color: #e2e8f0 !important;
+            border: 1px solid #334155 !important;
+        }
+
+        .apexcharts-text,
+        .apexcharts-xaxis-label,
+        .apexcharts-yaxis-label {
+            fill: #94a3b8 !important;
+        }
     </style>
 </head>
 
@@ -985,25 +1004,21 @@
         })();
 
         window.Apex = {
-            colors: ['#0ea5e9', '#22c55e', '#f59e0b', '#ef4444', '#a855f7'],
             chart: {
                 background: 'transparent',
-                toolbar: {
-                    show: false
-                }
+                toolbar: { show: false },
+                foreColor: '#e2e8f0'
             },
-            tooltip: {
-                theme: 'dark',
-                fillSeriesColor: false,
-                style: {
-                    fontSize: '13px',
-                    fontFamily: 'inherit'
-                }
+
+            theme: {
+                mode: 'dark'
             },
+
             grid: {
                 borderColor: '#334155',
                 strokeDashArray: 4
             },
+
             xaxis: {
                 labels: {
                     style: {
@@ -1012,6 +1027,7 @@
                     }
                 }
             },
+
             yaxis: {
                 labels: {
                     style: {
@@ -1020,26 +1036,34 @@
                     }
                 }
             },
+
             legend: {
                 labels: {
                     colors: '#cbd5f5'
                 }
             },
+
             dataLabels: {
                 enabled: true,
                 style: {
-                    colors: ['#f8fafc'],
-                    fontWeight: 600
+                    colors: ['#f8fafc']
                 }
             },
-            states: {
-                hover: {
-                    filter: {
-                        type: 'lighten',
-                        value: 0.1
-                    }
+
+            tooltip: {
+                theme: 'dark',
+                style: {
+                    fontSize: '13px'
                 }
             },
+
+            colors: [
+                '#0ea5e9',
+                '#22c55e',
+                '#f59e0b',
+                '#ef4444',
+                '#a855f7'
+            ]
         };
     </script>
     @stack('scripts')
