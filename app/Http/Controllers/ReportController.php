@@ -100,7 +100,15 @@ class ReportController extends Controller
 
     public function reportChartData(Request $request)
     {
-        return response()->json($this->getReportData($request));
+        \Log::info('Report endpoint hit');
+
+        try {
+            return response()->json($this->getReportData($request));
+        } catch (\Exception $e) {
+            \Log::error('Report error: '.$e->getMessage());
+            \Log::error($e->getTraceAsString());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     private function getReportData(Request $request): array
