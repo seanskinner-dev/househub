@@ -1843,10 +1843,10 @@ document.addEventListener("DOMContentLoaded", function () {
             screens.forEach(function (s) { s.style.display = 'none'; });
             return;
         }
-        var screenId = screens[index] ? screens[index].id : '';
-        if (screenId !== 'screen-weather') {
-            var tvContainer = document.querySelector('.tv-container');
-            if (tvContainer) tvContainer.style.background = '';
+        const nextScreenId = screens[index] ? screens[index].id : '';
+        const container = document.querySelector('.tv-container');
+        if (nextScreenId !== 'screen-weather') {
+            container.style.background = '#0a0a0a';
         }
         screens.forEach((s, i) => {
             s.style.display = (i === index) ? 'flex' : 'none';
@@ -1902,15 +1902,19 @@ document.addEventListener("DOMContentLoaded", function () {
     let activeWeatherState = 'clear';
 
     function setWeatherBackground(type) {
-        const container = document.querySelector('.tv-container');
-        if (!container) return;
+        const activeScreen = document.querySelector('.tv-screen:not([style*="display: none"])');
+
+        if (!activeScreen || activeScreen.id !== 'screen-weather') return;
+
+        const el = document.querySelector('.tv-container');
+        if (!el) return;
         const pool = weatherBackgrounds[type] || weatherBackgrounds.clear;
         let selected;
         do {
             selected = pool[Math.floor(Math.random() * pool.length)];
         } while (selected === lastBg && pool.length > 1);
         lastBg = selected;
-        container.style.background = "linear-gradient(rgba(8,12,20,0.18), rgba(2,6,23,0.28)), url('/weather/" + type + "/" + selected + "') center/cover no-repeat";
+        el.style.background = "linear-gradient(rgba(8,12,20,0.18), rgba(2,6,23,0.28)), url('/weather/" + type + "/" + selected + "') center/cover no-repeat";
     }
 
     function updateWeatherBackground() {
