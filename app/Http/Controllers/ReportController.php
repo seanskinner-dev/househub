@@ -11,11 +11,6 @@ class ReportController extends Controller
 {
     public function housePerformance()
     {
-        dd([
-            'transactions_count' => DB::table('point_transactions')->count(),
-            'students_with_points' => DB::table('students')->where('house_points', '>', 0)->count(),
-        ]);
-
         $now = Carbon::now();
         $year = (int) $now->year;
         $month = (int) $now->month;
@@ -102,23 +97,92 @@ class ReportController extends Controller
     {
         \Log::info('Report endpoint hit');
 
+        $emptyDataset = function (string $name): array {
+            return [
+                'categories' => [],
+                'series' => [[
+                    'name' => $name,
+                    'data' => [],
+                ]],
+            ];
+        };
+
+        $normalizeDataset = function ($dataset, string $defaultName) use ($emptyDataset): array {
+            if (! is_array($dataset)) {
+                return $emptyDataset($defaultName);
+            }
+
+            $categories = is_array($dataset['categories'] ?? null) ? array_values($dataset['categories']) : [];
+            $categories = array_map(fn ($v) => (string) $v, $categories);
+            $categoryCount = count($categories);
+
+            $rawSeries = $dataset['series'] ?? [];
+            if (! is_array($rawSeries)) {
+                return $emptyDataset($defaultName);
+            }
+
+            $isObjectSeries = isset($rawSeries[0]) && is_array($rawSeries[0]) && array_key_exists('data', $rawSeries[0]);
+
+            if ($isObjectSeries) {
+                $series = array_values(array_map(function ($item) use ($defaultName, $categoryCount) {
+                    $name = (string) ($item['name'] ?? $defaultName);
+                    $data = is_array($item['data'] ?? null) ? array_values($item['data']) : [];
+                    $data = array_map(fn ($v) => is_numeric($v) ? (float) $v : 0, $data);
+
+                    if ($categoryCount > 0) {
+                        $data = array_slice(array_pad($data, $categoryCount, 0), 0, $categoryCount);
+                    } else {
+                        $data = [];
+                    }
+
+                    return ['name' => $name, 'data' => $data];
+                }, $rawSeries));
+
+                if ($series === []) {
+                    return $emptyDataset($defaultName);
+                }
+
+                return [
+                    'categories' => $categories,
+                    'series' => $series,
+                ];
+            }
+
+            $data = array_values(array_map(fn ($v) => is_numeric($v) ? (float) $v : 0, $rawSeries));
+            if ($categoryCount > 0) {
+                $data = array_slice(array_pad($data, $categoryCount, 0), 0, $categoryCount);
+            } else {
+                $data = [];
+            }
+
+            return [
+                'categories' => $categories,
+                'series' => [[
+                    'name' => $defaultName,
+                    'data' => $data,
+                ]],
+            ];
+        };
+
         try {
-            return response()->json($this->getReportData($request));
+            $data = $this->getReportData($request);
+
+            return response()->json([
+                'house_breakdown' => $normalizeDataset($data['house_breakdown'] ?? null, 'House Points'),
+                'trend' => $normalizeDataset($data['trend'] ?? null, 'Trend'),
+            ]);
         } catch (\Exception $e) {
             \Log::error('Report error: '.$e->getMessage());
             \Log::error($e->getTraceAsString());
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json([
+                'house_breakdown' => $emptyDataset('House Points'),
+                'trend' => $emptyDataset('Trend'),
+            ]);
         }
     }
 
     private function getReportData(Request $request): array
     {
-        dd([
-            'transactions_count' => DB::table('point_transactions')->count(),
-            'students_with_points' => DB::table('students')->where('house_points', '>', 0)->count(),
-            'houses' => DB::table('houses')->get(),
-        ]);
-
         [$start, $end, $house, $yearFilter] = $this->pcParseFilters($request);
 
         $legacyDonut = $this->pcChartDonut($house, $start, $end, $yearFilter);
