@@ -806,75 +806,87 @@
             display: flex;
             flex-direction: column;
             padding: 36px 48px;
+            background: #0f172a;
+            color: #ffffff;
         }
 
         .screen-title {
-            font-size: clamp(54px, 6vw, 96px);
+            font-size: 4.5rem;
             font-weight: 900;
             margin: 0;
+            margin-top: 40px;
             text-align: center;
-            letter-spacing: 0.02em;
+            letter-spacing: 1px;
         }
 
         .leaderboard-list {
             display: flex;
             flex-direction: column;
-            gap: 18px;
-            margin-top: 40px;
-            padding: 0 40px;
+            gap: 28px;
+            margin-top: 60px;
+            padding: 0 80px;
             flex: 1;
             justify-content: center;
         }
 
-        .leaderboard-list .student-row {
+        .student-card {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 24px 32px;
-            border-radius: 18px;
-            background: rgba(255,255,255,0.06);
-            backdrop-filter: blur(6px);
-            font-size: 2.6rem;
+            padding: 32px 40px;
+            border-radius: 22px;
+            background: #1e293b;
+            font-size: 2.8rem;
             font-weight: 700;
+            position: relative;
+            overflow: hidden;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 0 0px var(--house-color);
         }
 
-        .leaderboard-list .student-row:hover {
-            transform: scale(1.02);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        .student-card::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 12px;
+            height: 100%;
+            background: var(--house-color);
         }
 
-        .leaderboard-list .student-left {
+        .student-card:hover {
+            transform: scale(1.03);
+        }
+
+        .leaderboard-list .student-card:first-child {
+            transform: scale(1.05);
+            box-shadow: 0 0 40px var(--house-color);
+        }
+
+        .student-left {
             display: flex;
             align-items: center;
             gap: 20px;
         }
 
-        .leaderboard-list .student-emoji {
-            font-size: 2.4rem;
+        .student-emoji {
+            font-size: 2.6rem;
         }
 
-        .leaderboard-list .student-name {
+        .student-name {
+            font-size: 3rem;
             letter-spacing: 0.5px;
         }
 
-        .leaderboard-list .student-rank {
-            font-size: 2rem;
+        .student-rank {
+            font-size: 2.2rem;
             opacity: 0.8;
         }
 
-        .leaderboard-list .student-name-wrap {
-            flex: 1;
-        }
-
-        .screen-inner.gryffindor { background: #740001; color: #fff; }
-        .screen-inner.slytherin { background: #1a472a; color: #fff; }
-        .screen-inner.ravenclaw { background: #0e1a40; color: #fff; }
-        .screen-inner.hufflepuff { background: #ffcc00; color: #000; }
-
-        .screen-inner.hufflepuff .leaderboard-row {
-            background: rgba(0,0,0,0.12);
-        }
+        .screen-inner.gryffindor,
+        .screen-inner.slytherin,
+        .screen-inner.ravenclaw,
+        .screen-inner.hufflepuff { background: #0f172a; color: #fff; }
     </style>
 </head>
 
@@ -1200,12 +1212,10 @@
                     @php
                         $meta = houseMeta($student->house_name ?? 'Gryffindor');
                     @endphp
-                    <div class="student-row" style="border-left: 10px solid {{ $meta['color'] }}">
+                    <div class="student-card" style="--house-color: {{ $meta['color'] }}">
                         <div class="student-left">
                             <span class="student-emoji">{{ $meta['emoji'] }}</span>
-                            <span class="student-name-wrap">
-                                <span class="student-name">{{ $student->first_name }} {{ $student->last_name }}</span>
-                            </span>
+                            <span class="student-name">{{ $student->first_name }} {{ $student->last_name }}</span>
                         </div>
                         <div class="student-rank">#{{ $index + 1 }}</div>
                     </div>
@@ -1222,12 +1232,10 @@
                     @php
                         $meta = houseMeta($student->house_name ?? 'Slytherin');
                     @endphp
-                    <div class="student-row" style="border-left: 10px solid {{ $meta['color'] }}">
+                    <div class="student-card" style="--house-color: {{ $meta['color'] }}">
                         <div class="student-left">
                             <span class="student-emoji">{{ $meta['emoji'] }}</span>
-                            <span class="student-name-wrap">
-                                <span class="student-name">{{ $student->first_name }} {{ $student->last_name }}</span>
-                            </span>
+                            <span class="student-name">{{ $student->first_name }} {{ $student->last_name }}</span>
                         </div>
                         <div class="student-rank">#{{ $index + 1 }}</div>
                     </div>
@@ -1244,12 +1252,10 @@
                     @php
                         $meta = houseMeta($student->house_name ?? 'Ravenclaw');
                     @endphp
-                    <div class="student-row" style="border-left: 10px solid {{ $meta['color'] }}">
+                    <div class="student-card" style="--house-color: {{ $meta['color'] }}">
                         <div class="student-left">
                             <span class="student-emoji">{{ $meta['emoji'] }}</span>
-                            <span class="student-name-wrap">
-                                <span class="student-name">{{ $student->first_name }} {{ $student->last_name }}</span>
-                            </span>
+                            <span class="student-name">{{ $student->first_name }} {{ $student->last_name }}</span>
                         </div>
                         <div class="student-rank">#{{ $index + 1 }}</div>
                     </div>
@@ -1266,12 +1272,10 @@
                     @php
                         $meta = houseMeta($student->house_name ?? 'Hufflepuff');
                     @endphp
-                    <div class="student-row" style="border-left: 10px solid {{ $meta['color'] }}">
+                    <div class="student-card" style="--house-color: {{ $meta['color'] }}">
                         <div class="student-left">
                             <span class="student-emoji">{{ $meta['emoji'] }}</span>
-                            <span class="student-name-wrap">
-                                <span class="student-name">{{ $student->first_name }} {{ $student->last_name }}</span>
-                            </span>
+                            <span class="student-name">{{ $student->first_name }} {{ $student->last_name }}</span>
                         </div>
                         <div class="student-rank">#{{ $index + 1 }}</div>
                     </div>
