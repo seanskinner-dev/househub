@@ -1630,7 +1630,7 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
-    let activeBroadcast = null;
+    let activeMessage = null;
     let emergencyExpiryTimeout = null;
     let emergencyActive = false;
 
@@ -1657,6 +1657,7 @@ document.addEventListener("DOMContentLoaded", function () {
             screens.forEach(function (s) { s.classList.remove('active'); });
             return;
         }
+        console.log('Banner exists (before rotation):', document.getElementById('broadcastBanner'));
         const next = screens[index];
         if (!next) return;
 
@@ -1708,6 +1709,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 screen.dataset.animated = 'true';
             }
         }
+        console.log('Banner exists (after rotation):', document.getElementById('broadcastBanner'));
     }
 
     function nextScreen() {
@@ -2037,7 +2039,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     if (broadcastBanner) {
                         broadcastBanner.style.display = 'none';
                     }
-                    activeBroadcast = null;
+                    activeMessage = null;
 
                     if (expiresAt && emergencyScreen) {
                         const expiryTime = new Date(expiresAt).getTime();
@@ -2067,9 +2069,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
                 if (broadcastBanner) {
-                    if (message) {
-                        if (message !== activeBroadcast) {
-                            activeBroadcast = message;
+                    if (message && message !== activeMessage) {
+                            activeMessage = message;
                             broadcastBanner.innerText = message;
                             broadcastBanner.style.display = 'block';
                             if (window.broadcastTimeout) {
@@ -2080,10 +2081,9 @@ document.addEventListener("DOMContentLoaded", function () {
                                 if (broadcastBanner) {
                                     broadcastBanner.style.display = 'none';
                                 }
-                                activeBroadcast = null;
+                                activeMessage = null;
                                 window.broadcastTimeout = null;
                             }, 15000);
-                        }
                     }
                 }
             })
