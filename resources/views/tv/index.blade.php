@@ -201,10 +201,21 @@
             color: #111;
         }
 
-        .house-card.gryffindor { background: #740001 !important; }
-        .house-card.slytherin { background: #1a472a !important; }
-        .house-card.ravenclaw { background: #3b82f6 !important; }
-        .house-card.hufflepuff { background: #ffcc00 !important; }
+        .house-card.gryffindor {
+            background: linear-gradient(145deg, #740001, #3a0000);
+        }
+
+        .house-card.slytherin {
+            background: linear-gradient(145deg, #1a472a, #0f2a18);
+        }
+
+        .house-card.ravenclaw {
+            background: linear-gradient(145deg, #3b82f6, #1e3a8a);
+        }
+
+        .house-card.hufflepuff {
+            background: linear-gradient(145deg, #ffcc00, #b38f00);
+        }
 
         .house-card.winner {
             transform-origin: center center;
