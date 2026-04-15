@@ -864,12 +864,16 @@
             max-width: 1400px;
             margin: 0 auto;
             height: 100%;
+            position: relative;
+            z-index: 1;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 20px;
-            background: transparent;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(6px);
+            border-radius: 20px;
+            padding: 30px;
             color: #ffffff;
         }
 
@@ -1222,11 +1226,6 @@
             margin: 0;
         }
 
-        .screen-inner {
-            background: transparent !important;
-        }
-
-        .screen-inner,
         .top-container,
         .streak-container,
         .activity-container,
@@ -1288,6 +1287,25 @@
         .student-card {
             margin: 0 auto;
             width: 100%;
+        }
+
+        .student-card,
+        .house-card,
+        .activity-card,
+        .streak-card {
+            background: rgba(20, 20, 20, 0.85);
+            color: #fff;
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+        }
+
+        .screen-title,
+        .student-name,
+        .house-name,
+        .points,
+        .student-meta {
+            color: #ffffff;
         }
 
         .student-grid,
