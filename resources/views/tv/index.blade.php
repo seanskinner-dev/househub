@@ -360,9 +360,10 @@
 
         .activity-container {
             display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            padding-top: 10px;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            width: 100%;
             overflow: hidden;
         }
 
@@ -843,6 +844,8 @@
             height: 100%;
             display: flex;
             flex-direction: column;
+            justify-content: center;
+            align-items: center;
             padding: 18px 28px;
             background: transparent;
             color: #ffffff;
@@ -858,14 +861,17 @@
             text-shadow: 0 8px 28px rgba(0, 0, 0, 0.6);
         }
 
+        .card-grid,
         .student-grid,
         .top-list,
-        .streak-list {
+        .streak-list,
+        .leaderboard-grid,
+        .activity-list {
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 12px 14px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
             width: 100%;
-            max-width: 1240px;
+            max-width: 1400px;
             margin-left: auto;
             margin-right: auto;
             flex: unset;
@@ -879,13 +885,9 @@
         }
 
         .activity-list {
-            width: min(1240px, 95vw);
-            margin-top: 8px;
-
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px 12px;
-
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
             overflow: hidden;
             max-height: 100%;
         }
@@ -900,11 +902,6 @@
         }
 
         .leaderboard-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-            width: 100%;
-            max-width: 1100px;
             margin: 14px auto 0;
         }
 
@@ -918,8 +915,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 14px;
-            border-radius: 18px;
+            padding: 16px;
+            border-radius: 16px;
             background: linear-gradient(
                 145deg,
                 rgba(20,20,20,0.95),
@@ -937,6 +934,7 @@
             color: #ffffff;
             text-shadow: 0 2px 8px rgba(0,0,0,0.45);
             height: auto;
+            min-height: 90px;
             width: 100%;
             max-width: 100%;
             animation: studentPulse 5.2s ease-in-out infinite;
@@ -1166,7 +1164,7 @@
                         ['student_name' => 'ISLA', 'house_name' => 'Hufflepuff', 'days' => 3],
                         ['student_name' => 'LUCAS', 'house_name' => 'Gryffindor', 'days' => 2],
                         ['student_name' => 'ARIA', 'house_name' => 'Ravenclaw', 'days' => 2],
-                    ])->take(10);
+                    ])->take(14);
                 @endphp
                 @foreach($streakData as $streak)
                     @php
@@ -1240,8 +1238,8 @@
         <div class="top-container">
 
             @php
-                $left = $topStudents->slice(0, 5)->values();
-                $right = $topStudents->slice(5, 5)->values();
+                $left = $topStudents->slice(0, 7)->values();
+                $right = $topStudents->slice(7, 7)->values();
             @endphp
 
             <div class="top-title">
@@ -1288,7 +1286,7 @@
                             ];
                             $house = $student->house_name ?? null;
                             $style = $houseStyles[$house] ?? ['color' => '#444', 'emoji' => '🏫'];
-                            $rankNumber = $index + 6;
+                            $rankNumber = $index + 8;
                             $rankClass = $rankNumber <= 3 ? ' is-top-2' : '';
                         @endphp
                         <div class="student-card{{ $rankClass }}" data-house="{{ $house }}" style="--house-color: {{ $style['color'] }};">
@@ -1401,10 +1399,10 @@
 
     <div class="tv-screen" id="screen-top-gryffindor">
         <div class="screen-inner gryffindor">
-            <h1 class="screen-title">Top 10 - Gryffindor</h1>
+            <h1 class="screen-title">Top 14 - Gryffindor</h1>
             @php
-                $left = $topGryffindor->slice(0, 5)->values();
-                $right = $topGryffindor->slice(5, 5)->values();
+                $left = $topGryffindor->slice(0, 7)->values();
+                $right = $topGryffindor->slice(7, 7)->values();
             @endphp
             <div class="leaderboard-grid">
                 <div class="leaderboard-column">
@@ -1438,7 +1436,7 @@
                                     <span class="student-points">{{ (int) $student->house_points }} pts</span>
                                 </span>
                             </div>
-                            <div class="student-rank">#{{ $index + 6 }}</div>
+                            <div class="student-rank">#{{ $index + 8 }}</div>
                         </div>
                     @endforeach
                 </div>
@@ -1448,10 +1446,10 @@
 
     <div class="tv-screen" id="screen-top-slytherin">
         <div class="screen-inner slytherin">
-            <h1 class="screen-title">Top 10 - Slytherin</h1>
+            <h1 class="screen-title">Top 14 - Slytherin</h1>
             @php
-                $left = $topSlytherin->slice(0, 5)->values();
-                $right = $topSlytherin->slice(5, 5)->values();
+                $left = $topSlytherin->slice(0, 7)->values();
+                $right = $topSlytherin->slice(7, 7)->values();
             @endphp
             <div class="leaderboard-grid">
                 <div class="leaderboard-column">
@@ -1485,7 +1483,7 @@
                                     <span class="student-points">{{ (int) $student->house_points }} pts</span>
                                 </span>
                             </div>
-                            <div class="student-rank">#{{ $index + 6 }}</div>
+                            <div class="student-rank">#{{ $index + 8 }}</div>
                         </div>
                     @endforeach
                 </div>
@@ -1495,10 +1493,10 @@
 
     <div class="tv-screen" id="screen-top-ravenclaw">
         <div class="screen-inner ravenclaw">
-            <h1 class="screen-title">Top 10 - Ravenclaw</h1>
+            <h1 class="screen-title">Top 14 - Ravenclaw</h1>
             @php
-                $left = $topRavenclaw->slice(0, 5)->values();
-                $right = $topRavenclaw->slice(5, 5)->values();
+                $left = $topRavenclaw->slice(0, 7)->values();
+                $right = $topRavenclaw->slice(7, 7)->values();
             @endphp
             <div class="leaderboard-grid">
                 <div class="leaderboard-column">
@@ -1532,7 +1530,7 @@
                                     <span class="student-points">{{ (int) $student->house_points }} pts</span>
                                 </span>
                             </div>
-                            <div class="student-rank">#{{ $index + 6 }}</div>
+                            <div class="student-rank">#{{ $index + 8 }}</div>
                         </div>
                     @endforeach
                 </div>
@@ -1542,10 +1540,10 @@
 
     <div class="tv-screen" id="screen-top-hufflepuff">
         <div class="screen-inner hufflepuff">
-            <h1 class="screen-title">Top 10 - Hufflepuff</h1>
+            <h1 class="screen-title">Top 14 - Hufflepuff</h1>
             @php
-                $left = $topHufflepuff->slice(0, 5)->values();
-                $right = $topHufflepuff->slice(5, 5)->values();
+                $left = $topHufflepuff->slice(0, 7)->values();
+                $right = $topHufflepuff->slice(7, 7)->values();
             @endphp
             <div class="leaderboard-grid">
                 <div class="leaderboard-column">
@@ -1579,7 +1577,7 @@
                                     <span class="student-points">{{ (int) $student->house_points }} pts</span>
                                 </span>
                             </div>
-                            <div class="student-rank">#{{ $index + 6 }}</div>
+                            <div class="student-rank">#{{ $index + 8 }}</div>
                         </div>
                     @endforeach
                 </div>
