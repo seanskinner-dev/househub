@@ -946,7 +946,7 @@
         .student-card {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             position: relative;
             padding: 18px 20px;
             border-radius: 16px;
@@ -967,7 +967,7 @@
             color: #ffffff;
             text-shadow: 0 2px 8px rgba(0,0,0,0.45);
             height: auto;
-            min-height: 110px;
+            min-height: 120px;
             width: 100%;
             max-width: 100%;
             animation: studentPulse 5.2s ease-in-out infinite;
@@ -1010,7 +1010,7 @@
 
         .student-left {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 12px;
             min-width: 0;
             width: 100%;
@@ -1029,12 +1029,23 @@
         .student-name {
             font-size: 1.55rem;
             letter-spacing: 0.3px;
-            display: block;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 75%;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+            white-space: normal;
+            overflow: visible;
+            text-overflow: unset;
             text-shadow: 0 2px 10px rgba(0,0,0,0.6);
+        }
+
+        .first-name {
+            font-size: 1.1em;
+            font-weight: 700;
+        }
+
+        .last-name {
+            font-size: 0.95em;
+            opacity: 0.85;
         }
 
         .student-points {
@@ -1065,9 +1076,9 @@
         }
 
         .streak-name {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            white-space: normal;
+            overflow: visible;
+            text-overflow: unset;
         }
 
         .student-card.is-top-1 {
@@ -1298,7 +1309,10 @@
                     <div class="student-card streak-card{{ $rankClass }}" data-house="{{ $streak['house_name'] }}" style="--house-color: {{ $meta['color'] }}">
                         <div class="student-left">
                             <span class="student-emoji house-icon">{{ $meta['emoji'] }}</span>
-                            <span class="student-name streak-name">{{ $streak['student_name'] . ' ' . $streak['student_last_name'] }}</span>
+                            <span class="student-name streak-name">
+                                <span class="first-name">{{ $streak['student_name'] }}</span>
+                                <span class="last-name">{{ $streak['student_last_name'] }}</span>
+                            </span>
                         </div>
                         <div class="student-rank">{{ $streak['days'] }} DAY STREAK</div>
                     </div>
@@ -1343,7 +1357,10 @@
                         <div class="student-left">
                             <span class="student-emoji house-icon">{{ $meta['emoji'] }}</span>
                             <span>
-                                <span class="student-name">{{ strtoupper($activity['student_name'] . ' ' . $activity['student_last_name']) }}</span>
+                                <span class="student-name">
+                                    <span class="first-name">{{ strtoupper($activity['student_name']) }}</span>
+                                    <span class="last-name">{{ strtoupper($activity['student_last_name']) }}</span>
+                                </span>
                                 <span class="student-points">{{ $activity['action'] }} - {{ $activity['teacher'] }}</span>
                             </span>
                         </div>
@@ -1385,12 +1402,22 @@
                         $style = $houseStyles[$house] ?? ['color' => '#444', 'emoji' => '🏫'];
                         $rankNumber = $index + 1;
                         $rankClass = $rankNumber === 1 ? ' is-top-1' : ($rankNumber <= 3 ? ' is-top-2' : '');
+                        $firstName = trim((string) ($student->first_name ?? ''));
+                        $lastName = trim((string) ($student->last_name ?? ''));
+                        if ($firstName === '' && $lastName === '') {
+                            $nameParts = preg_split('/\s+/', trim((string) ($student->name ?? '')), 2);
+                            $firstName = $nameParts[0] ?? '';
+                            $lastName = $nameParts[1] ?? '';
+                        }
                     @endphp
                     <div class="student-card{{ $rankClass }}" data-house="{{ $house }}" style="--house-color: {{ $style['color'] }};">
                         <div class="student-left">
                             <span class="student-emoji house-icon">{{ $style['emoji'] }}</span>
                             <span>
-                                <span class="student-name">{{ $student->name }}</span>
+                                <span class="student-name">
+                                    <span class="first-name">{{ $firstName }}</span>
+                                    <span class="last-name">{{ $lastName }}</span>
+                                </span>
                                 <span class="student-points">{{ (int) $student->house_points }} pts</span>
                             </span>
                         </div>
@@ -1511,7 +1538,10 @@
                         <div class="student-left">
                             <span class="student-emoji house-icon">{{ $meta['emoji'] }}</span>
                             <span>
-                                <span class="student-name">{{ $student->first_name }} {{ $student->last_name }}</span>
+                                <span class="student-name">
+                                    <span class="first-name">{{ $student->first_name }}</span>
+                                    <span class="last-name">{{ $student->last_name }}</span>
+                                </span>
                                 <span class="student-points">{{ (int) $student->house_points }} pts</span>
                             </span>
                         </div>
@@ -1540,7 +1570,10 @@
                         <div class="student-left">
                             <span class="student-emoji house-icon">{{ $meta['emoji'] }}</span>
                             <span>
-                                <span class="student-name">{{ $student->first_name }} {{ $student->last_name }}</span>
+                                <span class="student-name">
+                                    <span class="first-name">{{ $student->first_name }}</span>
+                                    <span class="last-name">{{ $student->last_name }}</span>
+                                </span>
                                 <span class="student-points">{{ (int) $student->house_points }} pts</span>
                             </span>
                         </div>
@@ -1569,7 +1602,10 @@
                         <div class="student-left">
                             <span class="student-emoji house-icon">{{ $meta['emoji'] }}</span>
                             <span>
-                                <span class="student-name">{{ $student->first_name }} {{ $student->last_name }}</span>
+                                <span class="student-name">
+                                    <span class="first-name">{{ $student->first_name }}</span>
+                                    <span class="last-name">{{ $student->last_name }}</span>
+                                </span>
                                 <span class="student-points">{{ (int) $student->house_points }} pts</span>
                             </span>
                         </div>
@@ -1598,7 +1634,10 @@
                         <div class="student-left">
                             <span class="student-emoji house-icon">{{ $meta['emoji'] }}</span>
                             <span>
-                                <span class="student-name">{{ $student->first_name }} {{ $student->last_name }}</span>
+                                <span class="student-name">
+                                    <span class="first-name">{{ $student->first_name }}</span>
+                                    <span class="last-name">{{ $student->last_name }}</span>
+                                </span>
                                 <span class="student-points">{{ (int) $student->house_points }} pts</span>
                             </span>
                         </div>
