@@ -1011,15 +1011,46 @@
             letter-spacing: 0.02em;
         }
 
-        .tv-this-term-grid {
+        .points-layout {
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            gap: 20px;
+            height: 100%;
+        }
+
+        .tv-this-term-screen > .points-layout {
             flex: 1;
             min-height: 0;
             width: 100%;
             max-width: 1280px;
+        }
+
+        .points-layout > .hero-house {
+            grid-row: 1;
+        }
+
+        .points-layout > .other-houses {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1fr 1fr;
             gap: 16px;
+            grid-row: 2;
+            min-height: 0;
+            width: 100%;
+        }
+
+        .points-layout > .last-house {
+            display: flex;
+            justify-content: center;
+            grid-row: 3;
+            width: 100%;
+        }
+
+        .points-layout > .last-house .house-card {
+            width: 50%;
+        }
+
+        .points-layout > .other-houses .house-card {
+            width: 100%;
         }
 
         .this-term-card {
@@ -1471,7 +1502,6 @@
         .student-grid,
         .top-list,
         .streak-list,
-        .tv-this-term-grid,
         .break-container {
             gap: 10px 14px;
         }
@@ -1754,20 +1784,62 @@
                 House Points - This Term
             </div>
 
-            <div class="tv-this-term-grid">
-                @foreach($housePointsThisTerm as $entry)
+            @php
+                $termHouses = collect($housePointsThisTerm)->take(4)->values();
+            @endphp
+            <div class="points-layout">
+                @if ($termHouses->isNotEmpty())
                     @php
+                        $entry = $termHouses[0];
                         $houseMeta = houseMeta($entry['house'] ?? null);
                     @endphp
-                    <div
-                        class="house-card this-term-card{{ $loop->iteration === 1 ? ' winner' : '' }}"
-                        style="--house-color: {{ $houseMeta['color'] }};"
-                    >
-                        <div class="rank">#{{ $loop->iteration }}</div>
-                        <div class="house-name">{{ strtoupper($entry['house']) }}</div>
-                        <div class="points" data-points="{{ $entry['total'] }}">0</div>
+                    <div class="hero-house">
+                        <div
+                            class="house-card this-term-card winner"
+                            style="--house-color: {{ $houseMeta['color'] }};"
+                        >
+                            <div class="rank">#1</div>
+                            <div class="house-name">{{ strtoupper($entry['house']) }}</div>
+                            <div class="points" data-points="{{ $entry['total'] }}">0</div>
+                        </div>
                     </div>
-                @endforeach
+                @endif
+
+                @if ($termHouses->count() >= 2)
+                    <div class="other-houses">
+                        @foreach ($termHouses->slice(1, 2) as $entry)
+                            @php
+                                $houseMeta = houseMeta($entry['house'] ?? null);
+                                $rank = $loop->iteration + 1;
+                            @endphp
+                            <div
+                                class="house-card this-term-card"
+                                style="--house-color: {{ $houseMeta['color'] }};"
+                            >
+                                <div class="rank">#{{ $rank }}</div>
+                                <div class="house-name">{{ strtoupper($entry['house']) }}</div>
+                                <div class="points" data-points="{{ $entry['total'] }}">0</div>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+
+                @if ($termHouses->count() >= 4)
+                    @php
+                        $entry = $termHouses[3];
+                        $houseMeta = houseMeta($entry['house'] ?? null);
+                    @endphp
+                    <div class="last-house">
+                        <div
+                            class="house-card this-term-card"
+                            style="--house-color: {{ $houseMeta['color'] }};"
+                        >
+                            <div class="rank">#4</div>
+                            <div class="house-name">{{ strtoupper($entry['house']) }}</div>
+                            <div class="points" data-points="{{ $entry['total'] }}">0</div>
+                        </div>
+                    </div>
+                @endif
             </div>
 
         </div>
@@ -1782,20 +1854,62 @@
                 House Points - This Year
             </div>
 
-            <div class="tv-this-term-grid">
-                @foreach(collect($housePointsThisYear)->take(4) as $entry)
+            @php
+                $yearHouses = collect($housePointsThisYear)->take(4)->values();
+            @endphp
+            <div class="points-layout">
+                @if ($yearHouses->isNotEmpty())
                     @php
+                        $entry = $yearHouses[0];
                         $houseMeta = houseMeta($entry['house'] ?? null);
                     @endphp
-                    <div
-                        class="house-card this-term-card{{ $loop->iteration === 1 ? ' winner' : '' }}"
-                        style="--house-color: {{ $houseMeta['color'] }};"
-                    >
-                        <div class="rank">#{{ $loop->iteration }}</div>
-                        <div class="house-name">{{ strtoupper($entry['house']) }}</div>
-                        <div class="points" data-points="{{ $entry['total'] }}">0</div>
+                    <div class="hero-house">
+                        <div
+                            class="house-card this-term-card winner"
+                            style="--house-color: {{ $houseMeta['color'] }};"
+                        >
+                            <div class="rank">#1</div>
+                            <div class="house-name">{{ strtoupper($entry['house']) }}</div>
+                            <div class="points" data-points="{{ $entry['total'] }}">0</div>
+                        </div>
                     </div>
-                @endforeach
+                @endif
+
+                @if ($yearHouses->count() >= 2)
+                    <div class="other-houses">
+                        @foreach ($yearHouses->slice(1, 2) as $entry)
+                            @php
+                                $houseMeta = houseMeta($entry['house'] ?? null);
+                                $rank = $loop->iteration + 1;
+                            @endphp
+                            <div
+                                class="house-card this-term-card"
+                                style="--house-color: {{ $houseMeta['color'] }};"
+                            >
+                                <div class="rank">#{{ $rank }}</div>
+                                <div class="house-name">{{ strtoupper($entry['house']) }}</div>
+                                <div class="points" data-points="{{ $entry['total'] }}">0</div>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+
+                @if ($yearHouses->count() >= 4)
+                    @php
+                        $entry = $yearHouses[3];
+                        $houseMeta = houseMeta($entry['house'] ?? null);
+                    @endphp
+                    <div class="last-house">
+                        <div
+                            class="house-card this-term-card"
+                            style="--house-color: {{ $houseMeta['color'] }};"
+                        >
+                            <div class="rank">#4</div>
+                            <div class="house-name">{{ strtoupper($entry['house']) }}</div>
+                            <div class="points" data-points="{{ $entry['total'] }}">0</div>
+                        </div>
+                    </div>
+                @endif
             </div>
 
         </div>
