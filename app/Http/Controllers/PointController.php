@@ -279,14 +279,27 @@ class PointController extends Controller
         if (!$student) abort(404);
 
         $awards = DB::table('awards')
-            ->where('student_id', $id)
+            ->leftJoin('users', 'awards.awarded_by', '=', 'users.id')
+            ->select('awards.*', 'users.name as teacher_name')
+            ->where('awards.student_id', $id)
             ->orderByDesc('created_at')
             ->get();
 
+        $pointTransactions = DB::table('point_transactions')
+            ->leftJoin('users', 'point_transactions.awarded_by', '=', 'users.id')
+            ->select('point_transactions.*', 'users.name as teacher_name')
+            ->where('point_transactions.student_id', $id)
+            ->where('point_transactions.amount', '!=', 0)
+            ->orderByDesc('point_transactions.created_at')
+            ->get();
+
         $commendations = DB::table('point_transactions')
-            ->where('student_id', $id)
-            ->whereNotNull('description')
-            ->where('description', '!=', '')
+            ->leftJoin('users', 'point_transactions.awarded_by', '=', 'users.id')
+            ->select('point_transactions.*', 'users.name as teacher_name')
+            ->where('point_transactions.student_id', $id)
+            ->where('point_transactions.category', 'commendation')
+            ->whereNotNull('point_transactions.description')
+            ->where('point_transactions.description', '!=', '')
             ->orderByDesc('created_at')
             ->get();
 
@@ -295,6 +308,7 @@ class PointController extends Controller
 
         return view('students.show', compact(
             'student',
+            'pointTransactions',
             'awards',
             'commendations',
             'awardCount',

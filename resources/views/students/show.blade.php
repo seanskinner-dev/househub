@@ -154,6 +154,19 @@
         .profile-section.active {
             display: block;
         }
+
+        .activity-item {
+            background:#2b2f36;
+            padding:15px;
+            border-radius:10px;
+            margin-bottom:10px;
+        }
+
+        .activity-meta {
+            font-size:12px;
+            color:#aaa;
+            margin-top:5px;
+        }
     </style>
 </head>
 
@@ -186,6 +199,7 @@
 
     <div class="profile-tabs">
         <button class="profile-tab active" data-tab="stats">Stats</button>
+        <button class="profile-tab" data-tab="points">House Points</button>
         <button class="profile-tab" data-tab="awards">Awards</button>
         <button class="profile-tab" data-tab="commendations">Commendations</button>
     </div>
@@ -214,6 +228,26 @@
         </div>
     </div>
 
+    <div class="section profile-section" data-section="points">
+        <h3>House Points Activity</h3>
+
+        @if($pointTransactions->count())
+            @foreach($pointTransactions as $tx)
+                <div class="activity-item">
+                    <div>
+                        {{ $tx->amount > 0 ? '+' : '' }}{{ $tx->amount }} points
+                    </div>
+
+                    <div class="activity-meta">
+                        {{ $tx->teacher_name ?? 'System' }} • {{ \Carbon\Carbon::parse($tx->created_at)->format('d M Y') }}
+                    </div>
+                </div>
+            @endforeach
+        @else
+            <div class="meta">No house points activity yet</div>
+        @endif
+    </div>
+
     <!-- ===================== -->
     <!-- AWARDS -->
     <!-- ===================== -->
@@ -227,12 +261,8 @@
                         {{ $award->name ?? $award->title ?? 'Award' }}
                     </div>
 
-                    <div>
-                        {{ $award->description }}
-                    </div>
-
-                    <div class="award-date">
-                        {{ \Carbon\Carbon::parse($award->awarded_at ?? $award->created_at)->format('d M Y') }}
+                    <div class="activity-meta">
+                        {{ $award->teacher_name ?? 'System' }} • {{ \Carbon\Carbon::parse($award->created_at)->format('d M Y') }}
                     </div>
 
                     <a href="/certificate/{{ $award->id }}" class="btn">View Certificate</a>
@@ -250,14 +280,14 @@
         <h3>Commendations</h3>
 
         @if($commendations->count())
-            @foreach($commendations as $c)
+            @foreach($commendations as $commendation)
                 <div class="award">
                     <div>
-                        {{ $c->description }}
+                        {{ $commendation->description }}
                     </div>
 
-                    <div class="award-date">
-                        {{ \Carbon\Carbon::parse($c->created_at)->format('d M Y') }}
+                    <div class="activity-meta">
+                        {{ $commendation->teacher_name ?? 'System' }} • {{ \Carbon\Carbon::parse($commendation->created_at)->format('d M Y') }}
                     </div>
                 </div>
             @endforeach
