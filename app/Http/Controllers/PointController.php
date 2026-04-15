@@ -498,6 +498,11 @@ class PointController extends Controller
             ->keys()
             ->first();
         $leadingHouseTerm = optional($houses->firstWhere('id', (int) $leadingHouseTermId))->name;
+        $leadingHouseYearId = collect($houseTotalsYear)
+            ->sortByDesc('total')
+            ->keys()
+            ->first();
+        $leadingHouseYear = optional($houses->firstWhere('id', (int) $leadingHouseYearId))->name;
 
         $weather = Cache::remember('tv_weather', 600, function () {
             $fallback = [
@@ -578,6 +583,7 @@ class PointController extends Controller
             'houseTotalsYear' => $houseTotalsYear,
             'houseTotalsTerm' => $houseTotalsTerm,
             'leadingHouseTerm' => $leadingHouseTerm,
+            'leadingHouseYear' => $leadingHouseYear,
             'topGryffindor' => $topGryffindor,
             'topSlytherin' => $topSlytherin,
             'topRavenclaw' => $topRavenclaw,

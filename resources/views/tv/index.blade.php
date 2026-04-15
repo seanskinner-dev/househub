@@ -1700,7 +1700,9 @@
         </div>
     </div>
 
-    <div class="tv-screen" id="screen-total-year">
+    <div class="tv-screen"
+         id="screen-total-year"
+         data-leading-house="{{ $leadingHouseYear }}">
         <div class="screen-inner">
             <h1 class="screen-title">TOTAL HOUSE POINTS (YEAR)</h1>
             <div class="total-banner">
@@ -1855,9 +1857,14 @@ document.addEventListener("DOMContentLoaded", function () {
             );
 
             const activeScreen = document.querySelector('.tv-screen.active');
-            if (activeScreen && activeScreen.id === 'screen-total-term') {
-                const house = activeScreen.dataset.leadingHouse;
-                if (house) {
+            if (activeScreen) {
+                const isTotalScreen =
+                    activeScreen.id === 'screen-total-term' ||
+                    activeScreen.id === 'screen-total-year';
+
+                if (isTotalScreen) {
+                    let house = activeScreen.dataset.leadingHouse;
+                    if (!house) house = 'gryffindor';
                     container.classList.add('house-' + house.toLowerCase());
                 }
             }
