@@ -192,6 +192,16 @@
 
             document.getElementById('clear-omm-btn')?.addEventListener('click', async function () {
                 const el = document.getElementById('bmm-status');
+                const banner = document.getElementById('broadcastBanner');
+                if (banner) {
+                    banner.style.display = 'none';
+                    banner.innerText = '';
+                }
+                window.activeMessage = null;
+                if (window.broadcastTimeout) {
+                    clearTimeout(window.broadcastTimeout);
+                    window.broadcastTimeout = null;
+                }
                 setStatus(el, 'Clearing…', 'muted');
                 try {
                     const res = await fetch('/omm/clear', {
@@ -208,7 +218,6 @@
                         return;
                     }
                     setStatus(el, 'Message cleared.', 'ok');
-                    location.reload();
                 } catch (e) {
                     setStatus(el, 'Network error.', 'err');
                 }
