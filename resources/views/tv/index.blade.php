@@ -24,9 +24,11 @@
         .tv-container {
             position: relative;
             height: 100%;
-            width: 100vw;
+            width: 100%;
+            max-width: 100%;
             overflow: hidden;
             padding: 0 20px;
+            box-sizing: border-box;
             color: #fff;
             transition: background 1s ease;
             animation: bgDrift 20s ease-in-out infinite;
@@ -85,8 +87,9 @@
         .tv-screen {
             display: flex;
             flex-direction: column;
-            height: 100vh;
-            width: 100vw;
+            height: 100%;
+            width: 100%;
+            max-width: 100%;
             overflow: hidden;
             box-sizing: border-box;
             position: absolute;
@@ -1058,7 +1061,7 @@
             overflow: hidden;
             box-shadow:
                 0 8px 25px rgba(0,0,0,0.7),
-                0 0 20px var(--house-color);
+                0 0 16px var(--house-color);
             backdrop-filter: blur(6px);
             color: #ffffff;
             text-shadow: 0 2px 8px rgba(0,0,0,0.45);
@@ -1135,7 +1138,7 @@
         .student-card.is-top-1 {
             transform: scale(1.03);
             box-shadow:
-                0 0 52px var(--house-color),
+                0 0 16px var(--house-color),
                 0 14px 42px rgba(0,0,0,0.85);
             animation: studentPulseTop1 5s ease-in-out infinite;
         }
@@ -1151,7 +1154,7 @@
         .student-card.is-top-2,
         .student-card.is-top-3 {
             box-shadow:
-                0 0 32px var(--house-color),
+                0 0 16px var(--house-color),
                 0 11px 32px rgba(0,0,0,0.7),
                 inset 0 1px 0 rgba(255,255,255,0.05);
         }
@@ -1159,7 +1162,7 @@
         .student-card:not(.is-top-1):not(.is-top-2):not(.is-top-3) {
             box-shadow:
                 0 8px 25px rgba(0,0,0,0.7),
-                0 0 12px var(--house-color);
+                0 0 16px var(--house-color);
         }
 
         .student-card.is-compact {
