@@ -27,7 +27,11 @@
         .points-index-page .house-btn.ravenclaw { background: #3b82f6; }
         .points-index-page .house-btn.hufflepuff {
             background: #ffcc00;
-            color: #111;
+            color: #111 !important;
+        }
+
+        .points-index-page .house-btn.hufflepuff * {
+            color: #111 !important;
         }
 
         .points-index-page .recent-activity {
