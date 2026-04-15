@@ -869,16 +869,11 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: rgba(0, 0, 0, 0.25);
-            backdrop-filter: blur(2px);
+            background: transparent;
+            backdrop-filter: none;
             border-radius: 20px;
             padding: 20px;
             color: #ffffff;
-        }
-
-        .screen-inner * {
-            position: relative;
-            z-index: 2;
         }
 
         .screen-title {
@@ -1237,15 +1232,21 @@
         .top-container,
         .streak-container,
         .activity-container,
-        .weather-container {
-            background: transparent;
+        .points-race-container {
+            background: rgba(0, 0, 0, 0.35);
+            border-radius: 20px;
+            padding: 20px;
+            width: 100%;
         }
 
         .top-title,
         .streak-title,
         .activity-title,
+        .screen-title,
         .house-name,
-        .student-name {
+        .student-name,
+        .student-meta,
+        .student-points {
             color: #fff;
             font-weight: 700;
         }
@@ -1308,19 +1309,21 @@
             box-shadow: 0 8px 25px rgba(0,0,0,0.5);
         }
 
-        .screen-title,
-        .student-name,
-        .house-name,
-        .points,
-        .student-meta {
-            color: #ffffff;
-        }
+        .points { color: #ffffff; }
 
         .student-grid,
         .top-list,
         .streak-list,
         .break-container {
             gap: 10px 14px;
+        }
+
+        .top-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            width: 100%;
+            height: 100%;
         }
 
         .top-students,
@@ -1340,13 +1343,6 @@
                 rgba(30,30,30,0.95),
                 rgba(10,10,10,0.95)
             ) !important;
-        }
-
-        .activity-card *,
-        .streak-card *,
-        .house-card * {
-            position: relative;
-            z-index: 2;
         }
 
         .card {
