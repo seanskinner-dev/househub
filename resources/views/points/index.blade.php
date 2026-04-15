@@ -116,6 +116,28 @@
             margin-bottom: 16px;
         }
 
+        .points-index-page .points-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .points-index-page .tab {
+            flex: 1;
+            padding: 10px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: none;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .points-index-page .tab.active {
+            background: #1e293b;
+            box-shadow: inset 0 0 0 2px #3b82f6;
+        }
+
         .points-index-page .house-pill {
             flex: 1;
             text-align: center;
@@ -216,6 +238,12 @@
 
             {{-- STUDENTS --}}
             <div class="col-lg-8" id="student-list">
+                <div class="points-tabs">
+                    <button class="tab active" data-tab="points">House Points</button>
+                    <button class="tab" data-tab="commendations">Commendations</button>
+                    <button class="tab" data-tab="awards">Awards</button>
+                </div>
+
                 @foreach ($students as $student)
                     @php
                         $houseKey = strtolower($student->house_name ?? '');
@@ -396,5 +424,99 @@
                     }
                 });
         }
+
+        var currentTab = 'points';
+
+        function showPointsTabToast(message) {
+            if (typeof window.reportShowToast === 'function') {
+                window.reportShowToast(message);
+            }
+        }
+
+        function pointsAwardNameByTotal(total) {
+            if (total === 5) return 'Bronze';
+            if (total === 10) return 'Silver';
+            if (total === 15) return 'Gold';
+            return null;
+        }
+
+        function checkForAutoAward(studentId, total) {
+            var award = pointsAwardNameByTotal(Number(total || 0));
+            if (!award) {
+                return Promise.resolve(null);
+            }
+
+            return fetch(@json(url('/points/award')), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': csrfToken()
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    student_id: Number(studentId),
+                    award_name: award + ' Award',
+                    description: 'Auto-awarded after ' + String(total) + ' commendations'
+                })
+            }).catch(function () {
+                return null;
+            });
+        }
+
+        function addCommendation(studentId) {
+            return fetch(@json(url('/points/commendation')), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': csrfToken()
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    student_id: Number(studentId)
+                })
+            })
+                .then(function (res) {
+                    if (!res.ok) {
+                        throw new Error('bad');
+                    }
+                    return res.json();
+                })
+                .then(function (data) {
+                    return checkForAutoAward(studentId, data.total).then(function () {
+                        location.reload();
+                    });
+                });
+        }
+
+        (function wirePointsTabs() {
+            document.querySelectorAll('.points-tabs .tab').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    document.querySelectorAll('.points-tabs .tab').forEach(function (b) {
+                        b.classList.remove('active');
+                    });
+                    btn.classList.add('active');
+                    currentTab = btn.getAttribute('data-tab') || 'points';
+                });
+            });
+
+            window.pointsCanPerformAction = function (requiredTab) {
+                if (currentTab === requiredTab) {
+                    return true;
+                }
+                showPointsTabToast('Switch to ' + requiredTab + ' tab first');
+                return false;
+            };
+
+            window.handlePointsCommendClick = function (studentId) {
+                addCommendation(studentId).catch(function () {
+                    showPointsTabToast('Could not save commendation');
+                });
+                return true;
+            };
+        })();
     </script>
 @endsection

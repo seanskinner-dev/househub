@@ -164,7 +164,7 @@ class PointController extends Controller
     {
         $data = $request->validate([
             'student_id' => 'required|integer|exists:students,id',
-            'description' => 'required|string|max:5000',
+            'description' => 'nullable|string|max:5000',
         ]);
 
         $userId = auth()->id() ?? 1;
@@ -178,6 +178,11 @@ class PointController extends Controller
         $houseId = $student->house_id ?? null;
 
         DB::transaction(function () use ($data, $userId, $student, $houseId) {
+            $description = trim((string) ($data['description'] ?? ''));
+            if ($description === '') {
+                $description = 'Commendation';
+            }
+
             Commendation::create([
                 'student_id' => $student->id,
                 'awarded_by' => $userId,
@@ -188,7 +193,7 @@ class PointController extends Controller
                 'house_id' => $houseId,
                 'amount' => 0,
                 'category' => 'commendation',
-                'description' => $data['description'],
+                'description' => $description,
                 'awarded_by' => $userId,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -196,9 +201,13 @@ class PointController extends Controller
         });
 
         $who = trim(($student->first_name ?? '').' '.($student->last_name ?? ''));
+        $total = Commendation::query()
+            ->where('student_id', $student->id)
+            ->count();
 
         return response()->json([
             'success' => true,
+            'total' => $total,
             'recent_entry' => [
                 'amount' => 0,
                 'who' => $who,

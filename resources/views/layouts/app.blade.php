@@ -893,6 +893,9 @@
                 var addBtn = e.target.closest('button.btn-add');
                 if (addBtn && !addBtn.disabled) {
                     e.preventDefault();
+                    if (typeof window.pointsCanPerformAction === 'function' && !window.pointsCanPerformAction('points')) {
+                        return;
+                    }
                     var id = addBtn.getAttribute('data-student-id') || addBtn.getAttribute('data-id');
                     if (id) {
                         reportSendPoint(id, 1);
@@ -902,6 +905,9 @@
                 var subBtn = e.target.closest('button.btn-sub');
                 if (subBtn && !subBtn.disabled) {
                     e.preventDefault();
+                    if (typeof window.pointsCanPerformAction === 'function' && !window.pointsCanPerformAction('points')) {
+                        return;
+                    }
                     var id2 = subBtn.getAttribute('data-student-id') || subBtn.getAttribute('data-id');
                     if (id2) {
                         reportSendPoint(id2, -1);
@@ -911,8 +917,14 @@
                 var awardBtn = e.target.closest('button.btn-award');
                 if (awardBtn && !awardBtn.disabled) {
                     e.preventDefault();
+                    if (typeof window.pointsCanPerformAction === 'function' && !window.pointsCanPerformAction('awards')) {
+                        return;
+                    }
                     var id3 = awardBtn.getAttribute('data-student-id') || awardBtn.getAttribute('data-id');
                     if (id3) {
+                        if (typeof window.handlePointsAwardClick === 'function' && window.handlePointsAwardClick(id3) === true) {
+                            return;
+                        }
                         window.openAwardModal(id3);
                     }
                     return;
@@ -920,8 +932,14 @@
                 var commendBtn = e.target.closest('button.btn-commend');
                 if (commendBtn && !commendBtn.disabled) {
                     e.preventDefault();
+                    if (typeof window.pointsCanPerformAction === 'function' && !window.pointsCanPerformAction('commendations')) {
+                        return;
+                    }
                     var id4 = commendBtn.getAttribute('data-student-id') || commendBtn.getAttribute('data-id');
                     if (id4) {
+                        if (typeof window.handlePointsCommendClick === 'function' && window.handlePointsCommendClick(id4) === true) {
+                            return;
+                        }
                         window.openCommendationModal(id4);
                     }
                 }
