@@ -261,7 +261,11 @@ class PointController extends Controller
 
     public function showStudent($id)
     {
-        $student = DB::table('students')->where('id', $id)->first();
+        $student = DB::table('students')
+            ->leftJoin('houses', 'students.house_id', '=', 'houses.id')
+            ->select('students.*', 'houses.name as house_name')
+            ->where('students.id', $id)
+            ->first();
 
         if (!$student) abort(404);
 

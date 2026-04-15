@@ -88,7 +88,7 @@
     <h1>{{ $student->first_name }} {{ $student->last_name }}</h1>
 
     <div class="meta">
-        {{ $student->house_name }}<br>
+        {{ $student->house_name ?? 'No house assigned' }}<br>
         {{ $student->house_points }} points
     </div>
 
