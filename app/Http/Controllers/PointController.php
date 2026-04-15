@@ -281,10 +281,15 @@ class PointController extends Controller
             ->orderByDesc('created_at')
             ->get();
 
+        $awardCount = $awards->count();
+        $commendationCount = $commendations->count();
+
         return view('students.show', compact(
             'student',
             'awards',
-            'commendations'
+            'commendations',
+            'awardCount',
+            'commendationCount'
         ));
     }
 
