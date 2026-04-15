@@ -381,12 +381,12 @@
         }
 
         .activity-container {
-            height: 100%;
+            height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
-            align-items: center;
             padding-top: 10px;
+            overflow: hidden;
         }
 
         .activity-title {
@@ -414,11 +414,6 @@
         @keyframes shimmer {
             0% { transform: translateX(-100%); }
             100% { transform: translateX(100%); }
-        }
-
-        .activity-list {
-            width: min(1240px, 95vw);
-            margin-top: 16px;
         }
 
         @keyframes activityFadeIn {
@@ -969,7 +964,6 @@
         .student-grid,
         .leaderboard-list,
         .top-list,
-        .activity-list,
         .streak-list {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -983,16 +977,21 @@
             min-height: 0;
         }
 
-        .activity-list,
         .streak-list {
             grid-auto-rows: auto;
             align-content: start;
         }
 
         .activity-list {
-            grid-auto-rows: min-content;
-            overflow: hidden;
+            width: min(1240px, 95vw);
+            margin-top: 8px;
+
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 8px 12px;
+
+            overflow: hidden;
+            max-height: 100%;
         }
 
         .leaderboard-list {
