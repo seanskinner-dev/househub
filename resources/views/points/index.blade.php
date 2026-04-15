@@ -492,31 +492,32 @@
                 });
         }
 
-        (function wirePointsTabs() {
-            document.querySelectorAll('.points-tabs .tab').forEach(function (btn) {
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.tab').forEach(function (btn) {
                 btn.addEventListener('click', function () {
-                    document.querySelectorAll('.points-tabs .tab').forEach(function (b) {
+                    document.querySelectorAll('.tab').forEach(function (b) {
                         b.classList.remove('active');
                     });
                     btn.classList.add('active');
                     currentTab = btn.getAttribute('data-tab') || 'points';
+                    console.log('Tab changed to:', currentTab);
                 });
             });
+        });
 
-            window.pointsCanPerformAction = function (requiredTab) {
-                if (currentTab === requiredTab) {
-                    return true;
-                }
-                showPointsTabToast('Switch to ' + requiredTab + ' tab first');
-                return false;
-            };
-
-            window.handlePointsCommendClick = function (studentId) {
-                addCommendation(studentId).catch(function () {
-                    showPointsTabToast('Could not save commendation');
-                });
+        window.pointsCanPerformAction = function (requiredTab) {
+            if (currentTab === requiredTab) {
                 return true;
-            };
-        })();
+            }
+            showPointsTabToast('Switch to ' + requiredTab + ' tab first');
+            return false;
+        };
+
+        window.handlePointsCommendClick = function (studentId) {
+            addCommendation(studentId).catch(function () {
+                showPointsTabToast('Could not save commendation');
+            });
+            return true;
+        };
     </script>
 @endsection

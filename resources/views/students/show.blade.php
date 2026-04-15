@@ -114,10 +114,25 @@
             text-decoration:none;
             font-size:12px;
         }
+
+        .back-btn {
+            color: #93c5fd;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .back-btn:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 
 <body>
+@include('layouts.navbar')
+
+<div style="padding: 20px;">
+    <a href="/points" class="back-btn">← Back</a>
+</div>
 
 <div class="card">
     <div class="student-profile-header {{ strtolower($student->house_name ?? '') }}">
@@ -215,9 +230,6 @@
         @endif
     </div>
 
-    <br>
-
-    <a href="/points">← Back to Points</a>
 </div>
 
 </body>
