@@ -1631,6 +1631,7 @@
 document.addEventListener("DOMContentLoaded", function () {
 
     let ommExpiryTimeout = null;
+    let emergencyExpiryTimeout = null;
     let emergencyActive = false;
 
     function shuffle(array) {
@@ -1998,6 +1999,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 return res.json();
             })
             .then(function (data) {
+                console.log('Broadcast data:', data);
+
                 const message = data && data.message ? String(data.message) : '';
                 const expiresAt = data && data.expires_at ? String(data.expires_at) : '';
                 var emergencyColorMap = {
@@ -2011,6 +2014,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 };
 
                 if (message && message.startsWith('EMERGENCY:')) {
+                    if (ommExpiryTimeout) {
+                        clearTimeout(ommExpiryTimeout);
+                        ommExpiryTimeout = null;
+                    }
+                    if (emergencyExpiryTimeout) {
+                        clearTimeout(emergencyExpiryTimeout);
+                        emergencyExpiryTimeout = null;
+                    }
+
                     const code = message.slice('EMERGENCY:'.length).trim();
                     const emergencyBg = emergencyColorMap[code] || '#dc2626';
                     emergencyActive = true;
@@ -2025,54 +2037,66 @@ document.addEventListener("DOMContentLoaded", function () {
                     if (broadcastBanner) {
                         broadcastBanner.style.display = 'none';
                     }
-                } else {
-                    emergencyActive = false;
-                    if (emergencyScreen) {
-                        emergencyScreen.style.display = 'none';
-                    }
-                    showScreen(currentScreen);
-                    if (broadcastBanner) {
-                        if (message) {
-                            broadcastBanner.textContent = message;
-                            broadcastBanner.style.display = 'block';
-                        } else {
-                            broadcastBanner.style.display = 'none';
+
+                    if (expiresAt && emergencyScreen) {
+                        const expiryTime = new Date(expiresAt).getTime();
+                        const nowMs = Date.now();
+                        const timeLeft = expiryTime - nowMs;
+                        if (timeLeft > 0) {
+                            emergencyExpiryTimeout = setTimeout(function () {
+                                emergencyActive = false;
+                                if (emergencyScreen) {
+                                    emergencyScreen.style.display = 'none';
+                                }
+                                emergencyExpiryTimeout = null;
+                                showScreen(currentScreen);
+                            }, timeLeft);
                         }
                     }
+                    return;
                 }
 
-                if (ommExpiryTimeout) {
-                    clearTimeout(ommExpiryTimeout);
-                    ommExpiryTimeout = null;
+                emergencyActive = false;
+                if (emergencyExpiryTimeout) {
+                    clearTimeout(emergencyExpiryTimeout);
+                    emergencyExpiryTimeout = null;
                 }
-                if (expiresAt) {
-                    const expiryTime = new Date(expiresAt).getTime();
-                    const nowMs = new Date().getTime();
-                    const timeLeft = expiryTime - nowMs;
-                    if (timeLeft > 0) {
-                        ommExpiryTimeout = setTimeout(function () {
-                            if (broadcastBanner) {
-                                broadcastBanner.style.display = 'none';
+                if (emergencyScreen) {
+                    emergencyScreen.style.display = 'none';
+                }
+                showScreen(currentScreen);
+
+                if (broadcastBanner) {
+                    if (message) {
+                        var alreadyShowing =
+                            broadcastBanner.style.display === 'block' &&
+                            broadcastBanner.innerText === message;
+                        if (!alreadyShowing) {
+                            broadcastBanner.innerText = message;
+                            broadcastBanner.style.display = 'block';
+                            if (ommExpiryTimeout) {
+                                clearTimeout(ommExpiryTimeout);
+                                ommExpiryTimeout = null;
                             }
-                            if (emergencyScreen) {
-                                emergencyScreen.style.display = 'none';
-                            }
-                        }, timeLeft);
+                            ommExpiryTimeout = setTimeout(function () {
+                                if (broadcastBanner) {
+                                    broadcastBanner.style.display = 'none';
+                                }
+                                ommExpiryTimeout = null;
+                            }, 15000);
+                        }
                     } else {
-                        if (broadcastBanner) {
-                            broadcastBanner.style.display = 'none';
+                        if (ommExpiryTimeout) {
+                            clearTimeout(ommExpiryTimeout);
+                            ommExpiryTimeout = null;
                         }
-                        if (emergencyScreen) {
-                            emergencyScreen.style.display = 'none';
-                        }
+                        broadcastBanner.style.display = 'none';
                     }
                 }
             })
-            .catch(function () {
+            .catch(function (err) {
+                console.warn('broadcast fetch failed', err);
                 emergencyActive = false;
-                if (broadcastBanner) {
-                    broadcastBanner.style.display = 'none';
-                }
             });
     }
 
@@ -2092,7 +2116,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     fetchBroadcast();
     updateWeatherBackground();
-    setInterval(fetchBroadcast, 5000);
+    setInterval(fetchBroadcast, 3000);
     setInterval(updateWeatherBackground, 300000);
 });
 </script>
