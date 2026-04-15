@@ -922,7 +922,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 14px;
+            padding: 12px 16px;
             border-radius: 18px;
             background: linear-gradient(
                 145deg,
@@ -978,13 +978,15 @@
         }
 
         .student-emoji {
-            font-size: 1.35rem;
-            filter: drop-shadow(0 0 8px rgba(0, 0, 0, 0.45));
+            font-size: 2.2rem;
+            filter: drop-shadow(0 0 10px rgba(0,0,0,0.6));
+            transform: translateY(-1px);
         }
 
         .student-name {
-            font-size: 1.55rem;
-            letter-spacing: 0.3px;
+            font-size: 1.65rem;
+            font-weight: 800;
+            letter-spacing: 0.4px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -993,9 +995,9 @@
 
         .student-points {
             display: block;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             font-weight: 700;
-            opacity: 0.82;
+            opacity: 0.75;
             margin-top: 2px;
         }
 
@@ -1340,16 +1342,16 @@
             <div class="streak-list">
                 @php
                     $streakData = collect([
-                        ['student_name' => 'JOSH', 'house_name' => 'Gryffindor', 'days' => 10],
-                        ['student_name' => 'EMMA', 'house_name' => 'Slytherin', 'days' => 9],
-                        ['student_name' => 'LIAM', 'house_name' => 'Ravenclaw', 'days' => 8],
-                        ['student_name' => 'AVA', 'house_name' => 'Hufflepuff', 'days' => 7],
-                        ['student_name' => 'NOAH', 'house_name' => 'Gryffindor', 'days' => 6],
-                        ['student_name' => 'MIA', 'house_name' => 'Ravenclaw', 'days' => 5],
-                        ['student_name' => 'ETHAN', 'house_name' => 'Slytherin', 'days' => 4],
-                        ['student_name' => 'ISLA', 'house_name' => 'Hufflepuff', 'days' => 3],
-                        ['student_name' => 'LUCAS', 'house_name' => 'Gryffindor', 'days' => 2],
-                        ['student_name' => 'ARIA', 'house_name' => 'Ravenclaw', 'days' => 2],
+                        ['student_name' => 'JOSH', 'student_last_name' => 'ALLEN', 'house_name' => 'Gryffindor', 'days' => 10],
+                        ['student_name' => 'EMMA', 'student_last_name' => 'BROOKS', 'house_name' => 'Slytherin', 'days' => 9],
+                        ['student_name' => 'LIAM', 'student_last_name' => 'CLARK', 'house_name' => 'Ravenclaw', 'days' => 8],
+                        ['student_name' => 'AVA', 'student_last_name' => 'DEAN', 'house_name' => 'Hufflepuff', 'days' => 7],
+                        ['student_name' => 'NOAH', 'student_last_name' => 'ELLIS', 'house_name' => 'Gryffindor', 'days' => 6],
+                        ['student_name' => 'MIA', 'student_last_name' => 'FORD', 'house_name' => 'Ravenclaw', 'days' => 5],
+                        ['student_name' => 'ETHAN', 'student_last_name' => 'GRANT', 'house_name' => 'Slytherin', 'days' => 4],
+                        ['student_name' => 'ISLA', 'student_last_name' => 'HAYES', 'house_name' => 'Hufflepuff', 'days' => 3],
+                        ['student_name' => 'LUCAS', 'student_last_name' => 'IRWIN', 'house_name' => 'Gryffindor', 'days' => 2],
+                        ['student_name' => 'ARIA', 'student_last_name' => 'JONES', 'house_name' => 'Ravenclaw', 'days' => 2],
                     ])->take(10);
                 @endphp
                 @foreach($streakData as $streak)
@@ -1360,7 +1362,10 @@
                     <div class="student-card{{ $rankClass }}" data-house="{{ $streak['house_name'] }}" style="--house-color: {{ $meta['color'] }}">
                         <div class="student-left">
                             <span class="student-emoji">{{ $meta['emoji'] }}</span>
-                            <span class="student-name">{{ $streak['student_name'] }}</span>
+                            <span>
+                                <span class="student-name">{{ $streak['student_name'] . ' ' . $streak['student_last_name'] }}</span>
+                                <span class="student-points">{{ $streak['days'] }} day streak</span>
+                            </span>
                         </div>
                         <div class="student-rank">{{ $streak['days'] }} DAY STREAK</div>
                     </div>
@@ -1474,7 +1479,7 @@
                         <div class="student-left">
                             <span class="student-emoji">{{ $heroStyle['emoji'] }}</span>
                             <span>
-                                <span class="student-name">{{ $heroStudent->name }}</span>
+                                <span class="student-name">{{ trim(($heroStudent->first_name ?? '') . ' ' . ($heroStudent->last_name ?? '')) }}</span>
                                 <span class="student-points">{{ (int) $heroStudent->house_points }} pts</span>
                             </span>
                         </div>
@@ -1494,7 +1499,7 @@
                             <div class="student-left">
                                 <span class="student-emoji">{{ $style['emoji'] }}</span>
                                 <span>
-                                    <span class="student-name">{{ $student->name }}</span>
+                                    <span class="student-name">{{ trim(($student->first_name ?? '') . ' ' . ($student->last_name ?? '')) }}</span>
                                     <span class="student-points">{{ (int) $student->house_points }} pts</span>
                                 </span>
                             </div>
