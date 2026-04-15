@@ -392,7 +392,7 @@ class PointController extends Controller
                 'houses.colour_hex as house_colour'
             )
             ->orderByDesc('students.house_points')
-            ->limit(20)
+            ->limit(12)
             ->get();
 
         $topTeachers = DB::table('point_transactions')
@@ -531,7 +531,7 @@ class PointController extends Controller
                 ->select('students.first_name', 'students.last_name', 'students.house_points', 'houses.name as house_name')
                 ->where('houses.name', $houseName)
                 ->orderByDesc('students.house_points')
-                ->limit(20)
+                ->limit(12)
                 ->get();
         };
 

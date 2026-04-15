@@ -26,7 +26,7 @@
             height: 100%;
             width: 100%;
             max-width: 100%;
-            overflow: hidden;
+            overflow: visible;
             padding: 0 20px;
             box-sizing: border-box;
             color: #fff;
@@ -99,6 +99,7 @@
             pointer-events: none;
             z-index: 1;
             background: #0a0a0a !important;
+            padding: 0 20px;
         }
 
         .tv-screen.active {
@@ -880,31 +881,43 @@
 
         .card-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 24px;
             width: 100%;
             max-width: 1600px;
             margin: 0 auto;
         }
 
+        .student-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        @media (max-width: 1400px) {
+            .card-grid,
+            .student-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
         .streak-list {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            grid-template-columns: 1fr;
             gap: 16px;
             grid-auto-rows: auto;
             align-content: start;
+            max-width: 800px;
         }
 
         .activity-list {
             width: 100%;
-            max-width: 1200px;
+            max-width: 1100px;
             margin: 0 auto;
             display: flex;
             flex-direction: column;
             gap: 12px;
             overflow: hidden;
             max-height: 80vh;
-            animation: scrollFeed 20s linear infinite;
+            animation: scrollFeed 30s linear infinite;
         }
 
         .activity-list:hover {
@@ -935,7 +948,7 @@
             justify-content: space-between;
             align-items: center;
             position: relative;
-            padding: 18px 22px;
+            padding: 18px 20px;
             border-radius: 16px;
             background: linear-gradient(
                 145deg,
@@ -1001,7 +1014,6 @@
             gap: 12px;
             min-width: 0;
             width: 100%;
-            padding-right: 56px;
         }
 
         .student-emoji,
@@ -1018,10 +1030,10 @@
             font-size: 1.55rem;
             letter-spacing: 0.3px;
             display: block;
-            padding-right: 40px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            max-width: 75%;
             text-shadow: 0 2px 10px rgba(0,0,0,0.6);
         }
 
@@ -1034,17 +1046,17 @@
         }
 
         .student-rank {
-            position: absolute;
-            top: 10px;
-            right: 14px;
+            position: static;
+            margin-left: auto;
             font-size: 14px;
-            opacity: 0.5;
+            opacity: 0.6;
             padding: 4px 10px;
             border-radius: 999px;
             border: 1px solid rgba(255,255,255,0.25);
             background: rgba(2, 6, 23, 0.45);
             font-weight: 800;
             white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .streak-card {
@@ -1159,7 +1171,7 @@
 
         @keyframes scrollFeed {
             0% { transform: translateY(0); }
-            100% { transform: translateY(-50%); }
+            100% { transform: translateY(-40%); }
         }
 
         html, body, .tv-container {
@@ -1199,6 +1211,25 @@
         .house-card,
         .break-card {
             padding: 16px 20px;
+        }
+
+        .top-container,
+        .streak-container,
+        .activity-container {
+            padding: 40px 24px;
+        }
+
+        .activity-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            padding-top: 40px;
+        }
+
+        .student-card {
+            margin: 0 auto;
+            width: 100%;
         }
 
         .student-grid,
@@ -1309,21 +1340,6 @@
                         $meta = houseMeta($activity['house_name']);
                     @endphp
                     <div class="student-card activity-card is-compact{{ $loop->first ? ' new' : '' }}" data-house="{{ $activity['house_name'] }}" style="--house-color: {{ $meta['color'] }}">
-                        <div class="student-left">
-                            <span class="student-emoji house-icon">{{ $meta['emoji'] }}</span>
-                            <span>
-                                <span class="student-name">{{ strtoupper($activity['student_name'] . ' ' . $activity['student_last_name']) }}</span>
-                                <span class="student-points">{{ $activity['action'] }} - {{ $activity['teacher'] }}</span>
-                            </span>
-                        </div>
-                        <div class="student-rank">+{{ $activity['points'] }}</div>
-                    </div>
-                @endforeach
-                @foreach($activityData as $activity)
-                    @php
-                        $meta = houseMeta($activity['house_name']);
-                    @endphp
-                    <div class="student-card activity-card is-compact" data-house="{{ $activity['house_name'] }}" style="--house-color: {{ $meta['color'] }}">
                         <div class="student-left">
                             <span class="student-emoji house-icon">{{ $meta['emoji'] }}</span>
                             <span>
@@ -1661,6 +1677,19 @@ document.addEventListener("DOMContentLoaded", function () {
     const broadcastUrl = @json(route('broadcast-messages.latest'));
     const broadcastBanner = document.getElementById('broadcastBanner');
 
+    function duplicateActivityItems() {
+        const activityList = document.querySelector('.activity-list');
+        if (!activityList || activityList.dataset.loopReady === 'true') return;
+        const items = Array.from(activityList.children);
+        if (!items.length) return;
+        items.forEach(function (item) {
+            const clone = item.cloneNode(true);
+            clone.classList.remove('new');
+            activityList.appendChild(clone);
+        });
+        activityList.dataset.loopReady = 'true';
+    }
+
     function showScreen(index) {
         if (emergencyActive) {
             screens.forEach(function (s) { s.classList.remove('active'); });
@@ -1753,6 +1782,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     showScreen(currentScreen);
     animatePoints();
+    duplicateActivityItems();
 
     setTimeout(() => {
         showScreen(currentScreen);
