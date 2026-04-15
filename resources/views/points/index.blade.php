@@ -397,99 +397,30 @@
                 });
         }
 
-        var currentTab = 'points';
-
-        function showPointsTabToast(message) {
-            if (typeof window.reportShowToast === 'function') {
-                window.reportShowToast(message);
-            }
+        if (typeof window.openCommendationModal !== 'function') {
+            window.openCommendationModal = function (studentId) {
+                alert('Open commendation modal for student ' + studentId);
+            };
         }
 
-        function pointsAwardNameByTotal(total) {
-            if (total === 5) return 'Bronze';
-            if (total === 10) return 'Silver';
-            if (total === 15) return 'Gold';
-            return null;
+        if (typeof window.openAwardModal !== 'function') {
+            window.openAwardModal = function (studentId) {
+                alert('Open award modal for student ' + studentId);
+            };
         }
 
-        function checkForAutoAward(studentId, total) {
-            var award = pointsAwardNameByTotal(Number(total || 0));
-            if (!award) {
-                return Promise.resolve(null);
-            }
-
-            return fetch(@json(url('/points/award')), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': csrfToken()
-                },
-                credentials: 'same-origin',
-                body: JSON.stringify({
-                    student_id: Number(studentId),
-                    award_name: award + ' Award',
-                    description: 'Auto-awarded after ' + String(total) + ' commendations'
-                })
-            }).catch(function () {
-                return null;
-            });
-        }
-
-        function addCommendation(studentId) {
-            return fetch(@json(url('/points/commendation')), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': csrfToken()
-                },
-                credentials: 'same-origin',
-                body: JSON.stringify({
-                    student_id: Number(studentId)
-                })
-            })
-                .then(function (res) {
-                    if (!res.ok) {
-                        throw new Error('bad');
-                    }
-                    return res.json();
-                })
-                .then(function (data) {
-                    return checkForAutoAward(studentId, data.total).then(function () {
-                        location.reload();
-                    });
-                });
-        }
-
-        document.addEventListener('DOMContentLoaded', function () {
-            document.querySelectorAll('.tab').forEach(function (btn) {
-                btn.addEventListener('click', function () {
-                    document.querySelectorAll('.tab').forEach(function (b) {
-                        b.classList.remove('active');
-                    });
-                    btn.classList.add('active');
-                    currentTab = btn.getAttribute('data-tab') || 'points';
-                    console.log('Tab changed to:', currentTab);
-                });
+        document.querySelectorAll('.btn-commend').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var studentId = this.dataset.studentId;
+                window.openCommendationModal(studentId);
             });
         });
 
-        window.pointsCanPerformAction = function (requiredTab) {
-            if (currentTab === requiredTab) {
-                return true;
-            }
-            showPointsTabToast('Switch to ' + requiredTab + ' tab first');
-            return false;
-        };
-
-        window.handlePointsCommendClick = function (studentId) {
-            addCommendation(studentId).catch(function () {
-                showPointsTabToast('Could not save commendation');
+        document.querySelectorAll('.btn-award').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var studentId = this.dataset.studentId;
+                window.openAwardModal(studentId);
             });
-            return true;
-        };
+        });
     </script>
 @endsection
