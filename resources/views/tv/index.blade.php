@@ -310,91 +310,11 @@
             animation: leaderPulse 3s ease-in-out infinite;
         }
 
-        .standings-container,
         .streak-container,
         .activity-container,
         .points-race-container {
             height: 100%;
             flex: 1;
-        }
-
-        .standings-container {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 40px;
-            box-sizing: border-box;
-        }
-
-        .standings-title {
-            text-align: center;
-            font-size: clamp(40px, 6vw, 90px);
-            font-weight: 800;
-            margin-bottom: 40px;
-        }
-
-        .standings-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: auto auto auto;
-            gap: 24px;
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            min-height: 0;
-        }
-
-        .standing-card {
-            border-radius: 24px;
-            padding: 28px;
-            text-align: center;
-            font-weight: 800;
-            position: relative;
-            color: #fff;
-        }
-
-        .standing-card.first {
-            grid-column: span 2;
-            grid-row: 1;
-            transform: scale(1.05);
-        }
-
-        .standing-card.second {
-            grid-column: 1;
-            grid-row: 2;
-        }
-
-        .standing-card.third {
-            grid-column: 2;
-            grid-row: 2;
-        }
-
-        .standing-card.fourth {
-            grid-column: span 2;
-            grid-row: 3;
-            width: 60%;
-            margin: 0 auto;
-        }
-
-        .standing-card.gryffindor { background: #740001; }
-        .standing-card.slytherin { background: #1a472a; }
-        .standing-card.ravenclaw { background: #3b82f6; }
-        .standing-card.hufflepuff { background: #ffcc00; color: #111; }
-
-        .standing-card .rank {
-            font-size: 2rem;
-            opacity: 0.7;
-        }
-
-        .standing-card .name {
-            font-size: clamp(28px, 4vw, 50px);
-            margin: 10px 0;
-        }
-
-        .standing-card .score {
-            font-size: clamp(40px, 6vw, 90px);
         }
 
         @keyframes firePulse {
@@ -1702,20 +1622,6 @@
 
     </div>
 
-    <div class="tv-screen" id="screen-standings">
-
-        <div class="standings-container">
-
-            <div class="standings-title">
-                🏆 CURRENT STANDINGS
-            </div>
-
-            <div id="standings-grid" class="standings-grid"></div>
-
-        </div>
-
-    </div>
-
     <button type="button" id="nextBtn" class="next-btn">Next ▶</button>
 
 </div>
@@ -1735,7 +1641,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const screens = Array.from(document.querySelectorAll('.tv-screen'));
     shuffle(screens);
-    const tvHousePointsYear = @json($housePointsThisYear ?? []);
     const streakScreenIdx = screens.findIndex(function (s) {
         return s.id === 'screen-2';
     });
@@ -1763,66 +1668,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    function renderStandings() {
-        var houses = [];
-        if (Array.isArray(tvHousePointsYear)) {
-            tvHousePointsYear.slice(0, 4).forEach(function (row) {
-                if (!row || !row.house) {
-                    return;
-                }
-                var name = String(row.house).trim().toUpperCase();
-                if (!name) {
-                    return;
-                }
-                var slug = name.toLowerCase().replace(/\s+/g, '');
-                var pts = parseInt(String(row.total), 10);
-                houses.push({
-                    name: name,
-                    points: isNaN(pts) ? 0 : pts,
-                    class: slug
-                });
-            });
-        }
-
-        houses.sort(function (a, b) {
-            return b.points - a.points;
-        });
-
-        var container = document.getElementById('standings-grid');
-        if (!container) {
-            return;
-        }
-
-        container.innerHTML = '';
-
-        var placeClasses = ['first', 'second', 'third', 'fourth'];
-        houses.forEach(function (house, index) {
-            var card = document.createElement('div');
-            var place = placeClasses[index] || 'fourth';
-            card.className = 'standing-card ' + house.class + ' ' + place;
-
-            card.innerHTML =
-                '<div class="rank">#' + (index + 1) + '</div>' +
-                '<div class="name">' + house.name + '</div>' +
-                '<div class="score">' + house.points + '</div>';
-
-            container.appendChild(card);
-        });
-
-        document.querySelectorAll('#standings-grid .standing-card').forEach(function (card, i) {
-            var isFirst = card.classList.contains('first');
-            card.style.opacity = '0';
-            card.style.transition = 'none';
-            card.style.transform = isFirst ? 'translateY(20px) scale(1.05)' : 'translateY(20px)';
-
-            setTimeout(function () {
-                card.style.transition = 'all 0.5s ease';
-                card.style.opacity = '1';
-                card.style.transform = '';
-            }, i * 150);
-        });
-    }
-
     function showScreen(index) {
         if (emergencyActive) {
             screens.forEach(function (s) { s.classList.remove('active'); });
@@ -1837,10 +1682,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (screens[index].id === 'screen-points-race') {
             animatePointsRace();
-        }
-
-        if (screens[index].id === 'screen-standings') {
-            renderStandings();
         }
     }
 

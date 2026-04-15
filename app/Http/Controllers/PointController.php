@@ -441,48 +441,6 @@ class PointController extends Controller
         }
 
         $now = now();
-        $year = (int) $now->year;
-        $month = (int) $now->month;
-
-        if ($month >= 1 && $month <= 3) {
-            $thisTermStart = Carbon::create($year, 1, 1)->startOfDay();
-            $thisTermEnd = Carbon::create($year, 3, 31)->endOfDay();
-        } elseif ($month >= 4 && $month <= 6) {
-            $thisTermStart = Carbon::create($year, 4, 1)->startOfDay();
-            $thisTermEnd = Carbon::create($year, 6, 30)->endOfDay();
-        } elseif ($month >= 7 && $month <= 9) {
-            $thisTermStart = Carbon::create($year, 7, 1)->startOfDay();
-            $thisTermEnd = Carbon::create($year, 9, 30)->endOfDay();
-        } else {
-            $thisTermStart = Carbon::create($year, 10, 1)->startOfDay();
-            $thisTermEnd = Carbon::create($year, 12, 31)->endOfDay();
-        }
-
-        $thisTermRows = DB::table('houses')
-            ->leftJoin('point_transactions', function ($join) use ($thisTermStart, $thisTermEnd) {
-                $join->on('houses.id', '=', 'point_transactions.house_id')
-                    ->whereBetween('point_transactions.created_at', [$thisTermStart, $thisTermEnd]);
-            })
-            ->select(
-                'houses.name as house',
-                'houses.colour_hex',
-                DB::raw('COALESCE(SUM(point_transactions.amount), 0) as total')
-            )
-            ->groupBy('houses.id', 'houses.name', 'houses.colour_hex')
-            ->orderByDesc('total')
-            ->limit(4)
-            ->get();
-
-        $housePointsThisTerm = $thisTermRows->map(function ($row) use ($houseMap) {
-            $hex = $row->colour_hex ?: ($houseMap[$row->house] ?? '#334155');
-
-            return [
-                'house' => $row->house,
-                'total' => (int) $row->total,
-                'colour_hex' => $hex,
-            ];
-        })->values()->all();
-
         $yearStart = Carbon::create((int) $now->year, 1, 1)->startOfDay();
 
         $thisYearRows = DB::table('houses')
@@ -589,8 +547,6 @@ class PointController extends Controller
             'topTeachers' => $topTeachers,
             'weather' => $weather,
             'housePointsByTerm' => $housePointsByTerm,
-            'housePointsThisTerm' => $housePointsThisTerm,
-            'housePointsThisYear' => $housePointsThisYear,
             'topGryffindor' => $topGryffindor,
             'topSlytherin' => $topSlytherin,
             'topRavenclaw' => $topRavenclaw,
