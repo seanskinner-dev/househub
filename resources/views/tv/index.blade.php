@@ -963,11 +963,10 @@
         .student-emoji {
             font-size: 2.2rem;
             filter: drop-shadow(0 0 10px rgba(0,0,0,0.6));
-            transform: translateY(-1px);
         }
 
         .student-name {
-            font-size: 1.65rem;
+            font-size: 1.6rem;
             font-weight: 800;
             letter-spacing: 0.4px;
             white-space: nowrap;
@@ -1384,7 +1383,7 @@
                             <span class="student-emoji">{{ $meta['emoji'] }}</span>
                             <span>
                                 <span class="student-name">{{ $streak['student_name'] . ' ' . $streak['student_last_name'] }}</span>
-                                <span class="student-points">{{ $streak['days'] }} day streak</span>
+                                <span class="student-points">{{ $streak['days'] }} DAY STREAK</span>
                             </span>
                         </div>
                         <div class="student-rank">{{ $streak['days'] }} DAY STREAK</div>
@@ -1430,7 +1429,7 @@
                         <div class="student-left">
                             <span class="student-emoji">{{ $meta['emoji'] }}</span>
                             <span>
-                                <span class="student-name">{{ strtoupper($activity['student_name'] . ' ' . $activity['student_last_name']) }}</span>
+                                <span class="student-name">{{ $activity['student_name'] }} {{ $activity['student_last_name'] }}</span>
                                 <span class="student-points">{{ $activity['action'] }} - {{ $activity['teacher'] }}</span>
                             </span>
                         </div>
@@ -1500,7 +1499,7 @@
                         <div class="student-left">
                             <span class="student-emoji">{{ $heroStyle['emoji'] }}</span>
                             <span>
-                                <span class="student-name">{{ trim(($heroStudent->first_name ?? '') . ' ' . ($heroStudent->last_name ?? '')) }}</span>
+                                <span class="student-name">{{ $heroStudent->first_name }} {{ $heroStudent->last_name }}</span>
                                 <span class="student-points">{{ (int) $heroStudent->house_points }} pts</span>
                             </span>
                         </div>
@@ -1520,7 +1519,7 @@
                             <div class="student-left">
                                 <span class="student-emoji">{{ $style['emoji'] }}</span>
                                 <span>
-                                    <span class="student-name">{{ trim(($student->first_name ?? '') . ' ' . ($student->last_name ?? '')) }}</span>
+                                    <span class="student-name">{{ $student->first_name }} {{ $student->last_name }}</span>
                                     <span class="student-points">{{ (int) $student->house_points }} pts</span>
                                 </span>
                             </div>
