@@ -103,31 +103,90 @@
                 0 6px 30px rgba(0, 0, 0, 0.6),
                 0 0 10px rgba(255, 255, 255, 0.08);
         }
+
+        .points-index-page .house-standings {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .points-index-page .house-pill {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            border-radius: 12px;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .points-index-page .house-pill.gryffindor {
+            border: 2px solid #740001;
+        }
+
+        .points-index-page .house-pill.slytherin {
+            border: 2px solid #1a472a;
+        }
+
+        .points-index-page .house-pill.ravenclaw {
+            border: 2px solid #3b82f6;
+        }
+
+        .points-index-page .house-pill.hufflepuff {
+            border: 2px solid #ffcc00;
+            color: #000;
+        }
+
+        .points-index-page .student-link {
+            color: #93c5fd;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .points-index-page .student-link:hover {
+            text-decoration: underline;
+        }
     </style>
 
     <div class="container-fluid points-index-page" style="max-width: 1200px;">
 
         <h1 class="h4 mb-3" style="color: #f1f5f9;">Award points</h1>
 
+        @php
+            $pillPoints = [
+                'gryffindor' => 0,
+                'slytherin' => 0,
+                'ravenclaw' => 0,
+                'hufflepuff' => 0,
+            ];
+            foreach ($houses as $h) {
+                $k = strtolower(str_replace(' ', '', $h->name ?? ''));
+                if (array_key_exists($k, $pillPoints)) {
+                    $pillPoints[$k] = (int) ($h->points ?? 0);
+                }
+            }
+        @endphp
+
+        <div class="house-standings">
+            <div class="house-pill gryffindor">🦁 <span id="gryffindor-points">{{ $pillPoints['gryffindor'] }}</span></div>
+            <div class="house-pill slytherin">🐍 <span id="slytherin-points">{{ $pillPoints['slytherin'] }}</span></div>
+            <div class="house-pill ravenclaw">🦅 <span id="ravenclaw-points">{{ $pillPoints['ravenclaw'] }}</span></div>
+            <div class="house-pill hufflepuff">🦡 <span id="hufflepuff-points">{{ $pillPoints['hufflepuff'] }}</span></div>
+        </div>
+
         {{-- HOUSE BUTTONS --}}
         <div class="row g-2 mb-3">
-            @foreach ($houses as $house)
-                @php
-                    $slug = strtolower(str_replace(' ', '', $house->name ?? ''));
-                    $emoji = match ($house->name ?? '') {
-                        'Gryffindor' => '🦁',
-                        'Slytherin' => '🐍',
-                        'Ravenclaw' => '🦅',
-                        'Hufflepuff' => '🦡',
-                        default => '🏫',
-                    };
-                @endphp
-                <div class="col-6 col-md-3">
-                    <button type="button"
-                            class="house-btn {{ $slug }}"
-                            onclick="awardHouse(@json($house->name))">{{ $emoji }} +1</button>
-                </div>
-            @endforeach
+            <div class="col-6 col-md-3">
+                <button type="button" class="house-btn gryffindor" onclick="awardHouse('gryffindor')">🦁 +1</button>
+            </div>
+            <div class="col-6 col-md-3">
+                <button type="button" class="house-btn slytherin" onclick="awardHouse('slytherin')">🐍 +1</button>
+            </div>
+            <div class="col-6 col-md-3">
+                <button type="button" class="house-btn ravenclaw" onclick="awardHouse('ravenclaw')">🦅 +1</button>
+            </div>
+            <div class="col-6 col-md-3">
+                <button type="button" class="house-btn hufflepuff" onclick="awardHouse('hufflepuff')">🦡 +1</button>
+            </div>
         </div>
 
         {{-- SEARCH --}}
@@ -152,7 +211,11 @@
                          data-house="{{ $houseKey }}"
                          data-name="{{ strtolower($student->first_name . ' ' . $student->last_name) }}">
                         <div>
-                            <div class="student-name">{{ $student->first_name }} {{ $student->last_name }}</div>
+                            <div class="student-name">
+                                <a href="{{ url('/students/' . $student->id) }}" class="student-link">
+                                    {{ $student->first_name }} {{ $student->last_name }}
+                                </a>
+                            </div>
                             <div class="student-meta">
                                 Year {{ $student->year_level }}
                                 |
@@ -250,7 +313,39 @@
             return m ? m.getAttribute('content') : '';
         }
 
-        function awardHouse(houseName) {
+        function houseSlugToApiName(slug) {
+            var map = {
+                gryffindor: 'Gryffindor',
+                slytherin: 'Slytherin',
+                ravenclaw: 'Ravenclaw',
+                hufflepuff: 'Hufflepuff'
+            };
+            return map[String(slug || '').toLowerCase()] || slug;
+        }
+
+        function houseApiNameToSlug(name) {
+            var map = {
+                Gryffindor: 'gryffindor',
+                Slytherin: 'slytherin',
+                Ravenclaw: 'ravenclaw',
+                Hufflepuff: 'hufflepuff'
+            };
+            return map[name] || String(name || '').toLowerCase().replace(/\s+/g, '');
+        }
+
+        function bumpHouseStandingsPill(houseApiName, delta) {
+            var slug = houseApiNameToSlug(houseApiName);
+            var el = document.getElementById(slug + '-points');
+            if (!el) {
+                return;
+            }
+            var n = parseInt(el.textContent, 10) || 0;
+            el.textContent = n + (delta || 0);
+        }
+
+        function awardHouse(house) {
+            var houseName = houseSlugToApiName(house);
+
             fetch(@json(url('/points')), {
                 method: 'POST',
                 headers: {
@@ -272,6 +367,9 @@
                     return res.json();
                 })
                 .then(function (data) {
+                    if (data.house) {
+                        bumpHouseStandingsPill(data.house, data.amount || 1);
+                    }
                     if (data.recent_entry && typeof window.houseHubPrependRecentActivity === 'function') {
                         window.houseHubPrependRecentActivity(data.recent_entry);
                     }
