@@ -124,6 +124,36 @@
         .back-btn:hover {
             text-decoration: underline;
         }
+
+        .profile-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .profile-tab {
+            flex: 1;
+            padding: 10px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.05);
+            border: none;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .profile-tab.active {
+            background: #1e293b;
+            box-shadow: inset 0 0 0 2px #3b82f6;
+        }
+
+        .profile-section {
+            display: none;
+        }
+
+        .profile-section.active {
+            display: block;
+        }
     </style>
 </head>
 
@@ -154,10 +184,16 @@
 
     </div>
 
+    <div class="profile-tabs">
+        <button class="profile-tab active" data-tab="stats">Stats</button>
+        <button class="profile-tab" data-tab="awards">Awards</button>
+        <button class="profile-tab" data-tab="commendations">Commendations</button>
+    </div>
+
     <!-- ===================== -->
     <!-- STATS -->
     <!-- ===================== -->
-    <div class="section">
+    <div class="section profile-section" data-section="stats">
         <h3>Stats</h3>
 
         <div class="stat-box">
@@ -181,7 +217,7 @@
     <!-- ===================== -->
     <!-- AWARDS -->
     <!-- ===================== -->
-    <div class="section">
+    <div class="section profile-section" data-section="awards">
         <h3>Awards</h3>
 
         @if($awards->count())
@@ -210,7 +246,7 @@
     <!-- ===================== -->
     <!-- COMMENDATIONS -->
     <!-- ===================== -->
-    <div class="section">
+    <div class="section profile-section" data-section="commendations">
         <h3>Commendations</h3>
 
         @if($commendations->count())
@@ -231,6 +267,31 @@
     </div>
 
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const tabs = document.querySelectorAll('.profile-tab');
+    const sections = document.querySelectorAll('.profile-section');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+
+            tabs.forEach(t => t.classList.remove('active'));
+            sections.forEach(s => s.classList.remove('active'));
+
+            tab.classList.add('active');
+
+            const target = tab.dataset.tab;
+            document.querySelector(`[data-section="${target}"]`).classList.add('active');
+        });
+    });
+
+    // default
+    document.querySelector('[data-section="stats"]').classList.add('active');
+
+});
+</script>
 
 </body>
 </html>
