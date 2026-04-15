@@ -34,29 +34,25 @@
             animation: bgDrift 20s ease-in-out infinite;
         }
 
-        .tv-container.house-gryffindor,
-        body.house-gryffindor {
+        .tv-container.house-gryffindor {
             background:
                 radial-gradient(circle, rgba(0,0,0,0.3), rgba(0,0,0,0.9)),
                 #740001 !important;
         }
 
-        .tv-container.house-slytherin,
-        body.house-slytherin {
+        .tv-container.house-slytherin {
             background:
                 radial-gradient(circle, rgba(0,0,0,0.3), rgba(0,0,0,0.9)),
                 #1a472a !important;
         }
 
-        .tv-container.house-ravenclaw,
-        body.house-ravenclaw {
+        .tv-container.house-ravenclaw {
             background:
                 radial-gradient(circle, rgba(0,0,0,0.3), rgba(0,0,0,0.9)),
                 #1e3a8a !important;
         }
 
-        .tv-container.house-hufflepuff,
-        body.house-hufflepuff {
+        .tv-container.house-hufflepuff {
             background:
                 radial-gradient(circle, rgba(0,0,0,0.3), rgba(0,0,0,0.9)),
                 #ffcc00 !important;
@@ -123,7 +119,7 @@
             transition: opacity 0.6s ease;
             pointer-events: none;
             z-index: 1;
-            background: #0a0a0a !important;
+            background: transparent !important;
             padding: 0 20px;
         }
 
@@ -444,7 +440,7 @@
             overflow: hidden;
             box-sizing: border-box;
             padding: 40px 28px 18px;
-            background: transparent;
+            background: transparent !important;
             color: #fff;
         }
 
@@ -1848,18 +1844,28 @@ document.addEventListener("DOMContentLoaded", function () {
         if (current) current.classList.remove('active');
         next.classList.add('active');
 
-        document.body.style.background = 'red';
-
         const container = document.querySelector('.tv-container');
-        if (container) container.style.background = 'green';
+        if (container) {
+            container.classList.remove(
+                'house-gryffindor',
+                'house-slytherin',
+                'house-ravenclaw',
+                'house-hufflepuff'
+            );
 
-        const screen = document.querySelector('.tv-screen.active');
-        if (screen) screen.style.background = 'blue';
+            const activeScreen = document.querySelector('.tv-screen.active');
+            if (activeScreen) {
+                const isTotalScreen =
+                    activeScreen.id === 'screen-total-term' ||
+                    activeScreen.id === 'screen-total-year';
 
-        const inner = document.querySelector('.tv-screen.active .screen-inner');
-        if (inner) inner.style.background = 'purple';
-
-        console.log('Applied test colours');
+                if (isTotalScreen) {
+                    let house = activeScreen.dataset.leadingHouse;
+                    if (!house) house = 'gryffindor';
+                    container.classList.add('house-' + house.toLowerCase());
+                }
+            }
+        }
 
         if (nextId === 'screen-points-race') {
             const screen = document.getElementById('screen-points-race');
