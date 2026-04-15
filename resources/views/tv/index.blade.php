@@ -915,135 +915,6 @@
             100% { opacity: 0; transform: scale(1.15); }
         }
 
-        .tv-this-term-screen {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 0;
-            width: 100%;
-            max-width: 1200px;
-            margin-left: auto;
-            margin-right: auto;
-            padding: 20px 24px 28px;
-            box-sizing: border-box;
-        }
-
-        .tv-this-term-title {
-            flex-shrink: 0;
-            font-size: clamp(36px, 5vw, 72px);
-            font-weight: 800;
-            text-align: center;
-            margin-bottom: 20px;
-            letter-spacing: 0.02em;
-        }
-
-        .tv-this-term-screen > .standings-grid {
-            flex: 1;
-            min-height: 0;
-            width: 100%;
-            align-self: stretch;
-        }
-
-        #screen-house-points-this-term .standings-grid > .house-card.winner,
-        #screen-house-points-this-year .standings-grid > .house-card.winner {
-            filter: brightness(1.15);
-            animation:
-                breatheWinner 6s ease-in-out infinite,
-                winnerGlow 3s ease-in-out infinite;
-        }
-
-        #screen-house-points-this-year .standings-grid > .house-card {
-            border: 2px solid rgba(255, 255, 255, 0.08);
-        }
-
-        #screen-house-points-this-term .standings-grid > .house-card {
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            opacity: 0.98;
-        }
-
-        #screen-house-points-this-term .standings-grid > .house-card,
-        #screen-house-points-this-year .standings-grid > .house-card {
-            min-width: 0;
-            width: 100%;
-            max-width: 100%;
-            box-sizing: border-box;
-            overflow: hidden;
-        }
-
-        #screen-house-points-this-term .standings-grid > .house-card.fourth,
-        #screen-house-points-this-year .standings-grid > .house-card.fourth {
-            max-width: 100%;
-        }
-
-        .this-term-card {
-            animation: none;
-            color: #fff !important;
-            justify-content: center;
-            padding: clamp(16px, 2.5vw, 28px);
-            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.55);
-            border-radius: 24px;
-            border: 1px solid rgba(255,255,255,0.1);
-            box-shadow:
-                0 14px 38px rgba(0,0,0,0.68),
-                0 0 34px var(--house-color, rgba(255,255,255,0.22));
-            background-color: var(--house-color, #334155) !important;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .this-term-card::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(to bottom, rgba(255,255,255,0.08), rgba(0,0,0,0.25));
-            pointer-events: none;
-        }
-
-        .this-term-card > * {
-            position: relative;
-            z-index: 1;
-        }
-
-        .this-term-card.winner {
-            transform: scale(1.03);
-            animation: houseLeaderPulse 4.8s ease-in-out infinite;
-            box-shadow:
-                0 16px 46px rgba(0,0,0,0.75),
-                0 0 56px var(--house-color, rgba(255,255,255,0.34));
-        }
-
-        #screen-house-points-this-term .standings-grid > .this-term-card.winner,
-        #screen-house-points-this-year .standings-grid > .this-term-card.winner {
-            transform: scale(1.05);
-        }
-
-        #screen-house-points-this-term .standings-grid > .house-card.this-term-card.standing-card,
-        #screen-house-points-this-year .standings-grid > .house-card.this-term-card.standing-card {
-            padding: 28px;
-        }
-
-        .this-term-card .rank {
-            font-size: clamp(24px, 3.2vw, 40px);
-            font-weight: 700;
-            opacity: 0.85;
-            margin-bottom: 10px;
-        }
-
-        .this-term-card .house-name {
-            font-size: clamp(32px, 5vw, 64px);
-            font-weight: 800;
-            letter-spacing: 0.08em;
-        }
-
-        .this-term-card .points {
-            font-size: clamp(72px, 14vw, 160px);
-            font-weight: 900;
-            margin-top: 16px;
-            line-height: 1;
-        }
-
         .screen-inner {
             width: 100%;
             max-width: 1200px;
@@ -1064,11 +935,6 @@
             text-align: center;
             letter-spacing: 0.04em;
             text-shadow: 0 8px 28px rgba(0, 0, 0, 0.6);
-        }
-
-        .tv-this-term-screen > .screen-title {
-            flex-shrink: 0;
-            margin-bottom: 16px;
         }
 
         .student-grid,
@@ -1286,11 +1152,6 @@
             50% { transform: scale(1.06); }
         }
 
-        @keyframes houseLeaderPulse {
-            0%, 100% { transform: scale(1.03); }
-            50% { transform: scale(1.06); }
-        }
-
         html, body, .tv-container {
             height: 100%;
             margin: 0;
@@ -1304,7 +1165,6 @@
         .top-container,
         .streak-container,
         .activity-container,
-        .tv-this-term-screen,
         .weather-container {
             background: transparent;
         }
@@ -1312,7 +1172,6 @@
         .top-title,
         .streak-title,
         .activity-title,
-        .tv-this-term-title,
         .house-name,
         .student-name {
             color: #fff;
@@ -1328,7 +1187,6 @@
         }
 
         .house-card,
-        .this-term-card,
         .break-card {
             padding: 16px 20px;
         }
@@ -1366,7 +1224,7 @@
 
     <div id="broadcastBanner" class="tv-broadcast-banner" role="status" aria-live="polite"></div>
 
-    <div class="tv-screen" id="screen-2">
+    <div class="tv-screen active" id="screen-2">
 
         <div class="streak-container">
 
@@ -1524,74 +1382,6 @@
                         </div>
                     @endforeach
                 </div>
-            </div>
-
-        </div>
-
-    </div>
-
-    <div class="tv-screen active" id="screen-house-points-this-term">
-
-        <div class="tv-this-term-screen">
-
-            @php
-                $termHouses = collect($housePointsThisTerm)->take(4)->values();
-            @endphp
-            <div class="standings-grid">
-                @foreach ($termHouses as $index => $entry)
-                    @php
-                        $houseMeta = houseMeta($entry['house'] ?? null);
-                        $placeClass = match ((int) $index) {
-                            0 => 'first',
-                            1 => 'second',
-                            2 => 'third',
-                            3 => 'fourth',
-                            default => 'fourth',
-                        };
-                    @endphp
-                    <div
-                        class="house-card this-term-card standing-card {{ $placeClass }}{{ $index === 0 ? ' winner' : '' }}"
-                        style="--house-color: {{ $houseMeta['color'] }};"
-                    >
-                        <div class="rank">#{{ $index + 1 }}</div>
-                        <div class="house-name">{{ strtoupper($entry['house']) }}</div>
-                        <div class="points" data-points="{{ $entry['total'] }}">0</div>
-                    </div>
-                @endforeach
-            </div>
-
-        </div>
-
-    </div>
-
-    <div class="tv-screen" id="screen-house-points-this-year">
-
-        <div class="tv-this-term-screen">
-
-            @php
-                $yearHouses = collect($housePointsThisYear)->take(4)->values();
-            @endphp
-            <div class="standings-grid">
-                @foreach ($yearHouses as $index => $entry)
-                    @php
-                        $houseMeta = houseMeta($entry['house'] ?? null);
-                        $placeClass = match ((int) $index) {
-                            0 => 'first',
-                            1 => 'second',
-                            2 => 'third',
-                            3 => 'fourth',
-                            default => 'fourth',
-                        };
-                    @endphp
-                    <div
-                        class="house-card this-term-card standing-card {{ $placeClass }}{{ $index === 0 ? ' winner' : '' }}"
-                        style="--house-color: {{ $houseMeta['color'] }};"
-                    >
-                        <div class="rank">#{{ $index + 1 }}</div>
-                        <div class="house-name">{{ strtoupper($entry['house']) }}</div>
-                        <div class="points" data-points="{{ $entry['total'] }}">0</div>
-                    </div>
-                @endforeach
             </div>
 
         </div>
@@ -1945,10 +1735,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const screens = Array.from(document.querySelectorAll('.tv-screen'));
     shuffle(screens);
-    const termScreenIdx = screens.findIndex(function (s) {
-        return s.id === 'screen-house-points-this-term';
+    const tvHousePointsYear = @json($housePointsThisYear ?? []);
+    const streakScreenIdx = screens.findIndex(function (s) {
+        return s.id === 'screen-2';
     });
-    let currentScreen = termScreenIdx >= 0 ? termScreenIdx : 0;
+    let currentScreen = streakScreenIdx >= 0 ? streakScreenIdx : 0;
     console.log('TV screens:', document.querySelectorAll('.tv-screen').length);
     console.log('TV screens found:', screens.length);
     const broadcastUrl = @json(route('broadcast-messages.latest'));
@@ -1972,32 +1763,22 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    function readPointsFromElement(el) {
-        if (!el || !el.dataset || el.dataset.points === undefined) {
-            return 0;
-        }
-        var n = parseInt(String(el.dataset.points), 10);
-        return isNaN(n) ? 0 : n;
-    }
-
     function renderStandings() {
-        var screen = document.getElementById('screen-house-points-this-year');
         var houses = [];
-        if (screen) {
-            screen.querySelectorAll('.standings-grid .house-card').forEach(function (card) {
-                var nameEl = card.querySelector('.house-name');
-                var ptsEl = card.querySelector('.points');
-                if (!nameEl || !ptsEl) {
+        if (Array.isArray(tvHousePointsYear)) {
+            tvHousePointsYear.slice(0, 4).forEach(function (row) {
+                if (!row || !row.house) {
                     return;
                 }
-                var name = (nameEl.textContent || '').trim().toUpperCase();
+                var name = String(row.house).trim().toUpperCase();
                 if (!name) {
                     return;
                 }
                 var slug = name.toLowerCase().replace(/\s+/g, '');
+                var pts = parseInt(String(row.total), 10);
                 houses.push({
                     name: name,
-                    points: readPointsFromElement(ptsEl),
+                    points: isNaN(pts) ? 0 : pts,
                     class: slug
                 });
             });
