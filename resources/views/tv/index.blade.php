@@ -1629,6 +1629,7 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+    console.log('OMM SCRIPT LOADED');
 
     let activeMessage = null;
     let bannerVisible = false;
@@ -1994,6 +1995,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function fetchBroadcast() {
         const emergencyScreen = document.getElementById('emergencyScreen');
         const emergencyText = document.getElementById('emergencyText');
+        console.log('FETCH START', new Date().toISOString());
 
         fetch(broadcastUrl)
             .then(function (res) {
@@ -2001,6 +2003,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 return res.json();
             })
             .then(function (data) {
+                console.log('FETCH RESULT:', data);
                 console.log('Broadcast data:', data);
 
                 const message = data && data.message ? String(data.message) : '';
@@ -2033,6 +2036,12 @@ document.addEventListener("DOMContentLoaded", function () {
                         emergencyText.innerText = code;
                     }
                     if (broadcastBanner) {
+                        console.log('BANNER WRITE:', {
+                            source: 'fetchBroadcast emergency branch display none',
+                            message: data && data.message ? data.message : null,
+                            currentText: broadcastBanner.innerText,
+                            time: new Date().toISOString()
+                        });
                         broadcastBanner.style.display = 'none';
                     }
                     activeMessage = null;
@@ -2070,9 +2079,32 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
                 if (broadcastBanner) {
+                    console.log('STATE:', {
+                        activeMessage: activeMessage,
+                        bannerText: broadcastBanner.innerText,
+                        bannerVisible: broadcastBanner.style.display
+                    });
                     if (!message && activeMessage) {
+                        console.log('BANNER WRITE:', {
+                            source: 'fetchBroadcast empty message clear innerText',
+                            message: data && data.message ? data.message : null,
+                            currentText: broadcastBanner.innerText,
+                            time: new Date().toISOString()
+                        });
                         broadcastBanner.innerText = '';
+                        console.log('BANNER WRITE:', {
+                            source: 'fetchBroadcast empty message hide banner',
+                            message: data && data.message ? data.message : null,
+                            currentText: broadcastBanner.innerText,
+                            time: new Date().toISOString()
+                        });
                         broadcastBanner.style.display = 'none';
+                        console.log('BANNER WRITE:', {
+                            source: 'fetchBroadcast empty message remove show class',
+                            message: data && data.message ? data.message : null,
+                            currentText: broadcastBanner.innerText,
+                            time: new Date().toISOString()
+                        });
                         broadcastBanner.classList.remove('show');
                         activeMessage = null;
                         bannerVisible = false;
@@ -2086,8 +2118,26 @@ document.addEventListener("DOMContentLoaded", function () {
                     if (message && message !== activeMessage) {
                         console.log('SETTING BANNER:', data.message);
                         activeMessage = message;
+                        console.log('BANNER WRITE:', {
+                            source: 'fetchBroadcast new message set innerText',
+                            message: data && data.message ? data.message : null,
+                            currentText: broadcastBanner.innerText,
+                            time: new Date().toISOString()
+                        });
                         broadcastBanner.innerText = message;
+                        console.log('BANNER WRITE:', {
+                            source: 'fetchBroadcast new message show banner',
+                            message: data && data.message ? data.message : null,
+                            currentText: broadcastBanner.innerText,
+                            time: new Date().toISOString()
+                        });
                         broadcastBanner.style.display = 'block';
+                        console.log('BANNER WRITE:', {
+                            source: 'fetchBroadcast new message add show class',
+                            message: data && data.message ? data.message : null,
+                            currentText: broadcastBanner.innerText,
+                            time: new Date().toISOString()
+                        });
                         broadcastBanner.classList.add('show');
                         bannerVisible = true;
 
@@ -2096,7 +2146,19 @@ document.addEventListener("DOMContentLoaded", function () {
                         }
 
                         bannerTimeout = setTimeout(function () {
+                            console.log('BANNER WRITE:', {
+                                source: 'fetchBroadcast timeout hide banner',
+                                message: data && data.message ? data.message : null,
+                                currentText: broadcastBanner.innerText,
+                                time: new Date().toISOString()
+                            });
                             broadcastBanner.style.display = 'none';
+                            console.log('BANNER WRITE:', {
+                                source: 'fetchBroadcast timeout remove show class',
+                                message: data && data.message ? data.message : null,
+                                currentText: broadcastBanner.innerText,
+                                time: new Date().toISOString()
+                            });
                             broadcastBanner.classList.remove('show');
                             bannerVisible = false;
                             activeMessage = null;
@@ -2129,6 +2191,10 @@ document.addEventListener("DOMContentLoaded", function () {
     updateWeatherBackground();
     setInterval(fetchBroadcast, 3000);
     setInterval(updateWeatherBackground, 300000);
+    setInterval(function () {
+        const banner = document.getElementById('broadcastBanner');
+        console.log('BANNER CHECK:', banner ? banner.innerText : undefined);
+    }, 2000);
 });
 </script>
 
