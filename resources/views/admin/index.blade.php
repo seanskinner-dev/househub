@@ -196,15 +196,13 @@
                 if (banner) {
                     banner.style.display = 'none';
                     banner.innerText = '';
+                    banner.classList.remove('show');
                 }
                 window.activeMessage = null;
-                window.messageStartTime = null;
-                if (window.broadcastTimeout) {
-                    clearTimeout(window.broadcastTimeout);
-                    window.broadcastTimeout = null;
-                }
-                if (banner) {
-                    banner.classList.remove('show');
+                window.bannerVisible = false;
+                if (window.bannerTimeout) {
+                    clearTimeout(window.bannerTimeout);
+                    window.bannerTimeout = null;
                 }
                 setStatus(el, 'Clearing…', 'muted');
                 try {

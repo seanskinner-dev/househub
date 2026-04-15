@@ -1631,8 +1631,8 @@
 document.addEventListener("DOMContentLoaded", function () {
 
     let activeMessage = null;
-    let messageStartTime = null;
-    let displayDuration = 15000;
+    let bannerVisible = false;
+    let bannerTimeout = null;
     let emergencyExpiryTimeout = null;
     let emergencyActive = false;
 
@@ -2038,7 +2038,11 @@ document.addEventListener("DOMContentLoaded", function () {
                         broadcastBanner.style.display = 'none';
                     }
                     activeMessage = null;
-                    messageStartTime = null;
+                    bannerVisible = false;
+                    if (bannerTimeout) {
+                        clearTimeout(bannerTimeout);
+                        bannerTimeout = null;
+                    }
 
                     if (expiresAt && emergencyScreen) {
                         const expiryTime = new Date(expiresAt).getTime();
@@ -2067,34 +2071,25 @@ document.addEventListener("DOMContentLoaded", function () {
                     emergencyScreen.style.display = 'none';
                 }
 
-                if (!message) {
-                    if (broadcastBanner) {
-                        broadcastBanner.innerText = '';
-                        broadcastBanner.style.display = 'none';
-                        broadcastBanner.classList.remove('show');
-                    }
-                    activeMessage = null;
-                    messageStartTime = null;
-                    return;
-                }
-
                 if (broadcastBanner) {
                     if (message && message !== activeMessage) {
                         activeMessage = message;
-                        messageStartTime = Date.now();
                         broadcastBanner.innerText = message;
                         broadcastBanner.style.display = 'block';
                         broadcastBanner.classList.add('show');
-                    }
+                        bannerVisible = true;
 
-                    if (activeMessage && messageStartTime !== null) {
-                        const elapsed = Date.now() - messageStartTime;
-                        if (elapsed > displayDuration) {
+                        if (bannerTimeout) {
+                            clearTimeout(bannerTimeout);
+                        }
+
+                        bannerTimeout = setTimeout(function () {
                             broadcastBanner.style.display = 'none';
                             broadcastBanner.classList.remove('show');
+                            bannerVisible = false;
                             activeMessage = null;
-                            messageStartTime = null;
-                        }
+                            bannerTimeout = null;
+                        }, 15000);
                     }
                 }
             })
