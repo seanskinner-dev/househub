@@ -392,13 +392,27 @@
             left: 0;
             top: 0;
             height: 100%;
-            transition: width 1s ease;
+            width: 0;
+            transition: width 1.2s cubic-bezier(0.77, 0, 0.18, 1);
         }
 
         .race-bar.gryffindor .bar-fill { background: #740001; }
         .race-bar.slytherin .bar-fill { background: #1a472a; }
         .race-bar.ravenclaw .bar-fill { background: #3b82f6; }
         .race-bar.hufflepuff .bar-fill { background: #ffcc00; }
+
+        .race-bar.leader .bar-fill {
+            box-shadow: 0 0 20px rgba(255,255,255,0.3);
+        }
+
+        @keyframes leaderPulse {
+            0%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(1.05); }
+        }
+
+        .race-bar.leader {
+            animation: leaderPulse 3s ease-in-out infinite;
+        }
 
         @keyframes firePulse {
             0%   { transform: scale(1); }
@@ -2051,22 +2065,22 @@
 
                 <div class="race-bar gryffindor">
                     <span>GRYFFINDOR</span>
-                    <div class="bar-fill" style="width: 80%"></div>
+                    <div class="bar-fill" data-width="80"></div>
                 </div>
 
                 <div class="race-bar slytherin">
                     <span>SLYTHERIN</span>
-                    <div class="bar-fill" style="width: 65%"></div>
+                    <div class="bar-fill" data-width="65"></div>
                 </div>
 
                 <div class="race-bar ravenclaw">
                     <span>RAVENCLAW</span>
-                    <div class="bar-fill" style="width: 45%"></div>
+                    <div class="bar-fill" data-width="45"></div>
                 </div>
 
-                <div class="race-bar hufflepuff">
+                <div class="race-bar hufflepuff leader">
                     <span>HUFFLEPUFF</span>
-                    <div class="bar-fill" style="width: 95%"></div>
+                    <div class="bar-fill" data-width="95"></div>
                 </div>
 
             </div>
@@ -2100,6 +2114,24 @@ document.addEventListener("DOMContentLoaded", function () {
     const broadcastUrl = @json(route('broadcast-messages.latest'));
     const broadcastBanner = document.getElementById('broadcastBanner');
 
+    function animatePointsRace() {
+        const bars = document.querySelectorAll('#points-race-bars .bar-fill');
+
+        bars.forEach(function (bar) {
+            bar.style.width = '0%';
+        });
+
+        requestAnimationFrame(function () {
+            bars.forEach(function (bar, index) {
+                const width = bar.dataset.width;
+
+                setTimeout(function () {
+                    bar.style.width = width + '%';
+                }, index * 200);
+            });
+        });
+    }
+
     function showScreen(index) {
         if (emergencyActive) {
             screens.forEach(function (s) { s.classList.remove('active'); });
@@ -2111,6 +2143,10 @@ document.addEventListener("DOMContentLoaded", function () {
         let current = document.querySelector('.tv-screen.active');
         if (current) current.classList.remove('active');
         next.classList.add('active');
+
+        if (screens[index].id === 'screen-points-race') {
+            animatePointsRace();
+        }
     }
 
     function nextScreen() {
