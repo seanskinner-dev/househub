@@ -1,20 +1,113 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container-fluid" style="max-width: 1200px;">
+    <style>
+        .points-index-page .house-btn {
+            width: 100%;
+            border: none;
+            border-radius: 14px;
+            padding: 12px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            transition: all 0.2s ease;
+        }
+
+        .points-index-page .house-btn:hover {
+            transform: scale(1.03);
+        }
+
+        .points-index-page .house-btn.gryffindor { border: 2px solid #740001; }
+        .points-index-page .house-btn.slytherin { border: 2px solid #1a472a; }
+        .points-index-page .house-btn.ravenclaw { border: 2px solid #3b82f6; }
+        .points-index-page .house-btn.hufflepuff { border: 2px solid #ffcc00; color: #000; }
+
+        .points-index-page .student-card {
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border-radius: 16px;
+            padding: 14px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+            border-left: 4px solid transparent;
+            color: #f1f5f9;
+        }
+
+        .points-index-page .student-card[data-house="gryffindor"] { border-left-color: #740001; }
+        .points-index-page .student-card[data-house="slytherin"] { border-left-color: #1a472a; }
+        .points-index-page .student-card[data-house="ravenclaw"] { border-left-color: #3b82f6; }
+        .points-index-page .student-card[data-house="hufflepuff"] { border-left-color: #ffcc00; }
+
+        .points-index-page .student-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .points-index-page .student-meta {
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        .points-index-page .btn-add {
+            background: rgba(34, 197, 94, 0.15) !important;
+            border: 1px solid #22c55e !important;
+            color: #22c55e !important;
+        }
+
+        .points-index-page .btn-sub {
+            background: rgba(239, 68, 68, 0.15) !important;
+            border: 1px solid #ef4444 !important;
+            color: #ef4444 !important;
+        }
+
+        .points-index-page .btn-commend {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            color: #e2e8f0 !important;
+        }
+
+        .points-index-page .btn-award {
+            background: rgba(255, 215, 0, 0.15) !important;
+            border: 1px solid rgba(255, 215, 0, 0.45) !important;
+            color: #facc15 !important;
+        }
+
+        .points-index-page .action-group button {
+            border-radius: 8px;
+            width: 36px;
+            height: 36px;
+            min-width: 36px;
+        }
+
+        .points-index-page .student-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.08);
+        }
+    </style>
+
+    <div class="container-fluid points-index-page" style="max-width: 1200px;">
 
         <h1 class="h4 mb-3" style="color: #f1f5f9;">Award points</h1>
 
         {{-- HOUSE BUTTONS --}}
         <div class="row g-2 mb-3">
             @foreach ($houses as $house)
+                @php
+                    $slug = strtolower(str_replace(' ', '', $house->name ?? ''));
+                    $emoji = match ($house->name ?? '') {
+                        'Gryffindor' => '🦁',
+                        'Slytherin' => '🐍',
+                        'Ravenclaw' => '🦅',
+                        'Hufflepuff' => '🦡',
+                        default => '🏫',
+                    };
+                @endphp
                 <div class="col-6 col-md-3">
                     <button type="button"
-                            class="btn w-100 text-white fw-semibold py-2"
-                            style="background-color: {{ $house->colour_hex ?? '#475569' }};"
-                            onclick="awardHouse(@json($house->name))">
-                        +1 {{ $house->name }}
-                    </button>
+                            class="house-btn {{ $slug }}"
+                            onclick="awardHouse(@json($house->name))">{{ $emoji }} +1</button>
                 </div>
             @endforeach
         </div>
@@ -34,51 +127,50 @@
             {{-- STUDENTS --}}
             <div class="col-lg-8" id="student-list">
                 @foreach ($students as $student)
-                    <div class="card mb-2 student-card border-0 shadow-sm"
-                         style="background: #1e293b; color: #f1f5f9;"
+                    @php
+                        $houseKey = strtolower($student->house_name ?? '');
+                    @endphp
+                    <div class="student-card mb-2"
+                         data-house="{{ $houseKey }}"
                          data-name="{{ strtolower($student->first_name . ' ' . $student->last_name) }}">
-                        <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-2 py-3">
-
-                            <div>
-                                <strong>{{ $student->first_name }} {{ $student->last_name }}</strong>
-                                <br>
-                                <small class="text-muted" style="color: #94a3b8 !important;">
-                                    Year {{ $student->year_level }}
-                                    |
-                                    {{ $student->house_name ?? '—' }}
-                                    |
-                                    {{ $student->house_points ?? 0 }} pts
-                                </small>
+                        <div>
+                            <div class="student-name">{{ $student->first_name }} {{ $student->last_name }}</div>
+                            <div class="student-meta">
+                                Year {{ $student->year_level }}
+                                |
+                                {{ $student->house_name ?? '—' }}
+                                |
+                                {{ $student->house_points ?? 0 }} pts
                             </div>
+                        </div>
 
-                            <div class="action-group flex-shrink-0" role="group">
-                                <button type="button"
-                                        class="btn btn-sm btn-sub"
-                                        data-id="{{ (int) $student->id }}"
-                                        data-student-id="{{ (int) $student->id }}">
-                                    −1
-                                </button>
-                                <button type="button"
-                                        class="btn btn-sm btn-add"
-                                        data-id="{{ (int) $student->id }}"
-                                        data-student-id="{{ (int) $student->id }}">
-                                    +1
-                                </button>
-                                <button type="button"
-                                        class="btn btn-sm btn-secondary btn-commend"
-                                        data-id="{{ (int) $student->id }}"
-                                        data-student-id="{{ (int) $student->id }}"
-                                        title="Commendation">
-                                    ⭐
-                                </button>
-                                <button type="button"
-                                        class="btn btn-sm btn-warning text-dark btn-award"
-                                        data-id="{{ (int) $student->id }}"
-                                        data-student-id="{{ (int) $student->id }}"
-                                        title="Award">
-                                    🏆
-                                </button>
-                            </div>
+                        <div class="action-group flex-shrink-0" role="group">
+                            <button type="button"
+                                    class="btn btn-sm btn-sub"
+                                    data-id="{{ (int) $student->id }}"
+                                    data-student-id="{{ (int) $student->id }}">
+                                −1
+                            </button>
+                            <button type="button"
+                                    class="btn btn-sm btn-add"
+                                    data-id="{{ (int) $student->id }}"
+                                    data-student-id="{{ (int) $student->id }}">
+                                +1
+                            </button>
+                            <button type="button"
+                                    class="btn btn-sm btn-secondary btn-commend"
+                                    data-id="{{ (int) $student->id }}"
+                                    data-student-id="{{ (int) $student->id }}"
+                                    title="Commendation">
+                                ⭐
+                            </button>
+                            <button type="button"
+                                    class="btn btn-sm btn-warning text-dark btn-award"
+                                    data-id="{{ (int) $student->id }}"
+                                    data-student-id="{{ (int) $student->id }}"
+                                    title="Award">
+                                🏆
+                            </button>
                         </div>
                     </div>
                 @endforeach
