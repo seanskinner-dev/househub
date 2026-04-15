@@ -1071,6 +1071,10 @@
         }
 
         .streak-card {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 6px;
             padding: 18px;
             font-size: 20px;
         }
@@ -1079,6 +1083,12 @@
             white-space: normal;
             overflow: visible;
             text-overflow: unset;
+        }
+
+        .student-meta {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 4px;
         }
 
         .student-card.is-top-1 {
@@ -1314,7 +1324,7 @@
                                 <span class="last-name">{{ $streak['student_last_name'] }}</span>
                             </span>
                         </div>
-                        <div class="student-rank">{{ $streak['days'] }} DAY STREAK</div>
+                        <div class="student-meta">🔥 {{ $streak['days'] }} Day Streak</div>
                     </div>
                 @endforeach
                 </div>

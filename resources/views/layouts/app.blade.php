@@ -699,10 +699,10 @@
                     var actions =
                         '<td class="td-actions text-end" style="padding:12px 14px;vertical-align:middle;">' +
                         '<div class="action-group flex-wrap">' +
-                        '<button type="button" class="btn-sub btn btn-sm"' + dis + ' data-id="' + dataId + '"' + dataStudentAttr + '>-1</button>' +
-                        '<button type="button" class="btn-add btn btn-sm"' + dis + ' data-id="' + dataId + '"' + dataStudentAttr + '>+1</button>' +
+                        '<button type="button" class="btn-sub btn-minus btn btn-sm"' + dis + ' data-id="' + dataId + '"' + dataStudentAttr + '>-1</button>' +
+                        '<button type="button" class="btn-add btn-plus btn btn-sm"' + dis + ' data-id="' + dataId + '"' + dataStudentAttr + '>+1</button>' +
                         '<button type="button" class="btn-award btn btn-sm"' + dis + ' data-id="' + dataId + '"' + dataStudentAttr + '>🏆</button>' +
-                        '<button type="button" class="btn-commend btn btn-sm"' + dis + ' data-id="' + dataId + '"' + dataStudentAttr + '>⭐</button>' +
+                        '<button type="button" class="btn-commend btn-commendation btn btn-sm"' + dis + ' data-id="' + dataId + '"' + dataStudentAttr + '>⭐</button>' +
                         '</div></td>';
                     return '<tr class="report-drilldown-row">' + nameCell +
                         '<td style="text-align:left;padding:12px 14px;vertical-align:middle;">' + yl + '</td>' +
@@ -890,21 +890,29 @@
             });
 
             document.addEventListener('click', function (e) {
-                var addBtn = e.target.closest('button.btn-add');
+                var addBtn = e.target.closest('button.btn-add, button.btn-plus');
                 if (addBtn && !addBtn.disabled) {
                     e.preventDefault();
                     var id = addBtn.getAttribute('data-student-id') || addBtn.getAttribute('data-id');
                     if (id) {
-                        reportSendPoint(id, 1);
+                        if (typeof window.awardPoint === 'function') {
+                            window.awardPoint(id, 1);
+                        } else {
+                            reportSendPoint(id, 1);
+                        }
                     }
                     return;
                 }
-                var subBtn = e.target.closest('button.btn-sub');
+                var subBtn = e.target.closest('button.btn-sub, button.btn-minus');
                 if (subBtn && !subBtn.disabled) {
                     e.preventDefault();
                     var id2 = subBtn.getAttribute('data-student-id') || subBtn.getAttribute('data-id');
                     if (id2) {
-                        reportSendPoint(id2, -1);
+                        if (typeof window.awardPoint === 'function') {
+                            window.awardPoint(id2, -1);
+                        } else {
+                            reportSendPoint(id2, -1);
+                        }
                     }
                     return;
                 }
@@ -917,7 +925,7 @@
                     }
                     return;
                 }
-                var commendBtn = e.target.closest('button.btn-commend');
+                var commendBtn = e.target.closest('button.btn-commend, button.btn-commendation');
                 if (commendBtn && !commendBtn.disabled) {
                     e.preventDefault();
                     var id4 = commendBtn.getAttribute('data-student-id') || commendBtn.getAttribute('data-id');
