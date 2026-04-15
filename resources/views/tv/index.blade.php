@@ -339,6 +339,32 @@
             z-index: 10001;
         }
 
+        .points-race-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 20px;
+            min-height: 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .points-title {
+            font-size: clamp(36px, 5vw, 64px);
+            font-weight: 800;
+            margin-bottom: 24px;
+            text-align: center;
+            letter-spacing: 0.04em;
+            text-shadow: 0 8px 28px rgba(0, 0, 0, 0.6);
+        }
+
+        .points-bars {
+            width: min(1100px, 100%);
+            min-height: 120px;
+        }
+
         @keyframes firePulse {
             0%   { transform: scale(1); }
             50%  { transform: scale(1.05); }
@@ -1976,6 +2002,20 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="tv-screen" id="screen-points-race">
+
+        <div class="points-race-container">
+
+            <div class="points-title">
+                🏆 POINTS RACE
+            </div>
+
+            <div id="points-race-bars" class="points-bars"></div>
+
+        </div>
+
     </div>
 
     <button type="button" id="nextBtn" class="next-btn">Next ▶</button>
