@@ -25,13 +25,15 @@
         .points-index-page .house-btn.gryffindor { background: #740001; }
         .points-index-page .house-btn.slytherin { background: #1a472a; }
         .points-index-page .house-btn.ravenclaw { background: #3b82f6; }
-        .points-index-page .house-btn.hufflepuff {
-            background: #ffcc00;
-            color: #111 !important;
+        .house-btn.hufflepuff,
+        .house-btn.hufflepuff span,
+        .house-btn.hufflepuff strong,
+        .house-btn.hufflepuff div {
+            color: #1f2937 !important;
         }
 
-        .points-index-page .house-btn.hufflepuff * {
-            color: #111 !important;
+        .house-btn.hufflepuff {
+            background: #ffcc00 !important;
         }
 
         .points-index-page .recent-activity {
