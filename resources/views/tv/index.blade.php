@@ -32,33 +32,34 @@
             color: #fff;
             transition: background 1s ease;
             animation: bgDrift 20s ease-in-out infinite;
-            background:
-                radial-gradient(circle at center, rgba(0,0,0,0) 60%, rgba(0,0,0,0.8) 100%),
-                #0a0a0a;
         }
 
-        .tv-container.house-gryffindor {
+        .tv-container.house-gryffindor,
+        body.house-gryffindor {
             background:
                 radial-gradient(circle, rgba(0,0,0,0.3), rgba(0,0,0,0.9)),
-                #740001;
+                #740001 !important;
         }
 
-        .tv-container.house-slytherin {
+        .tv-container.house-slytherin,
+        body.house-slytherin {
             background:
                 radial-gradient(circle, rgba(0,0,0,0.3), rgba(0,0,0,0.9)),
-                #1a472a;
+                #1a472a !important;
         }
 
-        .tv-container.house-ravenclaw {
+        .tv-container.house-ravenclaw,
+        body.house-ravenclaw {
             background:
                 radial-gradient(circle, rgba(0,0,0,0.3), rgba(0,0,0,0.9)),
-                #1e3a8a;
+                #1e3a8a !important;
         }
 
-        .tv-container.house-hufflepuff {
+        .tv-container.house-hufflepuff,
+        body.house-hufflepuff {
             background:
                 radial-gradient(circle, rgba(0,0,0,0.3), rgba(0,0,0,0.9)),
-                #ffcc00;
+                #ffcc00 !important;
         }
 
         /* .tv-container::after {
@@ -1847,7 +1848,10 @@ document.addEventListener("DOMContentLoaded", function () {
         if (current) current.classList.remove('active');
         next.classList.add('active');
 
-        const container = document.querySelector('.tv-container');
+        const container =
+            document.querySelector('.tv-container') ||
+            document.body;
+        console.log('Container found:', container);
         if (container) {
             container.classList.remove(
                 'house-gryffindor',
@@ -1855,6 +1859,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 'house-ravenclaw',
                 'house-hufflepuff'
             );
+            // container.classList.add('house-gryffindor');
+            // console.log('FORCED CLASS APPLIED');
 
             const activeScreen = document.querySelector('.tv-screen.active');
             if (activeScreen) {
@@ -1864,6 +1870,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 if (isTotalScreen) {
                     let house = activeScreen.dataset.leadingHouse;
+                    console.log('Applying house:', house);
                     if (!house) house = 'gryffindor';
                     container.classList.add('house-' + house.toLowerCase());
                 }
