@@ -1065,7 +1065,7 @@
             backdrop-filter: blur(6px);
             color: #ffffff;
             text-shadow: 0 2px 8px rgba(0,0,0,0.45);
-            height: 100%;
+            height: auto;
             width: 100%;
             max-width: 100%;
             animation: studentPulse 5.2s ease-in-out infinite;
@@ -1527,16 +1527,16 @@
             <div class="activity-list">
                 @php
                     $activityData = collect([
-                        ['student_name' => 'JOSH', 'house_name' => 'Gryffindor', 'points' => 5, 'action' => 'Award', 'teacher' => 'Ms Blake'],
-                        ['student_name' => 'EMMA', 'house_name' => 'Slytherin', 'points' => 4, 'action' => 'Commendation', 'teacher' => 'Mr Lee'],
-                        ['student_name' => 'LIAM', 'house_name' => 'Ravenclaw', 'points' => 3, 'action' => 'Award', 'teacher' => 'Ms Stone'],
-                        ['student_name' => 'AVA', 'house_name' => 'Hufflepuff', 'points' => 2, 'action' => 'Point', 'teacher' => 'Mr Cole'],
-                        ['student_name' => 'NOAH', 'house_name' => 'Gryffindor', 'points' => 4, 'action' => 'Award', 'teacher' => 'Ms Blake'],
-                        ['student_name' => 'MIA', 'house_name' => 'Ravenclaw', 'points' => 1, 'action' => 'Point', 'teacher' => 'Mr Wren'],
-                        ['student_name' => 'ETHAN', 'house_name' => 'Slytherin', 'points' => 5, 'action' => 'Commendation', 'teacher' => 'Mr Lee'],
-                        ['student_name' => 'ISLA', 'house_name' => 'Hufflepuff', 'points' => 2, 'action' => 'Point', 'teacher' => 'Ms Frost'],
-                        ['student_name' => 'LUCAS', 'house_name' => 'Gryffindor', 'points' => 3, 'action' => 'Award', 'teacher' => 'Mr Cole'],
-                        ['student_name' => 'ARIA', 'house_name' => 'Ravenclaw', 'points' => 1, 'action' => 'Point', 'teacher' => 'Ms Stone'],
+                        ['student_name' => 'JOSH', 'student_last_name' => 'ALLEN', 'house_name' => 'Gryffindor', 'points' => 5, 'action' => 'Award', 'teacher' => 'Ms Blake'],
+                        ['student_name' => 'EMMA', 'student_last_name' => 'BROOKS', 'house_name' => 'Slytherin', 'points' => 4, 'action' => 'Commendation', 'teacher' => 'Mr Lee'],
+                        ['student_name' => 'LIAM', 'student_last_name' => 'CLARK', 'house_name' => 'Ravenclaw', 'points' => 3, 'action' => 'Award', 'teacher' => 'Ms Stone'],
+                        ['student_name' => 'AVA', 'student_last_name' => 'DEAN', 'house_name' => 'Hufflepuff', 'points' => 2, 'action' => 'Point', 'teacher' => 'Mr Cole'],
+                        ['student_name' => 'NOAH', 'student_last_name' => 'ELLIS', 'house_name' => 'Gryffindor', 'points' => 4, 'action' => 'Award', 'teacher' => 'Ms Blake'],
+                        ['student_name' => 'MIA', 'student_last_name' => 'FORD', 'house_name' => 'Ravenclaw', 'points' => 1, 'action' => 'Point', 'teacher' => 'Mr Wren'],
+                        ['student_name' => 'ETHAN', 'student_last_name' => 'GRANT', 'house_name' => 'Slytherin', 'points' => 5, 'action' => 'Commendation', 'teacher' => 'Mr Lee'],
+                        ['student_name' => 'ISLA', 'student_last_name' => 'HAYES', 'house_name' => 'Hufflepuff', 'points' => 2, 'action' => 'Point', 'teacher' => 'Ms Frost'],
+                        ['student_name' => 'LUCAS', 'student_last_name' => 'IRWIN', 'house_name' => 'Gryffindor', 'points' => 3, 'action' => 'Award', 'teacher' => 'Mr Cole'],
+                        ['student_name' => 'ARIA', 'student_last_name' => 'JONES', 'house_name' => 'Ravenclaw', 'points' => 1, 'action' => 'Point', 'teacher' => 'Ms Stone'],
                     ])->take(10);
                 @endphp
                 @foreach($activityData as $activity)
@@ -1547,7 +1547,7 @@
                         <div class="student-left">
                             <span class="student-emoji">{{ $meta['emoji'] }}</span>
                             <span>
-                                <span class="student-name">{{ $activity['student_name'] }}</span>
+                                <span class="student-name">{{ strtoupper($activity['student_name'] . ' ' . $activity['student_last_name']) }}</span>
                                 <span class="student-points">{{ $activity['action'] }} - {{ $activity['teacher'] }}</span>
                             </span>
                         </div>
