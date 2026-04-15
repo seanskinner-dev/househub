@@ -1630,7 +1630,7 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
-    let ommExpiryTimeout = null;
+    let activeBroadcast = null;
     let emergencyExpiryTimeout = null;
     let emergencyActive = false;
 
@@ -2014,9 +2014,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 };
 
                 if (message && message.startsWith('EMERGENCY:')) {
-                    if (ommExpiryTimeout) {
-                        clearTimeout(ommExpiryTimeout);
-                        ommExpiryTimeout = null;
+                    if (window.broadcastTimeout) {
+                        clearTimeout(window.broadcastTimeout);
+                        window.broadcastTimeout = null;
                     }
                     if (emergencyExpiryTimeout) {
                         clearTimeout(emergencyExpiryTimeout);
@@ -2037,6 +2037,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     if (broadcastBanner) {
                         broadcastBanner.style.display = 'none';
                     }
+                    activeBroadcast = null;
 
                     if (expiresAt && emergencyScreen) {
                         const expiryTime = new Date(expiresAt).getTime();
@@ -2067,29 +2068,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 if (broadcastBanner) {
                     if (message) {
-                        var alreadyShowing =
-                            broadcastBanner.style.display === 'block' &&
-                            broadcastBanner.innerText === message;
-                        if (!alreadyShowing) {
+                        if (message !== activeBroadcast) {
+                            activeBroadcast = message;
                             broadcastBanner.innerText = message;
                             broadcastBanner.style.display = 'block';
-                            if (ommExpiryTimeout) {
-                                clearTimeout(ommExpiryTimeout);
-                                ommExpiryTimeout = null;
+                            if (window.broadcastTimeout) {
+                                clearTimeout(window.broadcastTimeout);
+                                window.broadcastTimeout = null;
                             }
-                            ommExpiryTimeout = setTimeout(function () {
+                            window.broadcastTimeout = setTimeout(function () {
                                 if (broadcastBanner) {
                                     broadcastBanner.style.display = 'none';
                                 }
-                                ommExpiryTimeout = null;
+                                activeBroadcast = null;
+                                window.broadcastTimeout = null;
                             }, 15000);
                         }
-                    } else {
-                        if (ommExpiryTimeout) {
-                            clearTimeout(ommExpiryTimeout);
-                            ommExpiryTimeout = null;
-                        }
-                        broadcastBanner.style.display = 'none';
                     }
                 }
             })
