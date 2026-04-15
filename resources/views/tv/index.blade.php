@@ -58,7 +58,7 @@
             font-weight: bold;
             padding: 16px;
             display: none;
-            z-index: 1;
+            z-index: 10002;
         }
 
         #emergencyScreen {
@@ -2064,7 +2064,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (emergencyScreen) {
                     emergencyScreen.style.display = 'none';
                 }
-                showScreen(currentScreen);
 
                 if (broadcastBanner) {
                     if (message) {
