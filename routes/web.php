@@ -29,10 +29,6 @@ Route::get('/broadcast-messages/latest', [BroadcastMessageController::class, 'la
 Route::get('/broadcast', [BroadcastMessageController::class, 'latest'])
     ->name('broadcast.latest');
 
-Route::get('/test123', function () {
-    return 'TEST123';
-});
-
 // =============================
 // AUTHENTICATED ROUTES
 // =============================

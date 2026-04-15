@@ -1659,7 +1659,6 @@ document.addEventListener("DOMContentLoaded", function () {
             screens.forEach(function (s) { s.classList.remove('active'); });
             return;
         }
-        console.log('Banner exists (before rotation):', document.getElementById('broadcastBanner'));
         const next = screens[index];
         if (!next) return;
 
@@ -1711,7 +1710,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 screen.dataset.animated = 'true';
             }
         }
-        console.log('Banner exists (after rotation):', document.getElementById('broadcastBanner'));
     }
 
     function nextScreen() {
@@ -2072,7 +2070,21 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
                 if (broadcastBanner) {
+                    if (!message && activeMessage) {
+                        broadcastBanner.innerText = '';
+                        broadcastBanner.style.display = 'none';
+                        broadcastBanner.classList.remove('show');
+                        activeMessage = null;
+                        bannerVisible = false;
+                        if (bannerTimeout) {
+                            clearTimeout(bannerTimeout);
+                            bannerTimeout = null;
+                        }
+                        return;
+                    }
+
                     if (message && message !== activeMessage) {
+                        console.log('SETTING BANNER:', data.message);
                         activeMessage = message;
                         broadcastBanner.innerText = message;
                         broadcastBanner.style.display = 'block';
