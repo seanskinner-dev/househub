@@ -92,7 +92,7 @@
             height: 100%;
             width: 100%;
             max-width: 100%;
-            overflow: hidden;
+            overflow: visible;
             box-sizing: border-box;
             opacity: 0;
             transition: opacity 0.6s ease;
@@ -847,7 +847,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 18px 28px;
+            padding: 40px 40px;
             background: transparent;
             color: #ffffff;
         }
@@ -909,15 +909,15 @@
         }
 
         .activity-list {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
             width: 100%;
-            max-width: 1100px;
+            max-width: 1400px;
             margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            overflow: hidden;
-            max-height: 80vh;
-            animation: scrollFeed 30s linear infinite;
+            overflow: visible;
+            max-height: none;
+            animation: none;
         }
 
         .activity-list:hover {
@@ -945,10 +945,11 @@
 
         .student-card {
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
             align-items: flex-start;
             position: relative;
             padding: 18px 20px;
+            gap: 6px;
             border-radius: 16px;
             background: linear-gradient(
                 145deg,
@@ -1059,6 +1060,7 @@
         .student-rank {
             position: static;
             margin-left: auto;
+            align-self: flex-end;
             font-size: 14px;
             opacity: 0.6;
             padding: 4px 10px;
@@ -1087,8 +1089,9 @@
 
         .student-meta {
             font-size: 0.9rem;
-            opacity: 0.8;
+            opacity: 0.85;
             margin-top: 4px;
+            font-weight: 700;
         }
 
         .student-card.is-top-1 {
@@ -1237,7 +1240,7 @@
         .top-container,
         .streak-container,
         .activity-container {
-            padding: 40px 24px;
+            padding: 40px 40px;
         }
 
         .activity-container {
@@ -1246,6 +1249,21 @@
             justify-content: flex-start;
             align-items: center;
             padding-top: 40px;
+        }
+
+        .total-banner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            width: 100%;
+        }
+
+        .total-number {
+            font-size: clamp(120px, 18vw, 240px);
+            font-weight: 900;
+            line-height: 1;
+            text-align: center;
         }
 
         .student-card {
@@ -1277,6 +1295,33 @@
                 };
             }
         }
+        $housePointsByTermCollection = collect($housePointsByTerm ?? []);
+        $currentMonth = (int) now()->month;
+        $currentTermIndex = (int) floor(($currentMonth - 1) / 3);
+        if ($currentTermIndex < 0) {
+            $currentTermIndex = 0;
+        }
+        if ($currentTermIndex > 3) {
+            $currentTermIndex = 3;
+        }
+
+        $houseTotalsYear = collect([
+            (object) ['name' => 'Gryffindor', 'points' => (int) ($gryffindorPoints ?? 0)],
+            (object) ['name' => 'Slytherin', 'points' => (int) ($slytherinPoints ?? 0)],
+            (object) ['name' => 'Ravenclaw', 'points' => (int) ($ravenclawPoints ?? 0)],
+            (object) ['name' => 'Hufflepuff', 'points' => (int) ($hufflepuffPoints ?? 0)],
+        ]);
+
+        $houseTotalsTerm = $houseTotalsYear->map(function ($house) use ($housePointsByTermCollection, $currentTermIndex) {
+            $termRow = $housePointsByTermCollection->first(function ($row) use ($house) {
+                return ($row['house'] ?? null) === $house->name;
+            });
+            $termPoints = (int) (($termRow['data'][$currentTermIndex] ?? 0));
+            return (object) ['name' => $house->name, 'points' => $termPoints];
+        });
+
+        $totalPointsYear = (int) $houseTotalsYear->sum('points');
+        $totalPointsTerm = (int) $houseTotalsTerm->sum('points');
     @endphp
 
     <div id="emergencyScreen" style="display:none;">
@@ -1658,6 +1703,52 @@
         </div>
     </div>
 
+    <div class="tv-screen" id="screen-total-year">
+        <div class="screen-inner">
+            <h1 class="screen-title">TOTAL HOUSE POINTS (YEAR)</h1>
+            <div class="total-banner">
+                <div class="total-number">{{ $totalPointsYear }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tv-screen" id="screen-total-term">
+        <div class="screen-inner">
+            <h1 class="screen-title">TOTAL HOUSE POINTS (TERM)</h1>
+            <div class="total-banner">
+                <div class="total-number">{{ $totalPointsTerm }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tv-screen" id="screen-total-house-year">
+        <div class="screen-inner">
+            <h1 class="screen-title">HOUSE TOTALS (YEAR)</h1>
+            <div class="card-grid">
+                @foreach($houseTotalsYear as $house)
+                    <div class="house-card {{ strtolower($house->name) }}">
+                        <div class="house-name">{{ $house->name }}</div>
+                        <div class="points">{{ $house->points }}</div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+
+    <div class="tv-screen" id="screen-total-house-term">
+        <div class="screen-inner">
+            <h1 class="screen-title">HOUSE TOTALS (TERM)</h1>
+            <div class="card-grid">
+                @foreach($houseTotalsTerm as $house)
+                    <div class="house-card {{ strtolower($house->name) }}">
+                        <div class="house-name">{{ $house->name }}</div>
+                        <div class="points">{{ $house->points }}</div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+
     <div class="tv-screen" id="screen-points-race" data-animated="false">
 
         <div class="points-race-container">
@@ -1725,19 +1816,6 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log('TV screens found:', screens.length);
     const broadcastUrl = @json(route('broadcast-messages.latest'));
     const broadcastBanner = document.getElementById('broadcastBanner');
-
-    function duplicateActivityItems() {
-        const activityList = document.querySelector('.activity-list');
-        if (!activityList || activityList.dataset.loopReady === 'true') return;
-        const items = Array.from(activityList.children);
-        if (!items.length) return;
-        items.forEach(function (item) {
-            const clone = item.cloneNode(true);
-            clone.classList.remove('new');
-            activityList.appendChild(clone);
-        });
-        activityList.dataset.loopReady = 'true';
-    }
 
     function showScreen(index) {
         if (emergencyActive) {
@@ -1831,7 +1909,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     showScreen(currentScreen);
     animatePoints();
-    duplicateActivityItems();
 
     setTimeout(() => {
         showScreen(currentScreen);
