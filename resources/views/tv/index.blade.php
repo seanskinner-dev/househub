@@ -992,6 +992,7 @@
         .activity-list {
             grid-auto-rows: min-content;
             overflow: hidden;
+            gap: 8px 12px;
         }
 
         .leaderboard-list {
@@ -1053,7 +1054,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 16px;
+            padding: 10px 14px;
             border-radius: 18px;
             background: linear-gradient(
                 145deg,
@@ -1061,7 +1062,7 @@
                 rgba(10,10,10,0.95)
             );
             border: 1px solid rgba(255,255,255,0.1);
-            font-size: 1.55rem;
+            font-size: 1.25rem;
             font-weight: 700;
             position: relative;
             overflow: hidden;
@@ -1124,7 +1125,7 @@
 
         .student-points {
             display: block;
-            font-size: 1.08rem;
+            font-size: 0.9rem;
             font-weight: 700;
             opacity: 0.82;
             margin-top: 2px;
@@ -1355,12 +1356,7 @@
             opacity: 0.8;
         }
 
-        .student-points {
-            font-size: 1rem;
-        }
-
         .house-card,
-        .student-card,
         .this-term-card,
         .break-card {
             padding: 16px 20px;
@@ -1370,7 +1366,6 @@
         .leaderboard-grid,
         .leaderboard-list,
         .top-list,
-        .activity-list,
         .streak-list,
         .tv-this-term-grid,
         .break-container {
