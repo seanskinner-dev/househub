@@ -1543,9 +1543,9 @@
                         ['student_name' => 'ISLA', 'student_last_name' => 'HAYES', 'house_name' => 'Hufflepuff', 'points' => 2, 'action' => 'Point', 'teacher' => 'Ms Frost'],
                         ['student_name' => 'LUCAS', 'student_last_name' => 'IRWIN', 'house_name' => 'Gryffindor', 'points' => 3, 'action' => 'Award', 'teacher' => 'Mr Cole'],
                         ['student_name' => 'ARIA', 'student_last_name' => 'JONES', 'house_name' => 'Ravenclaw', 'points' => 1, 'action' => 'Point', 'teacher' => 'Ms Stone'],
-                    ])->take(10);
+                    ])->take(8);
                 @endphp
-                @foreach($activityData as $activity)
+                @foreach($activityData->take(8) as $activity)
                     @php
                         $meta = houseMeta($activity['house_name']);
                     @endphp
