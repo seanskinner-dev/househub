@@ -1586,7 +1586,7 @@
         </div>
     </div>
 
-    <div class="tv-screen" id="screen-points-race">
+    <div class="tv-screen" id="screen-points-race" data-animated="false">
 
         <div class="points-race-container">
 
@@ -1650,40 +1650,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const broadcastUrl = @json(route('broadcast-messages.latest'));
     const broadcastBanner = document.getElementById('broadcastBanner');
 
-    let previousScreenId = null;
-
-    function animatePointsRace() {
-        const bars = document.querySelectorAll('#points-race-bars .bar-fill');
-        const track = document.getElementById('points-race-bars');
-
-        bars.forEach(function (bar) {
-            bar.style.transition = 'none';
-            bar.style.width = '0%';
-        });
-
-        if (track) {
-            void track.offsetWidth;
-        }
-
-        bars.forEach(function (bar) {
-            bar.style.removeProperty('transition');
-        });
-
-        requestAnimationFrame(function () {
-            bars.forEach(function (bar, index) {
-                const target = bar.dataset.width;
-                if (target === undefined || target === '') {
-                    return;
-                }
-                requestAnimationFrame(function () {
-                    setTimeout(function () {
-                        bar.style.width = target + '%';
-                    }, 100 + index * 120);
-                });
-            });
-        });
-    }
-
     function showScreen(index) {
         if (emergencyActive) {
             screens.forEach(function (s) { s.classList.remove('active'); });
@@ -1693,16 +1659,43 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!next) return;
 
         const nextId = next.id;
-
         let current = document.querySelector('.tv-screen.active');
+        const currentId = current ? current.id : null;
+
+        if (currentId === 'screen-points-race' && nextId !== 'screen-points-race') {
+            const raceScreen = document.getElementById('screen-points-race');
+            if (raceScreen) {
+                raceScreen.dataset.animated = 'false';
+                raceScreen.querySelectorAll('.bar-fill').forEach(function (bar) {
+                    bar.style.transition = 'none';
+                    bar.style.width = '0%';
+                });
+                void raceScreen.offsetWidth;
+                raceScreen.querySelectorAll('.bar-fill').forEach(function (bar) {
+                    bar.style.removeProperty('transition');
+                });
+            }
+        }
+
         if (current) current.classList.remove('active');
         next.classList.add('active');
 
-        if (nextId === 'screen-points-race' && previousScreenId !== 'screen-points-race') {
-            animatePointsRace();
+        if (nextId === 'screen-points-race') {
+            const screen = document.getElementById('screen-points-race');
+            if (screen && screen.dataset.animated === 'false') {
+                const bars = screen.querySelectorAll('.bar-fill');
+                bars.forEach(function (bar) {
+                    const target = bar.dataset.width;
+                    bar.style.width = '0%';
+                    requestAnimationFrame(function () {
+                        setTimeout(function () {
+                            bar.style.width = target + '%';
+                        }, 100);
+                    });
+                });
+                screen.dataset.animated = 'true';
+            }
         }
-
-        previousScreenId = nextId;
     }
 
     function nextScreen() {
