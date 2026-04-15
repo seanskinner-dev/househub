@@ -1542,7 +1542,7 @@
 
     </div>
 
-    <div class="tv-screen" id="screen-house-points-this-term">
+    <div class="tv-screen active" id="screen-house-points-this-term">
 
         <div class="tv-this-term-screen">
 
@@ -2013,7 +2013,6 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
-    let currentScreen = 0;
     let ommExpiryTimeout = null;
     let emergencyActive = false;
 
@@ -2026,6 +2025,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const screens = Array.from(document.querySelectorAll('.tv-screen'));
     shuffle(screens);
+    const termScreenIdx = screens.findIndex(function (s) {
+        return s.id === 'screen-house-points-this-term';
+    });
+    let currentScreen = termScreenIdx >= 0 ? termScreenIdx : 0;
     console.log('TV screens:', document.querySelectorAll('.tv-screen').length);
     console.log('TV screens found:', screens.length);
     const broadcastUrl = @json(route('broadcast-messages.latest'));
@@ -2170,11 +2173,11 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    showScreen(0);
+    showScreen(currentScreen);
     animatePoints();
 
     setTimeout(() => {
-        showScreen(0);
+        showScreen(currentScreen);
     }, 100);
 
     const weatherBackgrounds = {
