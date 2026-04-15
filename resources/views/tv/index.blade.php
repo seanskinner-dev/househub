@@ -389,6 +389,12 @@
             overflow: hidden;
         }
 
+        .activity-scale {
+            transform: scale(0.92);
+            transform-origin: top center;
+            width: 100%;
+        }
+
         .activity-title {
             position: relative;
             font-size: clamp(32px, 5vw, 60px);
@@ -1520,6 +1526,8 @@
 
         <div class="activity-container">
 
+            <div class="activity-scale">
+
             <div class="activity-title">
                 ⚡ LIVE ACTIVITY
             </div>
@@ -1554,6 +1562,8 @@
                         <div class="student-rank">+{{ $activity['points'] }}</div>
                     </div>
                 @endforeach
+            </div>
+
             </div>
 
         </div>
