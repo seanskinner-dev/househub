@@ -319,9 +319,11 @@
         }
 
         .standings-container {
+            height: 100%;
             display: flex;
             flex-direction: column;
             justify-content: center;
+            align-items: center;
             padding: 40px;
             box-sizing: border-box;
         }
@@ -336,12 +338,17 @@
         .standings-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto auto auto;
             gap: 24px;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: 0;
         }
 
         .standing-card {
             border-radius: 24px;
-            padding: 30px;
+            padding: 28px;
             text-align: center;
             font-weight: 800;
             position: relative;
@@ -350,8 +357,25 @@
 
         .standing-card.first {
             grid-column: span 2;
+            grid-row: 1;
             transform: scale(1.05);
-            box-shadow: 0 0 40px rgba(255,255,255,0.2);
+        }
+
+        .standing-card.second {
+            grid-column: 1;
+            grid-row: 2;
+        }
+
+        .standing-card.third {
+            grid-column: 2;
+            grid-row: 2;
+        }
+
+        .standing-card.fourth {
+            grid-column: span 2;
+            grid-row: 3;
+            width: 60%;
+            margin: 0 auto;
         }
 
         .standing-card.gryffindor { background: #740001; }
@@ -895,6 +919,7 @@
             flex: 1;
             display: flex;
             flex-direction: column;
+            justify-content: center;
             align-items: center;
             min-height: 0;
             width: 100%;
@@ -914,85 +939,42 @@
             letter-spacing: 0.02em;
         }
 
-        .points-layout {
-            display: grid;
-            grid-template-rows: auto auto auto;
-            gap: 16px;
-            height: 100%;
-            max-height: 100%;
-            min-height: 0;
-        }
-
-        .tv-this-term-screen > .points-layout {
+        .tv-this-term-screen > .standings-grid {
             flex: 1;
             min-height: 0;
             width: 100%;
-            max-width: 1200px;
+            align-self: stretch;
         }
 
-        .points-layout > .hero-house {
-            grid-row: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            min-height: 0;
-        }
-
-        .points-layout > .hero-house > .house-card {
-            width: 100%;
-            max-width: 100%;
-            min-height: 0;
-        }
-
-        .points-layout > .hero-house .house-card.winner {
+        #screen-house-points-this-term .standings-grid > .house-card.winner,
+        #screen-house-points-this-year .standings-grid > .house-card.winner {
             filter: brightness(1.15);
             animation:
                 breatheWinner 6s ease-in-out infinite,
                 winnerGlow 3s ease-in-out infinite;
         }
 
-        .points-layout > .other-houses {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            grid-row: 2;
-            min-height: 0;
-            width: 100%;
-        }
-
-        .points-layout > .last-house {
-            display: flex;
-            justify-content: center;
-            grid-row: 3;
-            width: 100%;
-        }
-
-        .points-layout > .last-house .house-card {
-            width: 50%;
-            max-width: 500px;
-        }
-
-        .points-layout > .other-houses .house-card {
-            width: 100%;
-        }
-
-        #screen-house-points-this-term .house-card,
-        #screen-house-points-this-year .house-card {
-            max-height: 260px;
-            overflow: hidden;
-        }
-
-        #screen-house-points-this-year .house-card {
-            transform: scale(1);
+        #screen-house-points-this-year .standings-grid > .house-card {
             border: 2px solid rgba(255, 255, 255, 0.08);
         }
 
-        #screen-house-points-this-term .house-card {
-            transform: scale(0.96);
-            opacity: 0.9;
+        #screen-house-points-this-term .standings-grid > .house-card {
             border: 1px solid rgba(255, 255, 255, 0.05);
+            opacity: 0.98;
+        }
+
+        #screen-house-points-this-term .standings-grid > .house-card,
+        #screen-house-points-this-year .standings-grid > .house-card {
+            min-width: 0;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        #screen-house-points-this-term .standings-grid > .house-card.fourth,
+        #screen-house-points-this-year .standings-grid > .house-card.fourth {
+            max-width: 100%;
         }
 
         .this-term-card {
@@ -1030,6 +1012,16 @@
             box-shadow:
                 0 16px 46px rgba(0,0,0,0.75),
                 0 0 56px var(--house-color, rgba(255,255,255,0.34));
+        }
+
+        #screen-house-points-this-term .standings-grid > .this-term-card.winner,
+        #screen-house-points-this-year .standings-grid > .this-term-card.winner {
+            transform: scale(1.05);
+        }
+
+        #screen-house-points-this-term .standings-grid > .house-card.this-term-card.standing-card,
+        #screen-house-points-this-year .standings-grid > .house-card.this-term-card.standing-card {
+            padding: 28px;
         }
 
         .this-term-card .rank {
@@ -1542,64 +1534,30 @@
 
         <div class="tv-this-term-screen">
 
-            <div class="screen-title">📊 POINTS THIS TERM</div>
-
             @php
                 $termHouses = collect($housePointsThisTerm)->take(4)->values();
             @endphp
-            <div class="points-layout">
-                @if ($termHouses->isNotEmpty())
+            <div class="standings-grid">
+                @foreach ($termHouses as $index => $entry)
                     @php
-                        $entry = $termHouses[0];
                         $houseMeta = houseMeta($entry['house'] ?? null);
+                        $placeClass = match ((int) $index) {
+                            0 => 'first',
+                            1 => 'second',
+                            2 => 'third',
+                            3 => 'fourth',
+                            default => 'fourth',
+                        };
                     @endphp
-                    <div class="hero-house">
-                        <div
-                            class="house-card this-term-card winner"
-                            style="--house-color: {{ $houseMeta['color'] }};"
-                        >
-                            <div class="rank">#1</div>
-                            <div class="house-name">{{ strtoupper($entry['house']) }}</div>
-                            <div class="points" data-points="{{ $entry['total'] }}">0</div>
-                        </div>
+                    <div
+                        class="house-card this-term-card standing-card {{ $placeClass }}{{ $index === 0 ? ' winner' : '' }}"
+                        style="--house-color: {{ $houseMeta['color'] }};"
+                    >
+                        <div class="rank">#{{ $index + 1 }}</div>
+                        <div class="house-name">{{ strtoupper($entry['house']) }}</div>
+                        <div class="points" data-points="{{ $entry['total'] }}">0</div>
                     </div>
-                @endif
-
-                @if ($termHouses->count() >= 2)
-                    <div class="other-houses">
-                        @foreach ($termHouses->slice(1, 2) as $entry)
-                            @php
-                                $houseMeta = houseMeta($entry['house'] ?? null);
-                                $rank = $loop->iteration + 1;
-                            @endphp
-                            <div
-                                class="house-card this-term-card"
-                                style="--house-color: {{ $houseMeta['color'] }};"
-                            >
-                                <div class="rank">#{{ $rank }}</div>
-                                <div class="house-name">{{ strtoupper($entry['house']) }}</div>
-                                <div class="points" data-points="{{ $entry['total'] }}">0</div>
-                            </div>
-                        @endforeach
-                    </div>
-                @endif
-
-                @if ($termHouses->count() >= 4)
-                    @php
-                        $entry = $termHouses[3];
-                        $houseMeta = houseMeta($entry['house'] ?? null);
-                    @endphp
-                    <div class="last-house">
-                        <div
-                            class="house-card this-term-card"
-                            style="--house-color: {{ $houseMeta['color'] }};"
-                        >
-                            <div class="rank">#4</div>
-                            <div class="house-name">{{ strtoupper($entry['house']) }}</div>
-                            <div class="points" data-points="{{ $entry['total'] }}">0</div>
-                        </div>
-                    </div>
-                @endif
+                @endforeach
             </div>
 
         </div>
@@ -1610,64 +1568,30 @@
 
         <div class="tv-this-term-screen">
 
-            <div class="screen-title">📅 POINTS THIS YEAR</div>
-
             @php
                 $yearHouses = collect($housePointsThisYear)->take(4)->values();
             @endphp
-            <div class="points-layout">
-                @if ($yearHouses->isNotEmpty())
+            <div class="standings-grid">
+                @foreach ($yearHouses as $index => $entry)
                     @php
-                        $entry = $yearHouses[0];
                         $houseMeta = houseMeta($entry['house'] ?? null);
+                        $placeClass = match ((int) $index) {
+                            0 => 'first',
+                            1 => 'second',
+                            2 => 'third',
+                            3 => 'fourth',
+                            default => 'fourth',
+                        };
                     @endphp
-                    <div class="hero-house">
-                        <div
-                            class="house-card this-term-card winner"
-                            style="--house-color: {{ $houseMeta['color'] }};"
-                        >
-                            <div class="rank">#1</div>
-                            <div class="house-name">{{ strtoupper($entry['house']) }}</div>
-                            <div class="points" data-points="{{ $entry['total'] }}">0</div>
-                        </div>
+                    <div
+                        class="house-card this-term-card standing-card {{ $placeClass }}{{ $index === 0 ? ' winner' : '' }}"
+                        style="--house-color: {{ $houseMeta['color'] }};"
+                    >
+                        <div class="rank">#{{ $index + 1 }}</div>
+                        <div class="house-name">{{ strtoupper($entry['house']) }}</div>
+                        <div class="points" data-points="{{ $entry['total'] }}">0</div>
                     </div>
-                @endif
-
-                @if ($yearHouses->count() >= 2)
-                    <div class="other-houses">
-                        @foreach ($yearHouses->slice(1, 2) as $entry)
-                            @php
-                                $houseMeta = houseMeta($entry['house'] ?? null);
-                                $rank = $loop->iteration + 1;
-                            @endphp
-                            <div
-                                class="house-card this-term-card"
-                                style="--house-color: {{ $houseMeta['color'] }};"
-                            >
-                                <div class="rank">#{{ $rank }}</div>
-                                <div class="house-name">{{ strtoupper($entry['house']) }}</div>
-                                <div class="points" data-points="{{ $entry['total'] }}">0</div>
-                            </div>
-                        @endforeach
-                    </div>
-                @endif
-
-                @if ($yearHouses->count() >= 4)
-                    @php
-                        $entry = $yearHouses[3];
-                        $houseMeta = houseMeta($entry['house'] ?? null);
-                    @endphp
-                    <div class="last-house">
-                        <div
-                            class="house-card this-term-card"
-                            style="--house-color: {{ $houseMeta['color'] }};"
-                        >
-                            <div class="rank">#4</div>
-                            <div class="house-name">{{ strtoupper($entry['house']) }}</div>
-                            <div class="points" data-points="{{ $entry['total'] }}">0</div>
-                        </div>
-                    </div>
-                @endif
+                @endforeach
             </div>
 
         </div>
@@ -2060,7 +1984,7 @@ document.addEventListener("DOMContentLoaded", function () {
         var screen = document.getElementById('screen-house-points-this-year');
         var houses = [];
         if (screen) {
-            screen.querySelectorAll('.points-layout .house-card').forEach(function (card) {
+            screen.querySelectorAll('.standings-grid .house-card').forEach(function (card) {
                 var nameEl = card.querySelector('.house-name');
                 var ptsEl = card.querySelector('.points');
                 if (!nameEl || !ptsEl) {
@@ -2090,9 +2014,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         container.innerHTML = '';
 
+        var placeClasses = ['first', 'second', 'third', 'fourth'];
         houses.forEach(function (house, index) {
             var card = document.createElement('div');
-            card.className = 'standing-card ' + house.class + (index === 0 ? ' first' : '');
+            var place = placeClasses[index] || 'fourth';
+            card.className = 'standing-card ' + house.class + ' ' + place;
 
             card.innerHTML =
                 '<div class="rank">#' + (index + 1) + '</div>' +
