@@ -37,6 +37,30 @@
                 #0a0a0a;
         }
 
+        .tv-container.house-gryffindor {
+            background:
+                radial-gradient(circle, rgba(0,0,0,0.3), rgba(0,0,0,0.9)),
+                #740001;
+        }
+
+        .tv-container.house-slytherin {
+            background:
+                radial-gradient(circle, rgba(0,0,0,0.3), rgba(0,0,0,0.9)),
+                #1a472a;
+        }
+
+        .tv-container.house-ravenclaw {
+            background:
+                radial-gradient(circle, rgba(0,0,0,0.3), rgba(0,0,0,0.9)),
+                #1e3a8a;
+        }
+
+        .tv-container.house-hufflepuff {
+            background:
+                radial-gradient(circle, rgba(0,0,0,0.3), rgba(0,0,0,0.9)),
+                #ffcc00;
+        }
+
         /* .tv-container::after {
             content: '';
             position: absolute;
@@ -1685,7 +1709,9 @@
         </div>
     </div>
 
-    <div class="tv-screen" id="screen-total-term">
+    <div class="tv-screen"
+         id="screen-total-term"
+         data-leading-house="{{ $leadingHouseTerm }}">
         <div class="screen-inner">
             <h1 class="screen-title">TOTAL HOUSE POINTS (TERM)</h1>
             <div class="total-banner">
@@ -1818,6 +1844,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (current) current.classList.remove('active');
         next.classList.add('active');
+
+        const container = document.querySelector('.tv-container');
+        if (container) {
+            container.classList.remove(
+                'house-gryffindor',
+                'house-slytherin',
+                'house-ravenclaw',
+                'house-hufflepuff'
+            );
+
+            const activeScreen = document.querySelector('.tv-screen.active');
+            if (activeScreen && activeScreen.id === 'screen-total-term') {
+                const house = activeScreen.dataset.leadingHouse;
+                if (house) {
+                    container.classList.add('house-' + house.toLowerCase());
+                }
+            }
+        }
 
         if (nextId === 'screen-points-race') {
             const screen = document.getElementById('screen-points-race');
