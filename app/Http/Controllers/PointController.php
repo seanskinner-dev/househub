@@ -267,7 +267,7 @@ class PointController extends Controller
 
         $awards = DB::table('awards')
             ->where('student_id', $id)
-            ->orderByDesc('awarded_at')
+            ->orderByDesc('created_at')
             ->get();
 
         $commendations = DB::table('point_transactions')

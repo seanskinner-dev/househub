@@ -71,7 +71,7 @@
     </div>
 
     <div class="award">
-        For: {{ $award->name }}
+        For: {{ $award->name ?? $award->title ?? '' }}
     </div>
 
     <div>
@@ -79,7 +79,7 @@
     </div>
 
     <div class="date">
-        {{ \Carbon\Carbon::parse($award->awarded_at)->format('d F Y') }}
+        {{ \Carbon\Carbon::parse($award->awarded_at ?? $award->created_at)->format('d F Y') }}
     </div>
 
     <div class="print-btn" onclick="window.print()">

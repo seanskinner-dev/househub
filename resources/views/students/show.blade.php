@@ -126,7 +126,7 @@
             @foreach($awards as $award)
                 <div class="award">
                     <div class="award-title">
-                        {{ $award->name }}
+                        {{ $award->name ?? $award->title ?? 'Award' }}
                     </div>
 
                     <div>
@@ -134,7 +134,7 @@
                     </div>
 
                     <div class="award-date">
-                        {{ \Carbon\Carbon::parse($award->awarded_at)->format('d M Y') }}
+                        {{ \Carbon\Carbon::parse($award->awarded_at ?? $award->created_at)->format('d M Y') }}
                     </div>
 
                     <a href="/certificate/{{ $award->id }}" class="btn">View Certificate</a>
