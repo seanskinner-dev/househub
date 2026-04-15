@@ -119,7 +119,7 @@
             transition: opacity 0.6s ease;
             pointer-events: none;
             z-index: 1;
-            background: transparent !important;
+            background: transparent;
             padding: 0 20px;
         }
 
@@ -865,15 +865,15 @@
             margin: 0 auto;
             height: 100%;
             position: relative;
-            z-index: 1;
+            z-index: 2;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: rgba(0, 0, 0, 0.65);
-            backdrop-filter: blur(6px);
+            background: rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(2px);
             border-radius: 20px;
-            padding: 30px;
+            padding: 20px;
             color: #ffffff;
         }
 
@@ -885,6 +885,8 @@
             text-align: center;
             letter-spacing: 0.04em;
             text-shadow: 0 8px 28px rgba(0, 0, 0, 0.6);
+            color: #ffffff;
+            background: transparent;
         }
 
         .student-grid,
@@ -1313,6 +1315,22 @@
         .streak-list,
         .break-container {
             gap: 10px 14px;
+        }
+
+        .tv-screen,
+        .tv-screen * {
+            background-color: transparent !important;
+        }
+
+        .student-card,
+        .house-card,
+        .activity-card,
+        .streak-card {
+            background: linear-gradient(
+                145deg,
+                rgba(30,30,30,0.95),
+                rgba(10,10,10,0.95)
+            ) !important;
         }
     </style>
 </head>
