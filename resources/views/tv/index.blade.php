@@ -1131,21 +1131,6 @@
             max-height: 100%;
         }
 
-        .leaderboard-list {
-            margin-top: 14px;
-            padding: 0 40px;
-            position: relative;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: repeat(5, 1fr);
-            gap: 24px;
-            max-width: 1100px;
-            margin-left: auto;
-            margin-right: auto;
-            box-sizing: border-box;
-        }
-
-        .leaderboard-list,
         .streaks-list,
         .streak-list {
             max-width: 1100px;
@@ -1155,34 +1140,19 @@
             box-sizing: border-box;
         }
 
-        .leaderboard-list::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            left: 50%;
-            width: 1px;
-            background: rgba(255,255,255,0.08);
-        }
-
         .leaderboard-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 24px;
-            padding: 0 40px;
             width: 100%;
             max-width: 1100px;
             margin: 14px auto 0;
-            flex: 1;
-            min-height: 0;
-            box-sizing: border-box;
         }
 
         .leaderboard-column {
             display: flex;
             flex-direction: column;
             gap: 10px;
-            min-height: 0;
         }
 
         .student-card {
@@ -1499,7 +1469,6 @@
         }
 
         .student-grid,
-        .leaderboard-grid,
         .top-list,
         .streak-list,
         .tv-this-term-grid,
