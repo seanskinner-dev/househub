@@ -136,13 +136,13 @@
             color: #000;
         }
 
-        .points-index-page .student-link {
+        .student-link {
             color: #93c5fd;
             font-weight: 700;
             text-decoration: none;
         }
 
-        .points-index-page .student-link:hover {
+        .student-link:hover {
             text-decoration: underline;
         }
     </style>
@@ -212,7 +212,7 @@
                          data-name="{{ strtolower($student->first_name . ' ' . $student->last_name) }}">
                         <div>
                             <div class="student-name">
-                                <a href="{{ url('/students/' . $student->id) }}" class="student-link">
+                                <a href="/students/{{ $student->id }}" class="student-link">
                                     {{ $student->first_name }} {{ $student->last_name }}
                                 </a>
                             </div>
