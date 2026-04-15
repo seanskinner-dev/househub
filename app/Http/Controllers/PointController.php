@@ -442,6 +442,13 @@ class PointController extends Controller
 
         $now = now();
         $yearStart = Carbon::create((int) $now->year, 1, 1)->startOfDay();
+        $termStartMonth = (int) (floor((((int) $now->month) - 1) / 3) * 3) + 1;
+        $termStart = Carbon::create((int) $now->year, $termStartMonth, 1)->startOfDay();
+        $termEnd = (clone $termStart)->addMonths(3)->subSecond();
+        $houses = DB::table('houses')
+            ->select('id', 'name', 'colour_hex')
+            ->orderBy('name')
+            ->get();
 
         $thisYearRows = DB::table('houses')
             ->leftJoin('point_transactions', function ($join) use ($yearStart) {
@@ -471,6 +478,20 @@ class PointController extends Controller
         $slytherinPoints = (int) (($houseTotalsLookup->get('Slytherin')['total'] ?? 0));
         $ravenclawPoints = (int) (($houseTotalsLookup->get('Ravenclaw')['total'] ?? 0));
         $hufflepuffPoints = (int) (($houseTotalsLookup->get('Hufflepuff')['total'] ?? 0));
+
+        $houseTotalsYear = DB::table('point_transactions')
+            ->select('house_id', DB::raw('SUM(amount) as total'))
+            ->whereYear('created_at', (int) $now->year)
+            ->groupBy('house_id')
+            ->get()
+            ->keyBy('house_id');
+
+        $houseTotalsTerm = DB::table('point_transactions')
+            ->select('house_id', DB::raw('SUM(amount) as total'))
+            ->whereBetween('created_at', [$termStart, $termEnd])
+            ->groupBy('house_id')
+            ->get()
+            ->keyBy('house_id');
 
         $weather = Cache::remember('tv_weather', 600, function () {
             $fallback = [
@@ -546,7 +567,10 @@ class PointController extends Controller
             'topStudents' => $topStudents,
             'topTeachers' => $topTeachers,
             'weather' => $weather,
+            'houses' => $houses,
             'housePointsByTerm' => $housePointsByTerm,
+            'houseTotalsYear' => $houseTotalsYear,
+            'houseTotalsTerm' => $houseTotalsTerm,
             'topGryffindor' => $topGryffindor,
             'topSlytherin' => $topSlytherin,
             'topRavenclaw' => $topRavenclaw,

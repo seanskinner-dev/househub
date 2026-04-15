@@ -27,7 +27,7 @@
             width: 100%;
             max-width: 100%;
             overflow: visible;
-            padding: 0 20px;
+            padding: 0 10px;
             box-sizing: border-box;
             color: #fff;
             transition: background 1s ease;
@@ -191,7 +191,7 @@
         }
 
         .house-card .points {
-            font-size: clamp(64px, 14vw, 140px);
+            font-size: clamp(60px, 10vw, 120px);
             font-weight: 900;
             margin-top: 12px;
             line-height: 1;
@@ -840,14 +840,14 @@
 
         .screen-inner {
             width: 100%;
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             height: 100%;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 40px 40px;
+            padding: 20px;
             background: transparent;
             color: #ffffff;
         }
@@ -881,22 +881,20 @@
 
         .card-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 24px;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
             width: 100%;
-            max-width: 1600px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
         .student-grid {
-            grid-template-columns: repeat(3, 1fr);
-        }
-
-        @media (max-width: 1400px) {
-            .card-grid,
-            .student-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
         }
 
         .streak-list {
@@ -1295,33 +1293,8 @@
                 };
             }
         }
-        $housePointsByTermCollection = collect($housePointsByTerm ?? []);
-        $currentMonth = (int) now()->month;
-        $currentTermIndex = (int) floor(($currentMonth - 1) / 3);
-        if ($currentTermIndex < 0) {
-            $currentTermIndex = 0;
-        }
-        if ($currentTermIndex > 3) {
-            $currentTermIndex = 3;
-        }
-
-        $houseTotalsYear = collect([
-            (object) ['name' => 'Gryffindor', 'points' => (int) ($gryffindorPoints ?? 0)],
-            (object) ['name' => 'Slytherin', 'points' => (int) ($slytherinPoints ?? 0)],
-            (object) ['name' => 'Ravenclaw', 'points' => (int) ($ravenclawPoints ?? 0)],
-            (object) ['name' => 'Hufflepuff', 'points' => (int) ($hufflepuffPoints ?? 0)],
-        ]);
-
-        $houseTotalsTerm = $houseTotalsYear->map(function ($house) use ($housePointsByTermCollection, $currentTermIndex) {
-            $termRow = $housePointsByTermCollection->first(function ($row) use ($house) {
-                return ($row['house'] ?? null) === $house->name;
-            });
-            $termPoints = (int) (($termRow['data'][$currentTermIndex] ?? 0));
-            return (object) ['name' => $house->name, 'points' => $termPoints];
-        });
-
-        $totalPointsYear = (int) $houseTotalsYear->sum('points');
-        $totalPointsTerm = (int) $houseTotalsTerm->sum('points');
+        $totalPointsYear = (int) collect($houseTotalsYear ?? [])->sum('total');
+        $totalPointsTerm = (int) collect($houseTotalsTerm ?? [])->sum('total');
     @endphp
 
     <div id="emergencyScreen" style="display:none;">
@@ -1725,10 +1698,10 @@
         <div class="screen-inner">
             <h1 class="screen-title">HOUSE TOTALS (YEAR)</h1>
             <div class="card-grid">
-                @foreach($houseTotalsYear as $house)
+                @foreach($houses as $house)
                     <div class="house-card {{ strtolower($house->name) }}">
                         <div class="house-name">{{ $house->name }}</div>
-                        <div class="points">{{ $house->points }}</div>
+                        <div class="points">{{ (int) (optional($houseTotalsYear->get($house->id))->total ?? 0) }}</div>
                     </div>
                 @endforeach
             </div>
@@ -1739,10 +1712,10 @@
         <div class="screen-inner">
             <h1 class="screen-title">HOUSE TOTALS (TERM)</h1>
             <div class="card-grid">
-                @foreach($houseTotalsTerm as $house)
+                @foreach($houses as $house)
                     <div class="house-card {{ strtolower($house->name) }}">
                         <div class="house-name">{{ $house->name }}</div>
-                        <div class="points">{{ $house->points }}</div>
+                        <div class="points">{{ (int) (optional($houseTotalsTerm->get($house->id))->total ?? 0) }}</div>
                     </div>
                 @endforeach
             </div>
