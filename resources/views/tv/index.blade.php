@@ -386,14 +386,14 @@
             flex-direction: column;
             justify-content: flex-start;
             align-items: center;
-            padding-top: 40px;
+            padding-top: 10px;
         }
 
         .activity-title {
             position: relative;
-            font-size: clamp(40px, 6vw, 80px);
+            font-size: clamp(32px, 5vw, 60px);
             font-weight: 800;
-            margin-bottom: 40px;
+            margin-bottom: 12px;
             overflow: hidden;
         }
 
