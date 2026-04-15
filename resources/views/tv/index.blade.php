@@ -363,7 +363,42 @@
         .points-bars {
             width: min(1100px, 100%);
             min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
         }
+
+        .race-bar {
+            position: relative;
+            height: 80px;
+            border-radius: 16px;
+            overflow: hidden;
+            background: rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            padding-left: 20px;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+        }
+
+        .race-bar span {
+            position: absolute;
+            left: 20px;
+            z-index: 2;
+        }
+
+        .bar-fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            transition: width 1s ease;
+        }
+
+        .race-bar.gryffindor .bar-fill { background: #740001; }
+        .race-bar.slytherin .bar-fill { background: #1a472a; }
+        .race-bar.ravenclaw .bar-fill { background: #3b82f6; }
+        .race-bar.hufflepuff .bar-fill { background: #ffcc00; }
 
         @keyframes firePulse {
             0%   { transform: scale(1); }
@@ -2012,7 +2047,29 @@
                 🏆 POINTS RACE
             </div>
 
-            <div id="points-race-bars" class="points-bars"></div>
+            <div id="points-race-bars" class="points-bars">
+
+                <div class="race-bar gryffindor">
+                    <span>GRYFFINDOR</span>
+                    <div class="bar-fill" style="width: 80%"></div>
+                </div>
+
+                <div class="race-bar slytherin">
+                    <span>SLYTHERIN</span>
+                    <div class="bar-fill" style="width: 65%"></div>
+                </div>
+
+                <div class="race-bar ravenclaw">
+                    <span>RAVENCLAW</span>
+                    <div class="bar-fill" style="width: 45%"></div>
+                </div>
+
+                <div class="race-bar hufflepuff">
+                    <span>HUFFLEPUFF</span>
+                    <div class="bar-fill" style="width: 95%"></div>
+                </div>
+
+            </div>
 
         </div>
 
