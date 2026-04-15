@@ -2067,6 +2067,17 @@ document.addEventListener("DOMContentLoaded", function () {
                     emergencyScreen.style.display = 'none';
                 }
 
+                if (!message) {
+                    if (broadcastBanner) {
+                        broadcastBanner.innerText = '';
+                        broadcastBanner.style.display = 'none';
+                        broadcastBanner.classList.remove('show');
+                    }
+                    activeMessage = null;
+                    messageStartTime = null;
+                    return;
+                }
+
                 if (broadcastBanner) {
                     if (message && message !== activeMessage) {
                         activeMessage = message;

@@ -26,6 +26,8 @@ Route::get('/', function () {
 // =============================
 Route::get('/broadcast-messages/latest', [BroadcastMessageController::class, 'latest'])
     ->name('broadcast-messages.latest');
+Route::get('/broadcast', [BroadcastMessageController::class, 'latest'])
+    ->name('broadcast.latest');
 
 Route::get('/test123', function () {
     return 'TEST123';
@@ -54,6 +56,7 @@ Route::middleware(['auth'])->group(function () {
     // OFFICE MESSAGE MODE
     // =============================
     Route::post('/broadcast-messages', [BroadcastMessageController::class, 'store'])->name('broadcast-messages.store');
+    Route::post('/broadcast/clear', [BroadcastMessageController::class, 'clear'])->name('broadcast.clear');
     Route::post('/omm/clear', [BroadcastMessageController::class, 'clear'])->name('omm.clear');
     Route::post('/emergency-mode', [BroadcastMessageController::class, 'storeEmergency'])->name('emergency.store');
     Route::post('/emergency-mode/clear', [BroadcastMessageController::class, 'clearEmergency'])->name('emergency.clear');

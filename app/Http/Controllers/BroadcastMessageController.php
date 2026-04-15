@@ -52,9 +52,13 @@ class BroadcastMessageController extends Controller
      */
     public function clear(): JsonResponse
     {
-        BroadcastMessage::query()->delete();
+        BroadcastMessage::query()
+            ->where('message', 'not like', 'EMERGENCY:%')
+            ->delete();
 
-        return response()->json(['success' => true]);
+        return response()->json([
+            'message' => null,
+        ]);
     }
 
     /**
