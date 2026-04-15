@@ -262,6 +262,7 @@
             display: flex;
             flex-direction: column;
             gap: 14px;
+            opacity: 0;
         }
 
         .race-bar {
@@ -288,7 +289,7 @@
             left: 0;
             top: 0;
             height: 100%;
-            width: 0;
+            width: 0 !important;
             transition: width 1.5s cubic-bezier(0.77, 0, 0.18, 1);
         }
 
@@ -1666,13 +1667,12 @@ document.addEventListener("DOMContentLoaded", function () {
             const raceScreen = document.getElementById('screen-points-race');
             if (raceScreen) {
                 raceScreen.dataset.animated = 'false';
+                const leaveContainer = raceScreen.querySelector('.points-bars');
+                if (leaveContainer) {
+                    leaveContainer.style.opacity = '0';
+                }
                 raceScreen.querySelectorAll('.bar-fill').forEach(function (bar) {
-                    bar.style.transition = 'none';
-                    bar.style.width = '0%';
-                });
-                void raceScreen.offsetWidth;
-                raceScreen.querySelectorAll('.bar-fill').forEach(function (bar) {
-                    bar.style.removeProperty('transition');
+                    bar.style.removeProperty('width');
                 });
             }
         }
@@ -1683,15 +1683,26 @@ document.addEventListener("DOMContentLoaded", function () {
         if (nextId === 'screen-points-race') {
             const screen = document.getElementById('screen-points-race');
             if (screen && screen.dataset.animated === 'false') {
+                const container = screen.querySelector('.points-bars');
                 const bars = screen.querySelectorAll('.bar-fill');
+                if (container) {
+                    container.style.opacity = '0';
+                }
                 bars.forEach(function (bar) {
-                    const target = bar.dataset.width;
-                    bar.style.width = '0%';
-                    requestAnimationFrame(function () {
-                        setTimeout(function () {
-                            bar.style.width = target + '%';
-                        }, 100);
-                    });
+                    bar.style.removeProperty('width');
+                });
+                requestAnimationFrame(function () {
+                    setTimeout(function () {
+                        bars.forEach(function (bar) {
+                            var w = bar.dataset.width;
+                            if (w !== undefined && w !== '') {
+                                bar.style.setProperty('width', String(w) + '%', 'important');
+                            }
+                        });
+                        if (container) {
+                            container.style.opacity = '1';
+                        }
+                    }, 100);
                 });
                 screen.dataset.animated = 'true';
             }
