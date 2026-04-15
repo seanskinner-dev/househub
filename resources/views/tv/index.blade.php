@@ -289,7 +289,7 @@
             top: 0;
             height: 100%;
             width: 0;
-            transition: width 1.2s cubic-bezier(0.77, 0, 0.18, 1);
+            transition: width 1.5s cubic-bezier(0.77, 0, 0.18, 1);
         }
 
         .race-bar.gryffindor .bar-fill { background: #740001; }
@@ -1650,20 +1650,36 @@ document.addEventListener("DOMContentLoaded", function () {
     const broadcastUrl = @json(route('broadcast-messages.latest'));
     const broadcastBanner = document.getElementById('broadcastBanner');
 
+    let previousScreenId = null;
+
     function animatePointsRace() {
         const bars = document.querySelectorAll('#points-race-bars .bar-fill');
+        const track = document.getElementById('points-race-bars');
 
         bars.forEach(function (bar) {
+            bar.style.transition = 'none';
             bar.style.width = '0%';
+        });
+
+        if (track) {
+            void track.offsetWidth;
+        }
+
+        bars.forEach(function (bar) {
+            bar.style.removeProperty('transition');
         });
 
         requestAnimationFrame(function () {
             bars.forEach(function (bar, index) {
-                const width = bar.dataset.width;
-
-                setTimeout(function () {
-                    bar.style.width = width + '%';
-                }, index * 200);
+                const target = bar.dataset.width;
+                if (target === undefined || target === '') {
+                    return;
+                }
+                requestAnimationFrame(function () {
+                    setTimeout(function () {
+                        bar.style.width = target + '%';
+                    }, 100 + index * 120);
+                });
             });
         });
     }
@@ -1676,13 +1692,17 @@ document.addEventListener("DOMContentLoaded", function () {
         const next = screens[index];
         if (!next) return;
 
+        const nextId = next.id;
+
         let current = document.querySelector('.tv-screen.active');
         if (current) current.classList.remove('active');
         next.classList.add('active');
 
-        if (screens[index].id === 'screen-points-race') {
+        if (nextId === 'screen-points-race' && previousScreenId !== 'screen-points-race') {
             animatePointsRace();
         }
+
+        previousScreenId = nextId;
     }
 
     function nextScreen() {
