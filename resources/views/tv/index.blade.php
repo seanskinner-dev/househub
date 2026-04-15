@@ -1631,6 +1631,8 @@
 document.addEventListener("DOMContentLoaded", function () {
 
     let activeMessage = null;
+    let messageStartTime = null;
+    let displayDuration = 15000;
     let emergencyExpiryTimeout = null;
     let emergencyActive = false;
 
@@ -2016,10 +2018,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 };
 
                 if (message && message.startsWith('EMERGENCY:')) {
-                    if (window.broadcastTimeout) {
-                        clearTimeout(window.broadcastTimeout);
-                        window.broadcastTimeout = null;
-                    }
                     if (emergencyExpiryTimeout) {
                         clearTimeout(emergencyExpiryTimeout);
                         emergencyExpiryTimeout = null;
@@ -2040,6 +2038,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         broadcastBanner.style.display = 'none';
                     }
                     activeMessage = null;
+                    messageStartTime = null;
 
                     if (expiresAt && emergencyScreen) {
                         const expiryTime = new Date(expiresAt).getTime();
@@ -2070,20 +2069,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 if (broadcastBanner) {
                     if (message && message !== activeMessage) {
-                            activeMessage = message;
-                            broadcastBanner.innerText = message;
-                            broadcastBanner.style.display = 'block';
-                            if (window.broadcastTimeout) {
-                                clearTimeout(window.broadcastTimeout);
-                                window.broadcastTimeout = null;
-                            }
-                            window.broadcastTimeout = setTimeout(function () {
-                                if (broadcastBanner) {
-                                    broadcastBanner.style.display = 'none';
-                                }
-                                activeMessage = null;
-                                window.broadcastTimeout = null;
-                            }, 15000);
+                        activeMessage = message;
+                        messageStartTime = Date.now();
+                        broadcastBanner.innerText = message;
+                        broadcastBanner.style.display = 'block';
+                        broadcastBanner.classList.add('show');
+                    }
+
+                    if (activeMessage && messageStartTime !== null) {
+                        const elapsed = Date.now() - messageStartTime;
+                        if (elapsed > displayDuration) {
+                            broadcastBanner.style.display = 'none';
+                            broadcastBanner.classList.remove('show');
+                            activeMessage = null;
+                            messageStartTime = null;
+                        }
                     }
                 }
             })

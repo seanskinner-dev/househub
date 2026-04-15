@@ -198,9 +198,13 @@
                     banner.innerText = '';
                 }
                 window.activeMessage = null;
+                window.messageStartTime = null;
                 if (window.broadcastTimeout) {
                     clearTimeout(window.broadcastTimeout);
                     window.broadcastTimeout = null;
+                }
+                if (banner) {
+                    banner.classList.remove('show');
                 }
                 setStatus(el, 'Clearing…', 'muted');
                 try {
