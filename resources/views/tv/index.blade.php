@@ -381,11 +381,12 @@
         }
 
         .activity-container {
-            height: 100vh;
+            height: 100%;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-start;
             align-items: center;
+            padding-top: 40px;
         }
 
         .activity-title {
@@ -977,8 +978,8 @@
             max-width: 1240px;
             margin-left: auto;
             margin-right: auto;
-            flex: 1;
-            align-content: center;
+            flex: unset;
+            align-content: start;
             min-height: 0;
         }
 
@@ -986,6 +987,11 @@
         .streak-list {
             grid-auto-rows: auto;
             align-content: start;
+        }
+
+        .activity-list {
+            grid-auto-rows: min-content;
+            overflow: hidden;
         }
 
         .leaderboard-list {
