@@ -201,6 +201,11 @@
             color: #111;
         }
 
+        .house-card.gryffindor { background: #740001 !important; }
+        .house-card.slytherin { background: #1a472a !important; }
+        .house-card.ravenclaw { background: #3b82f6 !important; }
+        .house-card.hufflepuff { background: #ffcc00 !important; }
+
         .house-card.winner {
             transform-origin: center center;
             z-index: 2;
