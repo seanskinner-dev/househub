@@ -373,30 +373,12 @@
         }
 
         .activity-title {
-            position: relative;
-            font-size: clamp(32px, 5vw, 60px);
+            font-size: clamp(40px, 6vw, 80px);
             font-weight: 800;
-            margin-bottom: 12px;
-            overflow: hidden;
-        }
-
-        .activity-title::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(
-                90deg,
-                transparent,
-                rgba(255, 255, 255, 0.1),
-                transparent
-            );
-            animation: shimmer 3s infinite;
-            pointer-events: none;
-        }
-
-        @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
+            margin-bottom: 20px;
+            text-align: center;
+            letter-spacing: 0.04em;
+            text-shadow: 0 8px 28px rgba(0, 0, 0, 0.6);
         }
 
         @keyframes activityFadeIn {
@@ -888,7 +870,8 @@
 
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 8px 12px;
+            grid-auto-rows: minmax(70px, auto);
+            gap: 10px 14px;
 
             overflow: hidden;
             max-height: 100%;
@@ -1043,16 +1026,16 @@
         }
 
         .student-card.is-compact {
-            padding: 12px 14px;
+            padding: 10px 14px;
             border-radius: 16px;
         }
 
         .student-card.is-compact .student-name {
-            font-size: 1.25rem;
+            font-size: 1.3rem;
         }
 
         .student-card.is-compact .student-emoji {
-            font-size: 1.2rem;
+            font-size: 1.6rem;
         }
 
         .student-card.is-compact .student-rank {
@@ -1418,27 +1401,28 @@
         <div class="activity-container">
 
             <div class="activity-scale">
+            @php
+                $activityLimit = 12;
+                $activityData = collect([
+                    ['student_name' => 'JOSH', 'student_last_name' => 'ALLEN', 'house_name' => 'Gryffindor', 'points' => 5, 'action' => 'Award', 'teacher' => 'Ms Blake'],
+                    ['student_name' => 'EMMA', 'student_last_name' => 'BROOKS', 'house_name' => 'Slytherin', 'points' => 4, 'action' => 'Commendation', 'teacher' => 'Mr Lee'],
+                    ['student_name' => 'LIAM', 'student_last_name' => 'CLARK', 'house_name' => 'Ravenclaw', 'points' => 3, 'action' => 'Award', 'teacher' => 'Ms Stone'],
+                    ['student_name' => 'AVA', 'student_last_name' => 'DEAN', 'house_name' => 'Hufflepuff', 'points' => 2, 'action' => 'Point', 'teacher' => 'Mr Cole'],
+                    ['student_name' => 'NOAH', 'student_last_name' => 'ELLIS', 'house_name' => 'Gryffindor', 'points' => 4, 'action' => 'Award', 'teacher' => 'Ms Blake'],
+                    ['student_name' => 'MIA', 'student_last_name' => 'FORD', 'house_name' => 'Ravenclaw', 'points' => 1, 'action' => 'Point', 'teacher' => 'Mr Wren'],
+                    ['student_name' => 'ETHAN', 'student_last_name' => 'GRANT', 'house_name' => 'Slytherin', 'points' => 5, 'action' => 'Commendation', 'teacher' => 'Mr Lee'],
+                    ['student_name' => 'ISLA', 'student_last_name' => 'HAYES', 'house_name' => 'Hufflepuff', 'points' => 2, 'action' => 'Point', 'teacher' => 'Ms Frost'],
+                    ['student_name' => 'LUCAS', 'student_last_name' => 'IRWIN', 'house_name' => 'Gryffindor', 'points' => 3, 'action' => 'Award', 'teacher' => 'Mr Cole'],
+                    ['student_name' => 'ARIA', 'student_last_name' => 'JONES', 'house_name' => 'Ravenclaw', 'points' => 1, 'action' => 'Point', 'teacher' => 'Ms Stone'],
+                ])->take($activityLimit);
+            @endphp
 
             <div class="activity-title">
-                ⚡ LIVE ACTIVITY
+                ⚡ LATEST ACTIVITY (TOP {{ $activityData->count() }})
             </div>
 
             <div class="activity-list student-grid">
-                @php
-                    $activityData = collect([
-                        ['student_name' => 'JOSH', 'student_last_name' => 'ALLEN', 'house_name' => 'Gryffindor', 'points' => 5, 'action' => 'Award', 'teacher' => 'Ms Blake'],
-                        ['student_name' => 'EMMA', 'student_last_name' => 'BROOKS', 'house_name' => 'Slytherin', 'points' => 4, 'action' => 'Commendation', 'teacher' => 'Mr Lee'],
-                        ['student_name' => 'LIAM', 'student_last_name' => 'CLARK', 'house_name' => 'Ravenclaw', 'points' => 3, 'action' => 'Award', 'teacher' => 'Ms Stone'],
-                        ['student_name' => 'AVA', 'student_last_name' => 'DEAN', 'house_name' => 'Hufflepuff', 'points' => 2, 'action' => 'Point', 'teacher' => 'Mr Cole'],
-                        ['student_name' => 'NOAH', 'student_last_name' => 'ELLIS', 'house_name' => 'Gryffindor', 'points' => 4, 'action' => 'Award', 'teacher' => 'Ms Blake'],
-                        ['student_name' => 'MIA', 'student_last_name' => 'FORD', 'house_name' => 'Ravenclaw', 'points' => 1, 'action' => 'Point', 'teacher' => 'Mr Wren'],
-                        ['student_name' => 'ETHAN', 'student_last_name' => 'GRANT', 'house_name' => 'Slytherin', 'points' => 5, 'action' => 'Commendation', 'teacher' => 'Mr Lee'],
-                        ['student_name' => 'ISLA', 'student_last_name' => 'HAYES', 'house_name' => 'Hufflepuff', 'points' => 2, 'action' => 'Point', 'teacher' => 'Ms Frost'],
-                        ['student_name' => 'LUCAS', 'student_last_name' => 'IRWIN', 'house_name' => 'Gryffindor', 'points' => 3, 'action' => 'Award', 'teacher' => 'Mr Cole'],
-                        ['student_name' => 'ARIA', 'student_last_name' => 'JONES', 'house_name' => 'Ravenclaw', 'points' => 1, 'action' => 'Point', 'teacher' => 'Ms Stone'],
-                    ])->take(8);
-                @endphp
-                @foreach($activityData->take(8) as $activity)
+                @foreach($activityData as $activity)
                     @php
                         $meta = houseMeta($activity['house_name']);
                     @endphp
