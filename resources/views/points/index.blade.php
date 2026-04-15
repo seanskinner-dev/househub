@@ -122,7 +122,10 @@
             padding: 10px;
             border-radius: 12px;
             font-weight: 700;
-            background: rgba(255, 255, 255, 0.05);
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            box-shadow:
+                0 4px 20px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
         }
 
         .points-index-page .house-pill.gryffindor {
@@ -139,7 +142,11 @@
 
         .points-index-page .house-pill.hufflepuff {
             border: 2px solid #ffcc00;
-            color: #000;
+            color: #facc15;
+
+            box-shadow:
+                0 0 12px rgba(255, 204, 0, 0.4),
+                0 4px 20px rgba(0, 0, 0, 0.5);
         }
 
         .student-link {
