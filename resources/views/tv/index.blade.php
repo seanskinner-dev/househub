@@ -106,64 +106,6 @@
             pointer-events: auto;
         }
 
-        .tv-layout {
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-            min-height: 0;
-            height: 100%;
-            width: 100%;
-        }
-
-        .hero-house {
-            flex: 0 1 65%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            min-height: 0;
-        }
-
-        .hero-house > .house-card {
-            width: 100%;
-            height: 100%;
-            flex: 1;
-            min-height: 0;
-        }
-
-        .hero-house .house-card.winner {
-            filter: brightness(1.15);
-            animation:
-                breatheWinner 6s ease-in-out infinite,
-                winnerGlow 3s ease-in-out infinite;
-        }
-
-        .other-houses {
-            flex: 0 1 35%;
-            display: flex;
-            flex-direction: row;
-            min-height: 0;
-            width: 100%;
-        }
-
-        .mini-house {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: stretch;
-            min-width: 0;
-            opacity: 0.7;
-        }
-
-        .mini-house > .house-card {
-            flex: 1;
-            width: 100%;
-            min-height: 0;
-            animation: none;
-        }
-
         .house-card {
             position: relative;
             overflow: hidden;
@@ -253,52 +195,6 @@
             margin-top: 12px;
             line-height: 1;
             text-shadow: 0 8px 30px rgba(0,0,0,0.8);
-        }
-
-        .hero-house .house-card .rank {
-            font-size: clamp(28px, 4vw, 42px);
-            margin-bottom: 12px;
-        }
-
-        .hero-house .house-card .house-name {
-            font-size: clamp(40px, 7vw, 80px);
-        }
-
-        .hero-house .house-card .points {
-            font-size: clamp(100px, 24vw, 260px);
-            margin-top: 16px;
-        }
-
-        .hero-house .house-name {
-            font-weight: 800;
-            letter-spacing: 0.1em;
-        }
-
-        .hero-house .points {
-            font-weight: 900;
-            letter-spacing: -0.02em;
-        }
-
-        .mini-house .house-card .rank {
-            font-size: clamp(16px, 2vw, 24px);
-            margin-bottom: 6px;
-        }
-
-        .mini-house .house-card .house-name {
-            font-size: clamp(18px, 3vw, 36px);
-        }
-
-        .mini-house .house-card .points {
-            font-size: clamp(36px, 8vw, 88px);
-            margin-top: 8px;
-        }
-
-        .mini-house .house-name {
-            font-weight: 600;
-        }
-
-        .mini-house .points {
-            font-weight: 700;
         }
 
         @keyframes breathe {
@@ -998,6 +894,9 @@
             align-items: center;
             min-height: 0;
             width: 100%;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
             padding: 20px 24px 28px;
             box-sizing: border-box;
         }
@@ -1013,20 +912,41 @@
 
         .points-layout {
             display: grid;
-            grid-template-rows: auto 1fr auto;
-            gap: 20px;
+            grid-template-rows: auto auto auto;
+            gap: 16px;
             height: 100%;
+            max-height: 100vh;
+            min-height: 0;
         }
 
         .tv-this-term-screen > .points-layout {
             flex: 1;
             min-height: 0;
             width: 100%;
-            max-width: 1280px;
+            max-width: 1200px;
         }
 
         .points-layout > .hero-house {
             grid-row: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-height: 0;
+        }
+
+        .points-layout > .hero-house > .house-card {
+            width: 100%;
+            max-width: 100%;
+            min-height: 0;
+        }
+
+        .points-layout > .hero-house .house-card.winner {
+            filter: brightness(1.15);
+            animation:
+                breatheWinner 6s ease-in-out infinite,
+                winnerGlow 3s ease-in-out infinite;
         }
 
         .points-layout > .other-houses {
@@ -1047,10 +967,28 @@
 
         .points-layout > .last-house .house-card {
             width: 50%;
+            max-width: 500px;
         }
 
         .points-layout > .other-houses .house-card {
             width: 100%;
+        }
+
+        #screen-house-points-this-term .house-card,
+        #screen-house-points-this-year .house-card {
+            max-height: 260px;
+            overflow: hidden;
+        }
+
+        #screen-house-points-this-year .house-card {
+            transform: scale(1);
+            border: 2px solid rgba(255, 255, 255, 0.08);
+        }
+
+        #screen-house-points-this-term .house-card {
+            transform: scale(0.96);
+            opacity: 0.9;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .this-term-card {
@@ -1112,6 +1050,8 @@
 
         .screen-inner {
             width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
             height: 100%;
             display: flex;
             flex-direction: column;
@@ -1128,6 +1068,11 @@
             text-align: center;
             letter-spacing: 0.04em;
             text-shadow: 0 8px 28px rgba(0, 0, 0, 0.6);
+        }
+
+        .tv-this-term-screen > .screen-title {
+            flex-shrink: 0;
+            margin-bottom: 16px;
         }
 
         .student-grid,
@@ -1335,97 +1280,6 @@
             color: #111;
         }
 
-        .banner-container {
-            display: flex;
-            flex: 1;
-            min-height: 0;
-            gap: 12px;
-            padding: 12px;
-        }
-
-        .banner {
-            --house-color: #475569;
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .banner.gryffindor { --house-color: #740001; }
-        .banner.slytherin { --house-color: #1a472a; }
-        .banner.ravenclaw { --house-color: #3b82f6; }
-        .banner.hufflepuff { --house-color: #ffcc00; }
-
-        .banner-inner {
-            width: 85%;
-            height: 90%;
-            border-radius: 24px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            gap: 20px;
-            color: #fff;
-            background: linear-gradient(
-                180deg,
-                var(--house-color),
-                rgba(0,0,0,0.95)
-            );
-            box-shadow:
-                0 20px 60px rgba(0,0,0,0.8),
-                0 0 60px var(--house-color);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .banner-inner::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(to bottom, rgba(255,255,255,0.08), rgba(0,0,0,0.35));
-        }
-
-        .banner-inner::after {
-            content: "";
-            position: absolute;
-            width: 64%;
-            height: 64%;
-            border-radius: 999px;
-            background: radial-gradient(circle, var(--house-color), transparent 68%);
-            opacity: 0.22;
-            filter: blur(8px);
-            pointer-events: none;
-        }
-
-        .banner-inner > * {
-            position: relative;
-            z-index: 1;
-        }
-
-        .banner.hufflepuff .banner-inner {
-            color: #111;
-        }
-
-        .banner-emoji {
-            font-size: clamp(7rem, 12vw, 11rem);
-            line-height: 1;
-            filter: drop-shadow(0 0 24px rgba(255,255,255,0.2));
-            animation: bannerPulse 4.6s ease-in-out infinite;
-        }
-
-        .banner-points {
-            font-size: clamp(4rem, 7vw, 6rem);
-            font-weight: 900;
-        }
-
-        .banner-name {
-            font-size: clamp(1.6rem, 2.5vw, 2.2rem);
-            font-weight: 800;
-            letter-spacing: 0.08em;
-            text-align: center;
-            opacity: 0.9;
-        }
-
         @keyframes studentPulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.02); }
@@ -1434,11 +1288,6 @@
         @keyframes studentPulseTop1 {
             0%, 100% { transform: scale(1.03); }
             50% { transform: scale(1.06); }
-        }
-
-        @keyframes bannerPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.04); }
         }
 
         @keyframes houseLeaderPulse {
@@ -1464,7 +1313,6 @@
         }
 
         .screen-inner,
-        .tv-layout,
         .top-container,
         .streak-container,
         .activity-container,
@@ -1473,14 +1321,12 @@
             background: transparent;
         }
 
-        .screen-title,
         .top-title,
         .streak-title,
         .activity-title,
         .tv-this-term-title,
         .house-name,
-        .student-name,
-        .banner-name {
+        .student-name {
             color: #fff;
             font-weight: 700;
         }
@@ -1531,86 +1377,6 @@
     </div>
 
     <div id="broadcastBanner" class="tv-broadcast-banner" role="status" aria-live="polite"></div>
-
-    <section class="tv-screen active" id="screen-house-banners">
-        <div class="screen-title">🏆 HOUSE STANDINGS</div>
-        <div class="banner-container">
-            <div class="banner gryffindor">
-                <div class="banner-inner">
-                    <div class="banner-emoji">🦁</div>
-                    <div class="banner-name">GRYFFINDOR</div>
-                    <div class="banner-points">{{ $gryffindorPoints }}</div>
-                </div>
-            </div>
-            <div class="banner slytherin">
-                <div class="banner-inner">
-                    <div class="banner-emoji">🐍</div>
-                    <div class="banner-name">SLYTHERIN</div>
-                    <div class="banner-points">{{ $slytherinPoints }}</div>
-                </div>
-            </div>
-            <div class="banner ravenclaw">
-                <div class="banner-inner">
-                    <div class="banner-emoji">🦅</div>
-                    <div class="banner-name">RAVENCLAW</div>
-                    <div class="banner-points">{{ $ravenclawPoints }}</div>
-                </div>
-            </div>
-            <div class="banner hufflepuff">
-                <div class="banner-inner">
-                    <div class="banner-emoji">🦡</div>
-                    <div class="banner-name">HUFFLEPUFF</div>
-                    <div class="banner-points">{{ $hufflepuffPoints }}</div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <div class="tv-screen" id="screen-1">
-        <div class="tv-layout">
-
-            <div class="screen-title">🏫 HOUSE OVERVIEW</div>
-
-            <div class="hero-house">
-                <div class="house-card {{ strtolower(str_replace(' ', '', $series[0]['name'] ?? 'gryffindor')) }} winner">
-
-                    <div class="rank">#1</div>
-
-                    <div class="house-name">
-                        {{ strtoupper($series[0]['name']) }}
-                    </div>
-
-                    <div class="points" data-points="{{ array_sum($series[0]['data'] ?? []) }}">
-                        0
-                    </div>
-
-                </div>
-            </div>
-
-            <div class="other-houses">
-                @foreach($series as $index => $house)
-                    @if($index > 0)
-                        <div class="mini-house">
-                            <div class="house-card {{ strtolower(str_replace(' ', '', $house['name'] ?? 'gryffindor')) }}">
-
-                                <div class="rank">#{{ $index + 1 }}</div>
-
-                                <div class="house-name">
-                                    {{ strtoupper($house['name']) }}
-                                </div>
-
-                                <div class="points" data-points="{{ array_sum($house['data'] ?? []) }}">
-                                    0
-                                </div>
-
-                            </div>
-                        </div>
-                    @endif
-                @endforeach
-            </div>
-
-        </div>
-    </div>
 
     <div class="tv-screen" id="screen-2">
 
@@ -1780,9 +1546,7 @@
 
         <div class="tv-this-term-screen">
 
-            <div class="tv-this-term-title">
-                House Points - This Term
-            </div>
+            <div class="screen-title">📊 POINTS THIS TERM</div>
 
             @php
                 $termHouses = collect($housePointsThisTerm)->take(4)->values();
@@ -1850,9 +1614,7 @@
 
         <div class="tv-this-term-screen">
 
-            <div class="tv-this-term-title">
-                House Points - This Year
-            </div>
+            <div class="screen-title">📅 POINTS THIS YEAR</div>
 
             @php
                 $yearHouses = collect($housePointsThisYear)->take(4)->values();
@@ -2287,8 +2049,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    function readHousePointsFromDom(selector) {
-        var el = document.querySelector(selector);
+    function readPointsFromElement(el) {
         if (!el || !el.dataset || el.dataset.points === undefined) {
             return 0;
         }
@@ -2297,28 +2058,27 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function renderStandings() {
-        var houses = [
-            {
-                name: 'GRYFFINDOR',
-                points: readHousePointsFromDom('#screen-1 .house-card.gryffindor .points'),
-                class: 'gryffindor'
-            },
-            {
-                name: 'SLYTHERIN',
-                points: readHousePointsFromDom('#screen-1 .house-card.slytherin .points'),
-                class: 'slytherin'
-            },
-            {
-                name: 'RAVENCLAW',
-                points: readHousePointsFromDom('#screen-1 .house-card.ravenclaw .points'),
-                class: 'ravenclaw'
-            },
-            {
-                name: 'HUFFLEPUFF',
-                points: readHousePointsFromDom('#screen-1 .house-card.hufflepuff .points'),
-                class: 'hufflepuff'
-            }
-        ];
+        var screen = document.getElementById('screen-house-points-this-year');
+        var houses = [];
+        if (screen) {
+            screen.querySelectorAll('.points-layout .house-card').forEach(function (card) {
+                var nameEl = card.querySelector('.house-name');
+                var ptsEl = card.querySelector('.points');
+                if (!nameEl || !ptsEl) {
+                    return;
+                }
+                var name = (nameEl.textContent || '').trim().toUpperCase();
+                if (!name) {
+                    return;
+                }
+                var slug = name.toLowerCase().replace(/\s+/g, '');
+                houses.push({
+                    name: name,
+                    points: readPointsFromElement(ptsEl),
+                    class: slug
+                });
+            });
+        }
 
         houses.sort(function (a, b) {
             return b.points - a.points;
