@@ -109,13 +109,14 @@
         .tv-layout {
             display: flex;
             flex-direction: column;
-            height: 100vh;
-            width: 100%;
+            flex: 1;
             min-height: 0;
+            height: 100%;
+            width: 100%;
         }
 
         .hero-house {
-            flex: 0 0 65%;
+            flex: 0 1 65%;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -139,7 +140,7 @@
         }
 
         .other-houses {
-            flex: 0 0 35%;
+            flex: 0 1 35%;
             display: flex;
             flex-direction: row;
             min-height: 0;
@@ -1099,7 +1100,6 @@
         }
 
         .student-grid,
-        .leaderboard-list,
         .top-list,
         .streak-list {
             display: grid;
@@ -1137,8 +1137,7 @@
             position: relative;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            grid-auto-flow: column;
-            grid-template-rows: repeat(6, 1fr);
+            grid-template-rows: repeat(5, 1fr);
             gap: 24px;
             max-width: 1100px;
             margin-left: auto;
@@ -1337,7 +1336,8 @@
 
         .banner-container {
             display: flex;
-            height: 100vh;
+            flex: 1;
+            min-height: 0;
             gap: 12px;
             padding: 12px;
         }
@@ -1500,7 +1500,6 @@
 
         .student-grid,
         .leaderboard-grid,
-        .leaderboard-list,
         .top-list,
         .streak-list,
         .tv-this-term-grid,
@@ -1535,6 +1534,7 @@
     <div id="broadcastBanner" class="tv-broadcast-banner" role="status" aria-live="polite"></div>
 
     <section class="tv-screen active" id="screen-house-banners">
+        <div class="screen-title">🏆 HOUSE STANDINGS</div>
         <div class="banner-container">
             <div class="banner gryffindor">
                 <div class="banner-inner">
@@ -1569,6 +1569,8 @@
 
     <div class="tv-screen" id="screen-1">
         <div class="tv-layout">
+
+            <div class="screen-title">🏫 HOUSE OVERVIEW</div>
 
             <div class="hero-house">
                 <div class="house-card {{ strtolower(str_replace(' ', '', $series[0]['name'] ?? 'gryffindor')) }} winner">
