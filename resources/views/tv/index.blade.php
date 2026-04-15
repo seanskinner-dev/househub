@@ -106,12 +106,11 @@
         }
 
         .tv-screen {
-            position: absolute;
-            inset: 0;
+            width: 100%;
+            height: 100%;
+            position: relative;
             display: flex;
             flex-direction: column;
-            height: 100%;
-            width: 100%;
             max-width: 100%;
             overflow: visible;
             box-sizing: border-box;
@@ -1317,9 +1316,12 @@
             gap: 10px 14px;
         }
 
-        .tv-screen,
-        .tv-screen * {
-            background-color: transparent !important;
+        .top-students,
+        .activity-feed,
+        .weather-screen,
+        .streaks-screen {
+            background: transparent;
+            color: #ffffff;
         }
 
         .student-card,
@@ -1331,6 +1333,11 @@
                 rgba(30,30,30,0.95),
                 rgba(10,10,10,0.95)
             ) !important;
+        }
+
+        .card {
+            background: transparent;
+            border: none;
         }
     </style>
 </head>
