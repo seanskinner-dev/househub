@@ -876,6 +876,11 @@
             color: #ffffff;
         }
 
+        .screen-inner * {
+            position: relative;
+            z-index: 2;
+        }
+
         .screen-title {
             font-size: clamp(42px, 4.8vw, 64px);
             font-weight: 900;
@@ -1018,6 +1023,7 @@
             height: 100%;
             background: radial-gradient(circle, var(--house-color), transparent 70%);
             opacity: 0.18;
+            z-index: 0;
         }
 
         .student-card::after {
@@ -1026,11 +1032,12 @@
             inset: 0;
             background: linear-gradient(to bottom, rgba(255,255,255,0.08), rgba(0,0,0,0.25));
             pointer-events: none;
+            z-index: 0;
         }
 
         .student-card > * {
             position: relative;
-            z-index: 1;
+            z-index: 2;
         }
 
         .student-left {
@@ -1333,6 +1340,13 @@
                 rgba(30,30,30,0.95),
                 rgba(10,10,10,0.95)
             ) !important;
+        }
+
+        .activity-card *,
+        .streak-card *,
+        .house-card * {
+            position: relative;
+            z-index: 2;
         }
 
         .card {
