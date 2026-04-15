@@ -1848,40 +1848,18 @@ document.addEventListener("DOMContentLoaded", function () {
         if (current) current.classList.remove('active');
         next.classList.add('active');
 
-        const container =
-            document.querySelector('.tv-container') ||
-            document.body;
+        document.body.style.background = 'red';
 
-        const activeScreen = document.querySelector('.tv-screen.active');
+        const container = document.querySelector('.tv-container');
+        if (container) container.style.background = 'green';
 
-        if (activeScreen) {
-            const isTotalScreen =
-                activeScreen.id === 'screen-total-term' ||
-                activeScreen.id === 'screen-total-year';
+        const screen = document.querySelector('.tv-screen.active');
+        if (screen) screen.style.background = 'blue';
 
-            if (isTotalScreen) {
-                let house = activeScreen.dataset.leadingHouse;
+        const inner = document.querySelector('.tv-screen.active .screen-inner');
+        if (inner) inner.style.background = 'purple';
 
-                if (!house) house = 'gryffindor';
-
-                console.log('FORCING BACKGROUND FOR:', house);
-
-                const colours = {
-                    gryffindor: '#740001',
-                    slytherin: '#1a472a',
-                    ravenclaw: '#1e3a8a',
-                    hufflepuff: '#ffcc00'
-                };
-
-                container.style.background =
-                    'radial-gradient(circle, rgba(0,0,0,0.3), rgba(0,0,0,0.9)), ' +
-                    colours[house.toLowerCase()];
-
-            } else {
-                // reset background for other screens
-                container.style.background = '';
-            }
-        }
+        console.log('Applied test colours');
 
         if (nextId === 'screen-points-race') {
             const screen = document.getElementById('screen-points-race');
