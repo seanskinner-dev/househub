@@ -116,28 +116,6 @@
             margin-bottom: 16px;
         }
 
-        .points-index-page .points-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 16px;
-        }
-
-        .points-index-page .tab {
-            flex: 1;
-            padding: 12px;
-            border-radius: 10px;
-            background: rgba(255,255,255,0.05);
-            border: none;
-            color: #f1f5f9;
-            font-weight: 700;
-            cursor: pointer;
-        }
-
-        .points-index-page .tab.active {
-            background: #1e293b;
-            box-shadow: inset 0 0 0 2px #3b82f6;
-        }
-
         .points-index-page .house-pill {
             flex: 1;
             text-align: center;
@@ -185,12 +163,6 @@
     <div class="container-fluid points-index-page" style="max-width: 1200px;">
 
         <h1 class="h4 mb-3" style="color: #f1f5f9;">Award points</h1>
-
-        <div class="points-tabs">
-            <button class="tab active" data-tab="points">House Points</button>
-            <button class="tab" data-tab="commendations">Commendations</button>
-            <button class="tab" data-tab="awards">Awards</button>
-        </div>
 
         @php
             $pillPoints = [
