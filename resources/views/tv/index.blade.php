@@ -1851,29 +1851,35 @@ document.addEventListener("DOMContentLoaded", function () {
         const container =
             document.querySelector('.tv-container') ||
             document.body;
-        console.log('Container found:', container);
-        if (container) {
-            container.classList.remove(
-                'house-gryffindor',
-                'house-slytherin',
-                'house-ravenclaw',
-                'house-hufflepuff'
-            );
-            // container.classList.add('house-gryffindor');
-            // console.log('FORCED CLASS APPLIED');
 
-            const activeScreen = document.querySelector('.tv-screen.active');
-            if (activeScreen) {
-                const isTotalScreen =
-                    activeScreen.id === 'screen-total-term' ||
-                    activeScreen.id === 'screen-total-year';
+        const activeScreen = document.querySelector('.tv-screen.active');
 
-                if (isTotalScreen) {
-                    let house = activeScreen.dataset.leadingHouse;
-                    console.log('Applying house:', house);
-                    if (!house) house = 'gryffindor';
-                    container.classList.add('house-' + house.toLowerCase());
-                }
+        if (activeScreen) {
+            const isTotalScreen =
+                activeScreen.id === 'screen-total-term' ||
+                activeScreen.id === 'screen-total-year';
+
+            if (isTotalScreen) {
+                let house = activeScreen.dataset.leadingHouse;
+
+                if (!house) house = 'gryffindor';
+
+                console.log('FORCING BACKGROUND FOR:', house);
+
+                const colours = {
+                    gryffindor: '#740001',
+                    slytherin: '#1a472a',
+                    ravenclaw: '#1e3a8a',
+                    hufflepuff: '#ffcc00'
+                };
+
+                container.style.background =
+                    'radial-gradient(circle, rgba(0,0,0,0.3), rgba(0,0,0,0.9)), ' +
+                    colours[house.toLowerCase()];
+
+            } else {
+                // reset background for other screens
+                container.style.background = '';
             }
         }
 
