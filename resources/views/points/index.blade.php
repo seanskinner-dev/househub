@@ -2,26 +2,38 @@
 
 @section('content')
     <style>
+        body {
+            background: #020617;
+        }
+
         .points-index-page .house-btn {
             width: 100%;
             border: none;
             border-radius: 14px;
-            padding: 12px;
-            font-size: 1.2rem;
+            padding: 14px;
+            font-size: 1.3rem;
             font-weight: 700;
-            background: rgba(255, 255, 255, 0.05);
             color: white;
             transition: all 0.2s ease;
         }
 
         .points-index-page .house-btn:hover {
-            transform: scale(1.03);
+            transform: scale(1.05);
+            filter: brightness(1.1);
         }
 
-        .points-index-page .house-btn.gryffindor { border: 2px solid #740001; }
-        .points-index-page .house-btn.slytherin { border: 2px solid #1a472a; }
-        .points-index-page .house-btn.ravenclaw { border: 2px solid #3b82f6; }
-        .points-index-page .house-btn.hufflepuff { border: 2px solid #ffcc00; color: #000; }
+        .points-index-page .house-btn.gryffindor { background: #740001; }
+        .points-index-page .house-btn.slytherin { background: #1a472a; }
+        .points-index-page .house-btn.ravenclaw { background: #3b82f6; }
+        .points-index-page .house-btn.hufflepuff {
+            background: #ffcc00;
+            color: #111;
+        }
+
+        .points-index-page .recent-activity {
+            position: sticky;
+            top: 20px;
+        }
 
         .points-index-page .student-card {
             background: linear-gradient(145deg, #1e293b, #0f172a);
@@ -33,6 +45,10 @@
             transition: all 0.2s ease;
             border-left: 4px solid transparent;
             color: #f1f5f9;
+            box-shadow:
+                0 4px 20px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .points-index-page .student-card[data-house="gryffindor"] { border-left-color: #740001; }
@@ -83,7 +99,9 @@
 
         .points-index-page .student-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.08);
+            box-shadow:
+                0 6px 30px rgba(0, 0, 0, 0.6),
+                0 0 10px rgba(255, 255, 255, 0.08);
         }
     </style>
 
@@ -178,33 +196,35 @@
 
             {{-- RECENT ACTIVITY --}}
             <div class="col-lg-4">
-                <div class="card border-0 shadow-sm" style="background: #1e293b; color: #f1f5f9;">
-                    <div class="card-header border-secondary text-white fw-semibold" style="background: #0f172a; border-color: #334155 !important;">
-                        Recent activity
-                    </div>
-                    <div class="card-body small" style="max-height: 500px; overflow-y: auto;" id="recent-activity">
-                        @forelse ($recent as $r)
-                            @php
-                                $who = trim(($r->first_name ?? '') . ' ' . ($r->last_name ?? ''));
-                                if ($who === '') {
-                                    $who = $r->house_name ?? 'House';
-                                }
-                            @endphp
-                            <div class="mb-3 pb-2 border-bottom border-secondary" style="border-color: #334155 !important;">
-                                <div>
-                                    <strong>{{ ($r->amount > 0 ? '+' : '') . $r->amount }}</strong>
-                                    {{ $who }}
+                <div class="recent-activity">
+                    <div class="card border-0 shadow-sm" style="background: #1e293b; color: #f1f5f9;">
+                        <div class="card-header border-secondary text-white fw-semibold" style="background: #0f172a; border-color: #334155 !important;">
+                            Recent activity
+                        </div>
+                        <div class="card-body small" style="max-height: 500px; overflow-y: auto;" id="recent-activity">
+                            @forelse ($recent as $r)
+                                @php
+                                    $who = trim(($r->first_name ?? '') . ' ' . ($r->last_name ?? ''));
+                                    if ($who === '') {
+                                        $who = $r->house_name ?? 'House';
+                                    }
+                                @endphp
+                                <div class="mb-3 pb-2 border-bottom border-secondary" style="border-color: #334155 !important;">
+                                    <div>
+                                        <strong>{{ ($r->amount > 0 ? '+' : '') . $r->amount }}</strong>
+                                        {{ $who }}
+                                    </div>
+                                    @if (!empty($r->category))
+                                        <div class="text-muted" style="color: #94a3b8 !important;">{{ $r->category }}</div>
+                                    @endif
+                                    @if (!empty($r->teacher))
+                                        <div class="text-muted" style="color: #94a3b8 !important;">{{ $r->teacher }}</div>
+                                    @endif
                                 </div>
-                                @if (!empty($r->category))
-                                    <div class="text-muted" style="color: #94a3b8 !important;">{{ $r->category }}</div>
-                                @endif
-                                @if (!empty($r->teacher))
-                                    <div class="text-muted" style="color: #94a3b8 !important;">{{ $r->teacher }}</div>
-                                @endif
-                            </div>
-                        @empty
-                            <p class="text-muted mb-0" style="color: #94a3b8 !important;">No recent transactions.</p>
-                        @endforelse
+                            @empty
+                                <p class="text-muted mb-0" style="color: #94a3b8 !important;">No recent transactions.</p>
+                            @endforelse
+                        </div>
                     </div>
                 </div>
             </div>
