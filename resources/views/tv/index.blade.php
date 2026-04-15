@@ -414,6 +414,62 @@
             animation: leaderPulse 3s ease-in-out infinite;
         }
 
+        .standings-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 40px;
+            box-sizing: border-box;
+        }
+
+        .standings-title {
+            text-align: center;
+            font-size: clamp(40px, 6vw, 90px);
+            font-weight: 800;
+            margin-bottom: 40px;
+        }
+
+        .standings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .standing-card {
+            border-radius: 24px;
+            padding: 30px;
+            text-align: center;
+            font-weight: 800;
+            position: relative;
+            color: #fff;
+        }
+
+        .standing-card.first {
+            grid-column: span 2;
+            transform: scale(1.05);
+            box-shadow: 0 0 40px rgba(255,255,255,0.2);
+        }
+
+        .standing-card.gryffindor { background: #740001; }
+        .standing-card.slytherin { background: #1a472a; }
+        .standing-card.ravenclaw { background: #3b82f6; }
+        .standing-card.hufflepuff { background: #ffcc00; color: #111; }
+
+        .standing-card .rank {
+            font-size: 2rem;
+            opacity: 0.7;
+        }
+
+        .standing-card .name {
+            font-size: clamp(28px, 4vw, 50px);
+            margin: 10px 0;
+        }
+
+        .standing-card .score {
+            font-size: clamp(40px, 6vw, 90px);
+        }
+
         @keyframes firePulse {
             0%   { transform: scale(1); }
             50%  { transform: scale(1.05); }
@@ -2089,6 +2145,20 @@
 
     </div>
 
+    <div class="tv-screen" id="screen-standings">
+
+        <div class="standings-container">
+
+            <div class="standings-title">
+                🏆 CURRENT STANDINGS
+            </div>
+
+            <div id="standings-grid" class="standings-grid"></div>
+
+        </div>
+
+    </div>
+
     <button type="button" id="nextBtn" class="next-btn">Next ▶</button>
 
 </div>
@@ -2132,6 +2202,76 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    function readHousePointsFromDom(selector) {
+        var el = document.querySelector(selector);
+        if (!el || !el.dataset || el.dataset.points === undefined) {
+            return 0;
+        }
+        var n = parseInt(String(el.dataset.points), 10);
+        return isNaN(n) ? 0 : n;
+    }
+
+    function renderStandings() {
+        var houses = [
+            {
+                name: 'GRYFFINDOR',
+                points: readHousePointsFromDom('#screen-1 .house-card.gryffindor .points'),
+                class: 'gryffindor'
+            },
+            {
+                name: 'SLYTHERIN',
+                points: readHousePointsFromDom('#screen-1 .house-card.slytherin .points'),
+                class: 'slytherin'
+            },
+            {
+                name: 'RAVENCLAW',
+                points: readHousePointsFromDom('#screen-1 .house-card.ravenclaw .points'),
+                class: 'ravenclaw'
+            },
+            {
+                name: 'HUFFLEPUFF',
+                points: readHousePointsFromDom('#screen-1 .house-card.hufflepuff .points'),
+                class: 'hufflepuff'
+            }
+        ];
+
+        houses.sort(function (a, b) {
+            return b.points - a.points;
+        });
+
+        var container = document.getElementById('standings-grid');
+        if (!container) {
+            return;
+        }
+
+        container.innerHTML = '';
+
+        houses.forEach(function (house, index) {
+            var card = document.createElement('div');
+            card.className = 'standing-card ' + house.class + (index === 0 ? ' first' : '');
+
+            card.innerHTML =
+                '<div class="rank">#' + (index + 1) + '</div>' +
+                '<div class="name">' + house.name + '</div>' +
+                '<div class="score">' + house.points + '</div>';
+
+            container.appendChild(card);
+        });
+
+        document.querySelectorAll('#standings-grid .standing-card').forEach(function (card, i) {
+            var isFirst = card.classList.contains('first');
+            card.style.opacity = '0';
+            card.style.transition = 'none';
+            card.style.transform = isFirst ? 'translateY(20px) scale(1.05)' : 'translateY(20px)';
+
+            setTimeout(function () {
+                card.style.transition = 'all 0.5s ease';
+                card.style.opacity = '1';
+                card.style.transform = '';
+            }, i * 150);
+        });
+    }
+
     function showScreen(index) {
         if (emergencyActive) {
             screens.forEach(function (s) { s.classList.remove('active'); });
@@ -2146,6 +2286,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (screens[index].id === 'screen-points-race') {
             animatePointsRace();
+        }
+
+        if (screens[index].id === 'screen-standings') {
+            renderStandings();
         }
     }
 
