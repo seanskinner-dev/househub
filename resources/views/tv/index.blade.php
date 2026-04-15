@@ -85,6 +85,8 @@
         }
 
         .tv-screen {
+            position: absolute;
+            inset: 0;
             display: flex;
             flex-direction: column;
             height: 100%;
@@ -92,13 +94,11 @@
             max-width: 100%;
             overflow: hidden;
             box-sizing: border-box;
-            position: absolute;
-            inset: 0;
             opacity: 0;
             transition: opacity 0.6s ease;
             pointer-events: none;
             z-index: 1;
-            background: transparent !important;
+            background: #0a0a0a !important;
         }
 
         .tv-screen.active {
@@ -237,7 +237,6 @@
         }
 
         .points-race-container {
-            flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -311,8 +310,15 @@
             animation: leaderPulse 3s ease-in-out infinite;
         }
 
+        .standings-container,
+        .streak-container,
+        .activity-container,
+        .points-race-container {
+            height: 100%;
+            flex: 1;
+        }
+
         .standings-container {
-            height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -385,7 +391,6 @@
         }
 
         .streak-container {
-            height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -409,7 +414,6 @@
         }
 
         .activity-container {
-            height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
@@ -568,13 +572,13 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
+            min-height: 100%;
             width: 100%;
         }
 
         #screen-weather .weather-hero {
             position: relative;
-            min-height: 100vh;
+            min-height: 100%;
             animation: slowZoom 20s ease-in-out infinite alternate;
         }
 
@@ -876,7 +880,7 @@
                 opacity: 1;
             }
             100% {
-                transform: translateY(100vh);
+                transform: translateY(100%);
                 opacity: 0;
             }
         }
@@ -915,7 +919,7 @@
             grid-template-rows: auto auto auto;
             gap: 16px;
             height: 100%;
-            max-height: 100vh;
+            max-height: 100%;
             min-height: 0;
         }
 
@@ -1300,16 +1304,8 @@
             margin: 0;
         }
 
-        .tv-screen,
         .screen-inner {
             background: transparent !important;
-        }
-
-        /* Final consistency pass */
-        .tv-screen {
-            position: absolute;
-            inset: 0;
-            background: #0a0a0a !important;
         }
 
         .screen-inner,
