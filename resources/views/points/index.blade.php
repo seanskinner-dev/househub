@@ -142,7 +142,7 @@
 
         .points-index-page .house-pill.hufflepuff {
             border: 2px solid #ffcc00;
-            color: #facc15;
+            color: #ffffff;
 
             box-shadow:
                 0 0 12px rgba(255, 204, 0, 0.4),
