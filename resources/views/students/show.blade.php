@@ -18,8 +18,43 @@
             max-width:700px;
         }
 
-        h1 {
-            margin-bottom:10px;
+        .student-profile-header {
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .student-profile-header.gryffindor {
+            background: linear-gradient(145deg, #740001, #3a0000);
+        }
+
+        .student-profile-header.slytherin {
+            background: linear-gradient(145deg, #1a472a, #0d2415);
+        }
+
+        .student-profile-header.ravenclaw {
+            background: linear-gradient(145deg, #3b82f6, #1e40af);
+        }
+
+        .student-profile-header.hufflepuff {
+            background: linear-gradient(145deg, #ffcc00, #e6b800);
+            color: #111;
+        }
+
+        .profile-emoji {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .profile-name {
+            font-size: 32px;
+            font-weight: 800;
+        }
+
+        .profile-meta {
+            opacity: 0.85;
         }
 
         .meta {
@@ -85,11 +120,23 @@
 <body>
 
 <div class="card">
-    <h1>{{ $student->first_name }} {{ $student->last_name }}</h1>
+    <div class="student-profile-header {{ strtolower($student->house_name ?? '') }}">
 
-    <div class="meta">
-        {{ $student->house_name ?? 'No house assigned' }}<br>
-        {{ $student->house_points }} points
+        <div class="profile-emoji">
+            @if($student->house_name === 'Gryffindor') 🦁 @endif
+            @if($student->house_name === 'Slytherin') 🐍 @endif
+            @if($student->house_name === 'Ravenclaw') 🦅 @endif
+            @if($student->house_name === 'Hufflepuff') 🦡 @endif
+        </div>
+
+        <div class="profile-name">
+            {{ $student->first_name }} {{ $student->last_name }}
+        </div>
+
+        <div class="profile-meta">
+            {{ $student->house_name ?? 'No house assigned' }} • Year {{ $student->year_level }}
+        </div>
+
     </div>
 
     <!-- ===================== -->

@@ -124,12 +124,12 @@
 
         .points-index-page .tab {
             flex: 1;
-            padding: 10px;
+            padding: 12px;
             border-radius: 10px;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255,255,255,0.05);
             border: none;
-            color: white;
-            font-weight: 600;
+            color: #f1f5f9;
+            font-weight: 700;
             cursor: pointer;
         }
 
@@ -186,6 +186,12 @@
 
         <h1 class="h4 mb-3" style="color: #f1f5f9;">Award points</h1>
 
+        <div class="points-tabs">
+            <button class="tab active" data-tab="points">House Points</button>
+            <button class="tab" data-tab="commendations">Commendations</button>
+            <button class="tab" data-tab="awards">Awards</button>
+        </div>
+
         @php
             $pillPoints = [
                 'gryffindor' => 0,
@@ -238,12 +244,6 @@
 
             {{-- STUDENTS --}}
             <div class="col-lg-8" id="student-list">
-                <div class="points-tabs">
-                    <button class="tab active" data-tab="points">House Points</button>
-                    <button class="tab" data-tab="commendations">Commendations</button>
-                    <button class="tab" data-tab="awards">Awards</button>
-                </div>
-
                 @foreach ($students as $student)
                     @php
                         $houseKey = strtolower($student->house_name ?? '');
