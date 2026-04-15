@@ -175,30 +175,29 @@
             box-shadow:
                 inset 0 0 80px rgba(0,0,0,0.3),
                 0 20px 60px rgba(0,0,0,0.5);
-            background-image: linear-gradient(
+            background: linear-gradient(
                 145deg,
-                rgba(255,255,255,0.08),
-                rgba(0,0,0,0.2)
+                var(--house-color),
+                rgba(0,0,0,0.85)
             );
-            background-color: #334155;
             color: #fff;
             animation: breathe 6s ease-in-out infinite;
         }
 
         .house-card.gryffindor {
-            background-color: #740001;
+            --house-color: #740001;
             color: #fff;
         }
         .house-card.slytherin {
-            background-color: #1a472a;
+            --house-color: #1a472a;
             color: #fff;
         }
         .house-card.ravenclaw {
-            background-color: #3b82f6;
+            --house-color: #3b82f6;
             color: #fff;
         }
         .house-card.hufflepuff {
-            background-color: #ffcc00;
+            --house-color: #ffcc00;
             color: #111;
         }
 
@@ -1309,16 +1308,6 @@
         .tv-this-term-screen,
         .weather-container {
             background: transparent;
-        }
-
-        .house-card,
-        .student-card,
-        .this-term-card,
-        .break-card,
-        .banner-inner {
-            background: linear-gradient(145deg, rgba(20,20,20,0.95), rgba(10,10,10,0.95)) !important;
-            border-radius: 16px !important;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.6) !important;
         }
 
         .screen-title,
