@@ -6,6 +6,17 @@
             background: #020617;
         }
 
+        /* Hide scrollbar but keep scroll (this page only) */
+        .points-index-page,
+        .points-index-page * {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .points-index-page *::-webkit-scrollbar {
+            display: none;
+        }
+
         .points-index-page .recent-activity {
             position: sticky;
             top: 20px;
@@ -259,6 +270,30 @@
         .student-link:hover {
             text-decoration: underline;
         }
+
+        .points-index-page .search-container {
+            margin-bottom: 12px;
+        }
+
+        .points-index-page .search-container input {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(8px);
+            color: #fff;
+        }
+
+        .points-index-page .search-container input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .points-index-page .search-container input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.18);
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.06);
+        }
     </style>
 
     <div class="container-fluid points-index-page" style="max-width: 1200px;">
@@ -280,16 +315,6 @@
             }
         @endphp
 
-        {{-- SEARCH --}}
-        <div class="mb-3">
-            <input type="text"
-                   id="student-search"
-                   class="form-control"
-                   style="background: #1e293b; border-color: #334155; color: #f1f5f9;"
-                   placeholder="Search students..."
-                   autocomplete="off">
-        </div>
-
         <div class="row g-3">
 
             <div class="col-12">
@@ -306,6 +331,16 @@
                     <div class="house-item hufflepuff">
                         Hufflepuff <span id="hufflepuff-points">{{ $pillPoints['hufflepuff'] }}</span>
                     </div>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div class="search-container">
+                    <input type="text"
+                           id="student-search"
+                           class="form-control border-0 shadow-none"
+                           placeholder="Search students..."
+                           autocomplete="off">
                 </div>
             </div>
 
@@ -388,7 +423,7 @@
                                         $who = $r->house_name ?? 'House';
                                     }
                                 @endphp
-                                <div class="mb-3 pb-2 border-bottom border-secondary" style="border-color: #334155 !important;">
+                                <div class="activity-item mb-3 pb-2 border-bottom border-secondary" style="border-color: #334155 !important;">
                                     <div>
                                         <strong>{{ ($r->amount > 0 ? '+' : '') . $r->amount }}</strong>
                                         {{ $who }}
@@ -525,5 +560,23 @@
                 window.openAwardModal(studentId);
             });
         });
+    </script>
+
+    <script>
+        function trimActivity() {
+            const container = document.querySelector('#recent-activity');
+            if (!container) return;
+
+            const items = container.querySelectorAll('.activity-item');
+
+            if (items.length > 10) {
+                for (let i = 10; i < items.length; i++) {
+                    items[i].remove();
+                }
+            }
+        }
+
+        trimActivity();
+        setInterval(trimActivity, 3000);
     </script>
 @endsection

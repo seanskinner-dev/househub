@@ -456,7 +456,7 @@
                 var cat = entry.category != null ? String(entry.category) : '';
                 var teacher = entry.teacher != null ? String(entry.teacher) : '';
                 var row = document.createElement('div');
-                row.className = 'mb-3 pb-2 border-bottom border-secondary';
+                row.className = 'activity-item mb-3 pb-2 border-bottom border-secondary';
                 row.style.borderColor = '#334155';
                 var html = '<div><strong>' + sign + amt + '</strong> ' + escapeReportHtml(who) + '</div>';
                 if (cat) {
