@@ -1,52 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
-    @php
-        if (!function_exists('houseEmoji')) {
-            function houseEmoji($house) {
-                return match (strtolower((string) ($house ?? ''))) {
-                    'gryffindor' => '🦁',
-                    'slytherin' => '🐍',
-                    'ravenclaw' => '🦅',
-                    'hufflepuff' => '🦡',
-                    default => '🏫',
-                };
-            }
-        }
-    @endphp
     <style>
         body {
             background: #020617;
-        }
-
-        .points-index-page .house-btn {
-            width: 100%;
-            border: none;
-            border-radius: 14px;
-            padding: 14px;
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: white;
-            transition: all 0.2s ease;
-        }
-
-        .points-index-page .house-btn:hover {
-            transform: scale(1.05);
-            filter: brightness(1.1);
-        }
-
-        .points-index-page .house-btn.gryffindor { background: #740001; }
-        .points-index-page .house-btn.slytherin { background: #1a472a; }
-        .points-index-page .house-btn.ravenclaw { background: #3b82f6; }
-        .house-btn.hufflepuff,
-        .house-btn.hufflepuff span,
-        .house-btn.hufflepuff strong,
-        .house-btn.hufflepuff div {
-            color: #1f2937 !important;
-        }
-
-        .house-btn.hufflepuff {
-            background: #ffcc00 !important;
         }
 
         .points-index-page .recent-activity {
@@ -61,9 +18,6 @@
         }
 
         .points-index-page .student-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
             min-width: 0;
             flex: 1;
         }
@@ -72,14 +26,6 @@
             display: flex;
             flex-direction: column;
             min-width: 0;
-        }
-
-        .points-index-page .student-emoji {
-            font-size: 1.8rem;
-            opacity: 0.9;
-            flex-shrink: 0;
-            line-height: 1;
-            filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
         }
 
         .points-index-page .student-card {
@@ -197,6 +143,12 @@
             flex-wrap: wrap;
             align-items: center;
             gap: 6px;
+            opacity: 0.7;
+            transition: opacity 0.2s ease;
+        }
+
+        .points-index-page .student-card:hover .action-group {
+            opacity: 1;
         }
 
         .points-index-page .student-name {
@@ -208,6 +160,39 @@
             font-size: 0.85rem;
             color: #94a3b8;
             margin-top: 2px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0;
+        }
+
+        .points-index-page .house-chip {
+            margin-left: 8px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+
+        .points-index-page .house-chip.gryffindor {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .points-index-page .house-chip.slytherin {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+
+        .points-index-page .house-chip.ravenclaw {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+        }
+
+        .points-index-page .house-chip.hufflepuff {
+            background: rgba(250, 204, 21, 0.25);
+            color: #facc15;
         }
 
         .points-index-page .btn-add {
@@ -235,49 +220,34 @@
         }
 
         .points-index-page .action-group button {
+            width: 34px;
+            height: 34px;
+            min-width: 34px;
             border-radius: 8px;
-            width: 36px;
-            height: 36px;
-            min-width: 36px;
         }
 
-        .points-index-page .house-standings {
+        .points-index-page .house-bar {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             margin-bottom: 16px;
         }
 
-        .points-index-page .house-pill {
+        .points-index-page .house-item {
             flex: 1;
-            text-align: center;
-            padding: 10px;
-            border-radius: 12px;
-            font-weight: 700;
-            background: linear-gradient(145deg, #1e293b, #0f172a);
-            box-shadow:
-                0 4px 20px rgba(0, 0, 0, 0.5),
-                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .points-index-page .house-pill.gryffindor {
-            border: 2px solid #740001;
-        }
-
-        .points-index-page .house-pill.slytherin {
-            border: 2px solid #1a472a;
-        }
-
-        .points-index-page .house-pill.ravenclaw {
-            border: 2px solid #3b82f6;
-        }
-
-        .points-index-page .house-pill.hufflepuff {
-            border: 2px solid #ffcc00;
-            color: #ffffff;
-
-            box-shadow:
-                0 0 12px rgba(255, 204, 0, 0.4),
-                0 4px 20px rgba(0, 0, 0, 0.5);
+        .points-index-page .house-item span {
+            opacity: 0.7;
         }
 
         .student-link {
@@ -310,29 +280,6 @@
             }
         @endphp
 
-        <div class="house-standings">
-            <div class="house-pill gryffindor">🦁 <span id="gryffindor-points">{{ $pillPoints['gryffindor'] }}</span></div>
-            <div class="house-pill slytherin">🐍 <span id="slytherin-points">{{ $pillPoints['slytherin'] }}</span></div>
-            <div class="house-pill ravenclaw">🦅 <span id="ravenclaw-points">{{ $pillPoints['ravenclaw'] }}</span></div>
-            <div class="house-pill hufflepuff">🦡 <span id="hufflepuff-points">{{ $pillPoints['hufflepuff'] }}</span></div>
-        </div>
-
-        {{-- HOUSE BUTTONS --}}
-        <div class="row g-2 mb-3">
-            <div class="col-6 col-md-3">
-                <button type="button" class="house-btn gryffindor" onclick="awardHouse('gryffindor')">🦁 +1</button>
-            </div>
-            <div class="col-6 col-md-3">
-                <button type="button" class="house-btn slytherin" onclick="awardHouse('slytherin')">🐍 +1</button>
-            </div>
-            <div class="col-6 col-md-3">
-                <button type="button" class="house-btn ravenclaw" onclick="awardHouse('ravenclaw')">🦅 +1</button>
-            </div>
-            <div class="col-6 col-md-3">
-                <button type="button" class="house-btn hufflepuff" onclick="awardHouse('hufflepuff')">🦡 +1</button>
-            </div>
-        </div>
-
         {{-- SEARCH --}}
         <div class="mb-3">
             <input type="text"
@@ -345,17 +292,33 @@
 
         <div class="row g-3">
 
+            <div class="col-12">
+                <div class="house-bar">
+                    <div class="house-item gryffindor">
+                        Gryffindor <span id="gryffindor-points">{{ $pillPoints['gryffindor'] }}</span>
+                    </div>
+                    <div class="house-item slytherin">
+                        Slytherin <span id="slytherin-points">{{ $pillPoints['slytherin'] }}</span>
+                    </div>
+                    <div class="house-item ravenclaw">
+                        Ravenclaw <span id="ravenclaw-points">{{ $pillPoints['ravenclaw'] }}</span>
+                    </div>
+                    <div class="house-item hufflepuff">
+                        Hufflepuff <span id="hufflepuff-points">{{ $pillPoints['hufflepuff'] }}</span>
+                    </div>
+                </div>
+            </div>
+
             {{-- STUDENTS --}}
             <div class="col-lg-8" id="student-list">
                 @foreach ($students as $student)
                     @php
-                        $houseKey = strtolower($student->house_name ?? '');
+                        $houseKey = strtolower(str_replace(' ', '', $student->house_name ?? ''));
                     @endphp
                     <div class="student-card"
                          data-house="{{ $houseKey }}"
                          data-name="{{ strtolower($student->first_name . ' ' . $student->last_name) }}">
                         <div class="student-left">
-                            <span class="student-emoji">{{ houseEmoji($student->house_name) }}</span>
                             <div class="student-left-main">
                                 <div class="student-name">
                                     <a href="/students/{{ $student->id }}" class="student-link">
@@ -364,8 +327,10 @@
                                 </div>
                                 <div class="student-meta">
                                     Year {{ $student->year_level }}
-                                    |
-                                    {{ $student->house_name ?? '—' }}
+
+                                    <span class="house-chip {{ $houseKey }}">
+                                        {{ $student->house_name ?? '—' }}
+                                    </span>
                                 </div>
                             </div>
                         </div>
