@@ -338,8 +338,8 @@
         .streak-container {
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            justify-content: flex-start;
+            align-items: stretch;
             text-align: center;
         }
 
@@ -354,22 +354,34 @@
             grid-template-columns: 1fr 1fr;
             gap: 12px 14px;
             width: 100%;
-            max-width: 1100px;
+            max-width: 1400px;
             margin: 0 auto;
+            align-content: start;
+            min-height: 0;
         }
 
         .activity-container {
             display: flex;
             flex-direction: column;
+            flex: 1;
             justify-content: flex-start;
+            align-items: stretch;
             padding-top: 10px;
             overflow: hidden;
         }
 
         .activity-scale {
-            transform: scale(0.92);
-            transform-origin: top center;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
             width: 100%;
+        }
+
+        .activity-scale .activity-list {
+            flex: 1;
+            align-content: start;
+            min-height: 0;
         }
 
         .activity-title {
@@ -408,15 +420,16 @@
 
         .top-container {
             flex: 1;
+            height: 100%;
             min-height: 0;
             width: 100%;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            align-items: stretch;
+            justify-content: flex-start;
             overflow: hidden;
             box-sizing: border-box;
-            padding: 18px 28px;
+            padding: 10px 20px;
             background: transparent;
             color: #fff;
         }
@@ -484,19 +497,20 @@
 
         .top-list {
             flex: 1;
-            min-height: 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 8px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            align-content: start;
             width: 100%;
-            max-width: 1100px;
+            max-width: 1400px;
+            min-height: 0;
+            margin: 0 auto;
             overflow: hidden;
         }
 
-        .top-list {
-            width: min(1240px, 95vw);
-            margin-top: 16px;
+        .top-list .top-right-grid,
+        .top-list .leaderboard-column {
+            display: contents;
         }
 
         .weather-container {
@@ -838,12 +852,16 @@
 
         .screen-inner {
             width: 100%;
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             height: 100%;
+            min-height: 0;
             display: flex;
             flex-direction: column;
-            padding: 18px 28px;
+            flex: 1;
+            align-items: stretch;
+            justify-content: flex-start;
+            padding: 10px 20px;
             background: transparent;
             color: #ffffff;
         }
@@ -860,43 +878,22 @@
 
         .student-grid,
         .top-list,
-        .streak-list {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 12px 14px;
+        .streak-list,
+        .activity-list {
             width: 100%;
-            max-width: 1240px;
+            max-width: 1400px;
             margin-left: auto;
             margin-right: auto;
-            flex: unset;
-            align-content: start;
-            min-height: 0;
         }
 
         .streak-list {
             grid-auto-rows: auto;
-            align-content: start;
         }
 
         .activity-list {
-            width: min(1240px, 95vw);
-            margin-top: 8px;
-
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 8px 12px;
-
-            overflow: hidden;
-            max-height: 100%;
-        }
-
-        .streaks-list,
-        .streak-list {
-            max-width: 1100px;
-            margin-left: auto;
-            margin-right: auto;
-            padding: 0 40px;
-            box-sizing: border-box;
+            gap: 10px;
         }
 
         .leaderboard-grid {
@@ -904,8 +901,11 @@
             grid-template-columns: 1fr 1fr;
             gap: 24px;
             width: 100%;
-            max-width: 1100px;
+            max-width: 1400px;
             margin: 14px auto 0;
+            flex: 1;
+            min-height: 0;
+            align-content: start;
         }
 
         .leaderboard-column {
@@ -985,6 +985,7 @@
         }
 
         .student-grid .student-card,
+        .top-list .student-card,
         .streak-list .student-card,
         .activity-list .student-card {
             margin-bottom: 0;
@@ -1131,6 +1132,8 @@
         }
 
         .student-card.is-top-1 {
+            grid-column: span 2;
+            padding: 22px 26px;
             transform: scale(1.02);
             box-shadow:
                 0 12px 36px rgba(0, 0, 0, 0.75),
@@ -1159,8 +1162,9 @@
         }
 
         .student-card.is-compact {
-            padding: 12px 16px;
+            padding: 16px 18px;
             border-radius: 12px;
+            font-size: 1rem;
         }
 
         .student-card.is-compact .student-name {
@@ -1232,9 +1236,6 @@
             padding: 16px 20px;
         }
 
-        .student-grid,
-        .top-list,
-        .streak-list,
         .break-container {
             gap: 10px 14px;
         }
