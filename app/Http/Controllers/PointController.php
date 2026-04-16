@@ -400,6 +400,19 @@ class PointController extends Controller
             ->limit(6)
             ->get();
 
+        $recent = DB::table('point_transactions')
+            ->leftJoin('students', 'point_transactions.student_id', '=', 'students.id')
+            ->leftJoin('houses', 'point_transactions.house_id', '=', 'houses.id')
+            ->select(
+                DB::raw("TRIM(COALESCE(students.first_name, '') || ' ' || COALESCE(students.last_name, '')) as student_name"),
+                'houses.name as house_name',
+                DB::raw("COALESCE(point_transactions.category, 'Points awarded') as description"),
+                'point_transactions.amount'
+            )
+            ->orderByDesc('point_transactions.created_at')
+            ->limit(10)
+            ->get();
+
         $termCaseSql = 'CASE '
             . 'WHEN EXTRACT(MONTH FROM point_transactions.created_at)::integer BETWEEN 1 AND 3 THEN 1 '
             . 'WHEN EXTRACT(MONTH FROM point_transactions.created_at)::integer BETWEEN 4 AND 6 THEN 2 '
@@ -581,6 +594,7 @@ class PointController extends Controller
             'dates' => $labels,
             'topStudents' => $topStudents,
             'topTeachers' => $topTeachers,
+            'recent' => $recent,
             'weather' => $weather,
             'houses' => $houses,
             'housePointsByTerm' => $housePointsByTerm,
