@@ -239,7 +239,7 @@
                     </div>
 
                     <div class="activity-meta">
-                        {{ $tx->teacher_name ?? 'Unknown Teacher' }} • {{ \Carbon\Carbon::parse($tx->created_at)->format('d M Y') }}
+                        {{ $tx->teacher_name ?? 'Unknown' }} • {{ \Carbon\Carbon::parse($tx->created_at)->format('d M Y') }}
                     </div>
                 </div>
             @endforeach
@@ -262,7 +262,7 @@
                     </div>
 
                     <div class="activity-meta">
-                        {{ $award->teacher_name ?? 'Unknown Teacher' }} • {{ \Carbon\Carbon::parse($award->created_at)->format('d M Y') }}
+                        {{ $award->teacher_name ?? 'Unknown' }} • {{ \Carbon\Carbon::parse($award->created_at)->format('d M Y') }}
                     </div>
 
                     <a href="/certificate/{{ $award->id }}" class="btn">View Certificate</a>
@@ -287,7 +287,7 @@
                     </div>
 
                     <div class="activity-meta">
-                        {{ $commendation->teacher_name ?? 'Unknown Teacher' }} • {{ \Carbon\Carbon::parse($commendation->created_at)->format('d M Y') }}
+                        {{ $commendation->teacher_name ?? 'Unknown' }} • {{ \Carbon\Carbon::parse($commendation->created_at)->format('d M Y') }}
                     </div>
                 </div>
             @endforeach
