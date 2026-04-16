@@ -470,8 +470,9 @@
             display: flex;
             flex-direction: column;
             height: 100%;
-            padding: 40px;
-            gap: 30px;
+            padding: 20px 28px 20px 28px;
+            gap: 16px;
+            box-sizing: border-box;
         }
 
         .banner-title {
@@ -483,8 +484,9 @@
         .banner-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 30px;
+            gap: 16px;
             flex: 1;
+            min-height: 0;
         }
 
         .banner-card {
@@ -493,44 +495,88 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 40px;
+            padding: 24px;
+            height: 100%;
             border-radius: 20px;
-            background: linear-gradient(135deg, rgba(0,0,0,0.6), rgba(0,0,0,0.3));
-            border: 2px solid rgba(255,255,255,0.1);
             text-align: center;
+            border: 2px solid rgba(255,255,255,0.15);
+            box-shadow:
+                0 20px 60px rgba(0,0,0,0.6),
+                inset 0 0 60px rgba(0,0,0,0.3);
         }
 
         .banner-emoji {
-            font-size: clamp(4rem, 6vw, 6rem);
+            font-size: clamp(5rem, 7vw, 7rem);
             margin-bottom: 10px;
+            filter: drop-shadow(0 6px 20px rgba(0,0,0,0.6));
         }
 
         .banner-name {
-            font-size: clamp(1.8rem, 2.5vw, 2.5rem);
-            font-weight: 800;
-            letter-spacing: 0.05em;
+            font-size: clamp(2rem, 3vw, 3rem);
+            font-weight: 900;
+            letter-spacing: 0.08em;
         }
 
         .banner-points {
-            font-size: clamp(3rem, 4vw, 5rem);
+            font-size: clamp(3.5rem, 5vw, 6rem);
             font-weight: 900;
             margin-top: 10px;
+            text-shadow: 0 10px 40px rgba(0,0,0,0.8);
         }
 
         .banner-card[data-house="gryffindor"] {
-            background: linear-gradient(135deg, rgba(239,68,68,0.35), rgba(0,0,0,0.5));
+            background: linear-gradient(135deg, #ef4444, #7f1d1d);
+            box-shadow: 0 0 40px rgba(239,68,68,0.6);
         }
 
         .banner-card[data-house="slytherin"] {
-            background: linear-gradient(135deg, rgba(34,197,94,0.35), rgba(0,0,0,0.5));
+            background: linear-gradient(135deg, #22c55e, #064e3b);
+            box-shadow: 0 0 40px rgba(34,197,94,0.6);
         }
 
         .banner-card[data-house="ravenclaw"] {
-            background: linear-gradient(135deg, rgba(59,130,246,0.35), rgba(0,0,0,0.5));
+            background: linear-gradient(135deg, #3b82f6, #1e3a8a);
+            box-shadow: 0 0 40px rgba(59,130,246,0.6);
         }
 
         .banner-card[data-house="hufflepuff"] {
-            background: linear-gradient(135deg, rgba(250,204,21,0.4), rgba(0,0,0,0.5));
+            background: linear-gradient(135deg, #facc15, #78350f);
+            box-shadow: 0 0 40px rgba(250,204,21,0.6);
+        }
+
+        .banner-card.winner {
+            transform: scale(1.05);
+            box-shadow:
+                0 0 80px rgba(255,255,255,0.4),
+                0 20px 80px rgba(0,0,0,0.7);
+        }
+
+        .banner-card[data-house="gryffindor"].winner {
+            box-shadow:
+                0 0 80px rgba(255,255,255,0.4),
+                0 20px 80px rgba(0,0,0,0.7),
+                0 0 40px rgba(239,68,68,0.6);
+        }
+
+        .banner-card[data-house="slytherin"].winner {
+            box-shadow:
+                0 0 80px rgba(255,255,255,0.4),
+                0 20px 80px rgba(0,0,0,0.7),
+                0 0 40px rgba(34,197,94,0.6);
+        }
+
+        .banner-card[data-house="ravenclaw"].winner {
+            box-shadow:
+                0 0 80px rgba(255,255,255,0.4),
+                0 20px 80px rgba(0,0,0,0.7),
+                0 0 40px rgba(59,130,246,0.6);
+        }
+
+        .banner-card[data-house="hufflepuff"].winner {
+            box-shadow:
+                0 0 80px rgba(255,255,255,0.4),
+                0 20px 80px rgba(0,0,0,0.7),
+                0 0 40px rgba(250,204,21,0.6);
         }
 
         .weather-container {
@@ -1517,9 +1563,13 @@
 
             <div class="banner-grid">
 
+                @php
+                    $max = collect($termTotals)->max('total');
+                @endphp
+
                 @foreach($termTotals as $house)
 
-                <div class="banner-card" data-house="{{ strtolower($house->house_name) }}">
+                <div class="banner-card {{ $house->total == $max ? 'winner' : '' }}" data-house="{{ strtolower($house->house_name) }}">
 
                     <div class="banner-emoji">
                         {{ houseEmoji($house->house_name) }}
@@ -1551,9 +1601,13 @@
 
             <div class="banner-grid">
 
+                @php
+                    $max = collect($annualTotals)->max('total');
+                @endphp
+
                 @foreach($annualTotals as $house)
 
-                <div class="banner-card" data-house="{{ strtolower($house->house_name) }}">
+                <div class="banner-card {{ $house->total == $max ? 'winner' : '' }}" data-house="{{ strtolower($house->house_name) }}">
 
                     <div class="banner-emoji">
                         {{ houseEmoji($house->house_name) }}
