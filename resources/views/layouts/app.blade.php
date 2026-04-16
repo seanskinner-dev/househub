@@ -1052,6 +1052,13 @@
                 var shell = document.getElementById('commendationModal');
                 if (shell) {
                     shell.style.display = 'none';
+                    shell.classList.remove('show');
+                }
+                if (window.bootstrap && typeof window.bootstrap.Modal !== 'undefined') {
+                    var cModal = window.bootstrap.Modal.getInstance(document.getElementById('commendationModal'));
+                    if (cModal) {
+                        cModal.hide();
+                    }
                 }
             }
 
@@ -1077,6 +1084,35 @@
                 var shell = document.getElementById('awardModal');
                 if (shell) {
                     shell.style.display = 'none';
+                    shell.classList.remove('show');
+                }
+                if (window.bootstrap && typeof window.bootstrap.Modal !== 'undefined') {
+                    var aModal = window.bootstrap.Modal.getInstance(document.getElementById('awardModal'));
+                    if (aModal) {
+                        aModal.hide();
+                    }
+                }
+            }
+
+            function closeAndResetRewardModals() {
+                closeCommendationModal();
+                closeAwardModal();
+                document.querySelectorAll('.modal-backdrop').forEach(function (el) { el.remove(); });
+                var commendForm = document.querySelector('#commendationForm');
+                var awardForm = document.querySelector('#awardForm');
+                if (commendForm && typeof commendForm.reset === 'function') {
+                    commendForm.reset();
+                } else {
+                    var commendText = document.getElementById('commendationModalText');
+                    if (commendText) commendText.value = '';
+                }
+                if (awardForm && typeof awardForm.reset === 'function') {
+                    awardForm.reset();
+                } else {
+                    var awardNameEl = document.getElementById('awardModalName');
+                    var awardDescEl = document.getElementById('awardModalDescription');
+                    if (awardNameEl) awardNameEl.selectedIndex = 0;
+                    if (awardDescEl) awardDescEl.value = '';
                 }
             }
 
@@ -1113,21 +1149,33 @@
                             credentials: 'same-origin',
                             body: JSON.stringify({ student_id: Number(sid), description: desc })
                         })
-                            .then(function (res) {
-                                if (!res.ok) {
-                                    throw new Error('bad');
+                            .then(async function (res) {
+                                var text = await res.text();
+                                var data;
+                                try {
+                                    data = JSON.parse(text);
+                                } catch (err) {
+                                    console.error('Invalid response:', text);
+                                    throw new Error('Invalid response');
                                 }
-                                return res.json();
+                                if (!res.ok) {
+                                    throw new Error((data && data.message) ? data.message : 'Failed');
+                                }
+                                return data;
                             })
                             .then(function (data) {
-                                closeCommendationModal();
+                                if (!data || !data.success) {
+                                    throw new Error('Failed');
+                                }
+                                closeAndResetRewardModals();
                                 if (data && data.recent_entry) {
                                     window.houseHubPrependRecentActivity(data.recent_entry);
                                 }
-                                reportShowToast('Commendation saved');
+                                reportShowToast('Saved successfully');
                             })
-                            .catch(function () {
-                                reportShowToast('Could not save commendation');
+                            .catch(function (err) {
+                                console.error(err);
+                                reportShowToast('Could not save');
                             });
                     });
                 }
@@ -1171,21 +1219,33 @@
                                 description: desc
                             })
                         })
-                            .then(function (res) {
-                                if (!res.ok) {
-                                    throw new Error('bad');
+                            .then(async function (res) {
+                                var text = await res.text();
+                                var data;
+                                try {
+                                    data = JSON.parse(text);
+                                } catch (err) {
+                                    console.error('Invalid response:', text);
+                                    throw new Error('Invalid response');
                                 }
-                                return res.json();
+                                if (!res.ok) {
+                                    throw new Error((data && data.message) ? data.message : 'Failed');
+                                }
+                                return data;
                             })
                             .then(function (data) {
-                                closeAwardModal();
+                                if (!data || !data.success) {
+                                    throw new Error('Failed');
+                                }
+                                closeAndResetRewardModals();
                                 if (data && data.recent_entry) {
                                     window.houseHubPrependRecentActivity(data.recent_entry);
                                 }
-                                reportShowToast('Award saved');
+                                reportShowToast('Saved successfully');
                             })
-                            .catch(function () {
-                                reportShowToast('Could not save award');
+                            .catch(function (err) {
+                                console.error(err);
+                                reportShowToast('Could not save');
                             });
                     });
                 }
