@@ -190,13 +190,24 @@ class PointController extends Controller
 
     public function storeCommendation(Request $request)
     {
-        $data = $request->validate([
+        $systemUser = User::firstOrCreate(
+            ['email' => 'system@househub.local'],
+            [
+                'name' => 'System',
+                'password' => bcrypt('notused123')
+            ]
+        );
+
+        $userId = auth()->check()
+            ? auth()->id()
+            : $systemUser->id;
+
+        $data = validator($request->all(), [
             'student_id' => 'required|integer|exists:students,id',
             'description' => 'nullable|string|max:5000',
-        ]);
+        ])->validate();
 
-        $userId = auth()->id() ?? 1;
-        $teacherName = auth()->user()->name ?? 'System';
+        $teacherName = auth()->check() ? auth()->user()->name : 'System';
 
         $student = DB::table('students')->where('id', $data['student_id'])->first();
         if (! $student) {
@@ -247,14 +258,25 @@ class PointController extends Controller
 
     public function storeAward(Request $request)
     {
-        $data = $request->validate([
+        $systemUser = User::firstOrCreate(
+            ['email' => 'system@househub.local'],
+            [
+                'name' => 'System',
+                'password' => bcrypt('notused123')
+            ]
+        );
+
+        $userId = auth()->check()
+            ? auth()->id()
+            : $systemUser->id;
+
+        $data = validator($request->all(), [
             'student_id' => 'required|integer|exists:students,id',
             'award_name' => 'required|string|max:255',
             'description' => 'required|string|max:5000',
-        ]);
+        ])->validate();
 
-        $userId = auth()->id() ?? 1;
-        $teacherName = auth()->user()->name ?? 'System';
+        $teacherName = auth()->check() ? auth()->user()->name : 'System';
 
         $student = DB::table('students')->where('id', $data['student_id'])->first();
         if (! $student) {
