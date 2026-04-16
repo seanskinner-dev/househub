@@ -898,21 +898,41 @@
 
         .student-card[data-house="gryffindor"] {
             --house-color: var(--gryffindor);
+            background: linear-gradient(
+                135deg,
+                rgba(239, 68, 68, 0.18),
+                rgba(255,255,255,0.04)
+            );
             box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
         }
 
         .student-card[data-house="slytherin"] {
             --house-color: var(--slytherin);
+            background: linear-gradient(
+                135deg,
+                rgba(34, 197, 94, 0.18),
+                rgba(255,255,255,0.04)
+            );
             box-shadow: 0 0 12px rgba(34, 197, 94, 0.4);
         }
 
         .student-card[data-house="ravenclaw"] {
             --house-color: var(--ravenclaw);
+            background: linear-gradient(
+                135deg,
+                rgba(59, 130, 246, 0.18),
+                rgba(255,255,255,0.04)
+            );
             box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
         }
 
         .student-card[data-house="hufflepuff"] {
             --house-color: var(--hufflepuff);
+            background: linear-gradient(
+                135deg,
+                rgba(250, 204, 21, 0.20),
+                rgba(255,255,255,0.04)
+            );
             box-shadow: 0 0 12px rgba(250, 204, 21, 0.4);
         }
 
@@ -943,9 +963,9 @@
             overflow: hidden;
         }
 
-        .student-card:not(.is-top-1):hover {
+        .student-card:hover {
             transform: scale(1.01);
-            background: rgba(255, 255, 255, 0.08);
+            filter: brightness(1.05);
         }
 
         .student-card::before {
