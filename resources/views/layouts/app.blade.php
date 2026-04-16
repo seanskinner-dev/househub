@@ -9,6 +9,18 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
+        /* Hide scrollbars but keep scroll */
+        html,
+        body {
+            scrollbar-width: none; /* Firefox */
+        }
+
+        html::-webkit-scrollbar,
+        body::-webkit-scrollbar,
+        *::-webkit-scrollbar {
+            display: none; /* Chrome, Safari */
+        }
+
         body {
             margin: 0;
             font-family: Arial, sans-serif;
@@ -423,6 +435,32 @@
             return s;
         };
 
+        /** Full dd/mm/yyyy for report drill-down tables only (charts use formatReportChartDate). */
+        window.formatReportDrilldownDate = function (d) {
+            if (d == null || d === '') return '';
+            var s = String(d).trim();
+            if (s.indexOf('T') !== -1) {
+                s = s.split('T')[0];
+            } else if (s.indexOf(' ') !== -1) {
+                s = s.split(' ')[0];
+            }
+            if (s.length > 10) {
+                s = s.slice(0, 10);
+            }
+            var m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            if (m) {
+                return m[3] + '/' + m[2] + '/' + m[1];
+            }
+            var dt = new Date(s.length === 10 ? s + 'T00:00:00' : s);
+            if (!isNaN(dt.getTime())) {
+                var dd = String(dt.getDate()).padStart(2, '0');
+                var mm = String(dt.getMonth() + 1).padStart(2, '0');
+                var yyyy = String(dt.getFullYear());
+                return dd + '/' + mm + '/' + yyyy;
+            }
+            return s;
+        };
+
         (function () {
             window._reportDrilldownSortState = window._reportDrilldownSortState || new Map();
 
@@ -556,7 +594,7 @@
                 var dateStr = '';
                 if (dateRaw != null && dateRaw !== '') {
                     var slice = drilldownDateOnlyPart(dateRaw);
-                    dateStr = typeof window.formatReportChartDate === 'function' ? window.formatReportChartDate(slice) : slice;
+                    dateStr = typeof window.formatReportDrilldownDate === 'function' ? window.formatReportDrilldownDate(slice) : slice;
                 }
 
                 return {

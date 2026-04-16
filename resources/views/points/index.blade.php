@@ -6,17 +6,6 @@
             background: #020617;
         }
 
-        /* Hide scrollbar but keep scroll (this page only) */
-        .points-index-page,
-        .points-index-page * {
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-        }
-
-        .points-index-page *::-webkit-scrollbar {
-            display: none;
-        }
-
         .points-index-page .recent-activity {
             position: sticky;
             top: 20px;
