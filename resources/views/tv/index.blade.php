@@ -27,7 +27,7 @@
             width: 100%;
             max-width: 100%;
             overflow: hidden;
-            padding: 0 20px;
+            padding: 20px 28px 28px 28px;
             box-sizing: border-box;
             color: #fff;
             transition: background 1s ease;
@@ -341,6 +341,7 @@
             justify-content: flex-start;
             align-items: stretch;
             text-align: center;
+            padding-bottom: 10px;
         }
 
         .streak-title {
@@ -358,6 +359,7 @@
             margin: 0 auto;
             align-content: stretch;
             grid-auto-rows: 1fr;
+            padding: 6px;
         }
 
         .activity-container {
@@ -367,6 +369,7 @@
             justify-content: flex-start;
             align-items: stretch;
             padding-top: 10px;
+            padding-bottom: 10px;
             overflow: hidden;
         }
 
@@ -416,6 +419,7 @@
             overflow: hidden;
             box-sizing: border-box;
             padding: 10px 20px;
+            padding-bottom: 10px;
             background: transparent;
             color: #fff;
         }
@@ -491,6 +495,7 @@
             margin: 0 auto;
             align-content: stretch;
             grid-auto-rows: 1fr;
+            padding: 6px;
         }
 
         .top-list .top-right-grid,
@@ -846,7 +851,7 @@
             flex: 1;
             align-items: stretch;
             justify-content: flex-start;
-            padding: 10px 20px;
+            padding: 20px 24px 24px 24px;
             background: transparent;
             color: #ffffff;
         }
@@ -880,6 +885,7 @@
             margin: 0 auto;
             align-content: stretch;
             grid-auto-rows: 1fr;
+            padding: 6px;
         }
 
         .leaderboard-grid {
