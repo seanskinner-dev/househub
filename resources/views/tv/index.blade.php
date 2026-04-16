@@ -1421,41 +1421,56 @@
 
     <div class="tv-screen" id="screen-4">
 
-        <div class="top-container">
+        <div class="streak-container">
 
-            <div class="top-title">
+            <div class="streak-title">
                 🏆 TOP STUDENTS
             </div>
 
-            <div class="top-list">
-                @foreach($topStudents as $index => $student)
-                    <div class="student-card {{ $index === 0 ? 'is-gold' : '' }} {{ $index === 1 ? 'is-silver' : '' }} {{ $index === 2 ? 'is-bronze' : '' }}" data-house="{{ strtolower($student->house_name ?? '') }}">
-                        <div class="student-left">
-                            <div class="student-emoji">
-                                {{ $student->house_emoji ?? '🏫' }}
-                            </div>
-                            <div class="student-left-main">
-                                <span class="student-name">
-                                    {{ $student->first_name }}
-                                    <strong>{{ $student->last_name }}</strong>
-                                </span>
+            <div class="streak-list">
+                @foreach($topStudents->take(10) as $index => $student)
 
-                                <span class="student-meta">
-                                    {{ $student->year_level ?? '' }}
-                                </span>
+                <div class="student-card
+                    {{ $index === 0 ? 'is-top-1' : '' }}
+                    {{ $index === 1 ? 'is-top-2' : '' }}
+                    {{ $index === 2 ? 'is-top-3' : '' }}"
+                    data-house="{{ strtolower($student->house_name) }}">
+
+                    <div class="student-left">
+
+                        <span class="student-emoji">
+                            @if(strtolower($student->house_name) === 'gryffindor') 🦁
+                            @elseif(strtolower($student->house_name) === 'slytherin') 🐍
+                            @elseif(strtolower($student->house_name) === 'ravenclaw') 🦅
+                            @elseif(strtolower($student->house_name) === 'hufflepuff') 🦡
+                            @else 🏫
+                            @endif
+                        </span>
+
+                        <div class="student-left-main">
+                            <span class="student-name">
+                                {{ strtoupper($student->first_name) }}
+                                <strong>{{ strtoupper($student->last_name) }}</strong>
+                            </span>
+
+                            <div class="student-meta">
+                                {{ $student->house_name }}
                             </div>
-                        </div>
-                        <div class="student-right">
-                            <span class="student-points">{{ (int) $student->house_points }} pts</span>
-                            <div class="student-rank">
-                                @if($index === 0) 🥇
-                                @elseif($index === 1) 🥈
-                                @elseif($index === 2) 🥉
-                                @else #{{ $index + 1 }}
-                                @endif
-                            </div>
+
+                            <span class="student-sub">
+                                {{ $student->house_points }} POINTS
+                            </span>
                         </div>
                     </div>
+
+                    <div class="student-right">
+                        <div class="student-rank">
+                            #{{ $index + 1 }}
+                        </div>
+                    </div>
+
+                </div>
+
                 @endforeach
             </div>
 
