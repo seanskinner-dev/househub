@@ -41,26 +41,124 @@
             top: 20px;
         }
 
+        .points-index-page #student-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .points-index-page .student-left {
+            min-width: 0;
+            flex: 1;
+        }
+
         .points-index-page .student-card {
-            background: linear-gradient(145deg, #1e293b, #0f172a);
-            border-radius: 16px;
-            padding: 14px 18px;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(12px);
+            border-radius: 18px;
+            padding: 16px 18px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: all 0.2s ease;
-            border-left: 4px solid transparent;
-            color: #f1f5f9;
+            border: 1px solid rgba(255, 255, 255, 0.08);
             box-shadow:
-                0 4px 20px rgba(0, 0, 0, 0.5),
+                0 8px 30px rgba(0, 0, 0, 0.6),
                 inset 0 1px 0 rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.2s ease;
+            color: #f1f5f9;
         }
 
-        .points-index-page .student-card[data-house="gryffindor"] { border-left-color: #740001; }
-        .points-index-page .student-card[data-house="slytherin"] { border-left-color: #1a472a; }
-        .points-index-page .student-card[data-house="ravenclaw"] { border-left-color: #3b82f6; }
-        .points-index-page .student-card[data-house="hufflepuff"] { border-left-color: #ffcc00; }
+        .points-index-page .student-card[data-house="gryffindor"] {
+            box-shadow:
+                0 0 0 1px rgba(239, 68, 68, 0.3),
+                0 0 20px rgba(239, 68, 68, 0.4),
+                0 8px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        .points-index-page .student-card[data-house="slytherin"] {
+            box-shadow:
+                0 0 0 1px rgba(34, 197, 94, 0.3),
+                0 0 20px rgba(34, 197, 94, 0.4),
+                0 8px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        .points-index-page .student-card[data-house="ravenclaw"] {
+            box-shadow:
+                0 0 0 1px rgba(59, 130, 246, 0.4),
+                0 0 25px rgba(59, 130, 246, 0.5),
+                0 8px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        .points-index-page .student-card[data-house="hufflepuff"] {
+            box-shadow:
+                0 0 0 1px rgba(250, 204, 21, 0.4),
+                0 0 25px rgba(250, 204, 21, 0.5),
+                0 8px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        .points-index-page .student-card:hover {
+            transform: translateY(-3px);
+            box-shadow:
+                0 12px 40px rgba(0, 0, 0, 0.8),
+                0 0 20px rgba(255, 255, 255, 0.08);
+        }
+
+        .points-index-page .student-card[data-house="gryffindor"]:hover {
+            box-shadow:
+                0 12px 40px rgba(0, 0, 0, 0.8),
+                0 0 20px rgba(255, 255, 255, 0.08),
+                0 0 0 1px rgba(239, 68, 68, 0.35),
+                0 0 28px rgba(239, 68, 68, 0.5);
+        }
+
+        .points-index-page .student-card[data-house="slytherin"]:hover {
+            box-shadow:
+                0 12px 40px rgba(0, 0, 0, 0.8),
+                0 0 20px rgba(255, 255, 255, 0.08),
+                0 0 0 1px rgba(34, 197, 94, 0.35),
+                0 0 28px rgba(34, 197, 94, 0.5);
+        }
+
+        .points-index-page .student-card[data-house="ravenclaw"]:hover {
+            box-shadow:
+                0 12px 40px rgba(0, 0, 0, 0.8),
+                0 0 20px rgba(255, 255, 255, 0.08),
+                0 0 0 1px rgba(59, 130, 246, 0.45),
+                0 0 32px rgba(59, 130, 246, 0.55);
+        }
+
+        .points-index-page .student-card[data-house="hufflepuff"]:hover {
+            box-shadow:
+                0 12px 40px rgba(0, 0, 0, 0.8),
+                0 0 20px rgba(255, 255, 255, 0.08),
+                0 0 0 1px rgba(250, 204, 21, 0.45),
+                0 0 32px rgba(250, 204, 21, 0.55);
+        }
+
+        .points-index-page .student-right {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 16px;
+        }
+
+        .points-index-page .student-points-big {
+            font-size: 2rem;
+            font-weight: 900;
+            letter-spacing: 0.05em;
+            min-width: 70px;
+            text-align: right;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            line-height: 1;
+        }
+
+        .points-index-page .action-group {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+        }
 
         .points-index-page .student-name {
             font-size: 1.2rem;
@@ -70,6 +168,7 @@
         .points-index-page .student-meta {
             font-size: 0.85rem;
             color: #94a3b8;
+            margin-top: 2px;
         }
 
         .points-index-page .btn-add {
@@ -101,13 +200,6 @@
             width: 36px;
             height: 36px;
             min-width: 36px;
-        }
-
-        .points-index-page .student-card:hover {
-            transform: translateY(-2px);
-            box-shadow:
-                0 6px 30px rgba(0, 0, 0, 0.6),
-                0 0 10px rgba(255, 255, 255, 0.08);
         }
 
         .points-index-page .house-standings {
@@ -220,10 +312,10 @@
                     @php
                         $houseKey = strtolower($student->house_name ?? '');
                     @endphp
-                    <div class="student-card mb-2"
+                    <div class="student-card"
                          data-house="{{ $houseKey }}"
                          data-name="{{ strtolower($student->first_name . ' ' . $student->last_name) }}">
-                        <div>
+                        <div class="student-left">
                             <div class="student-name">
                                 <a href="/students/{{ $student->id }}" class="student-link">
                                     {{ $student->first_name }} {{ $student->last_name }}
@@ -233,38 +325,42 @@
                                 Year {{ $student->year_level }}
                                 |
                                 {{ $student->house_name ?? '—' }}
-                                |
-                                {{ $student->house_points ?? 0 }} pts
                             </div>
                         </div>
 
-                        <div class="action-group flex-shrink-0" role="group">
-                            <button type="button"
-                                    class="btn btn-sm btn-sub"
-                                    data-id="{{ (int) $student->id }}"
-                                    data-student-id="{{ (int) $student->id }}">
-                                −1
-                            </button>
-                            <button type="button"
-                                    class="btn btn-sm btn-add"
-                                    data-id="{{ (int) $student->id }}"
-                                    data-student-id="{{ (int) $student->id }}">
-                                +1
-                            </button>
-                            <button type="button"
-                                    class="btn btn-sm btn-secondary btn-commend"
-                                    data-id="{{ (int) $student->id }}"
-                                    data-student-id="{{ (int) $student->id }}"
-                                    title="Commendation">
-                                ⭐
-                            </button>
-                            <button type="button"
-                                    class="btn btn-sm btn-warning text-dark btn-award"
-                                    data-id="{{ (int) $student->id }}"
-                                    data-student-id="{{ (int) $student->id }}"
-                                    title="Award">
-                                🏆
-                            </button>
+                        <div class="student-right">
+                            <div class="student-points-big td-points" data-student-id="{{ (int) $student->id }}">
+                                {{ (int) $student->house_points }}
+                            </div>
+
+                            <div class="action-group" role="group">
+                                <button type="button"
+                                        class="btn btn-sm btn-sub"
+                                        data-id="{{ (int) $student->id }}"
+                                        data-student-id="{{ (int) $student->id }}">
+                                    −1
+                                </button>
+                                <button type="button"
+                                        class="btn btn-sm btn-add"
+                                        data-id="{{ (int) $student->id }}"
+                                        data-student-id="{{ (int) $student->id }}">
+                                    +1
+                                </button>
+                                <button type="button"
+                                        class="btn btn-sm btn-secondary btn-commend"
+                                        data-id="{{ (int) $student->id }}"
+                                        data-student-id="{{ (int) $student->id }}"
+                                        title="Commendation">
+                                    ⭐
+                                </button>
+                                <button type="button"
+                                        class="btn btn-sm btn-warning text-dark btn-award"
+                                        data-id="{{ (int) $student->id }}"
+                                        data-student-id="{{ (int) $student->id }}"
+                                        title="Award">
+                                    🏆
+                                </button>
+                            </div>
                         </div>
                     </div>
                 @endforeach
