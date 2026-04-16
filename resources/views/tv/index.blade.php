@@ -466,22 +466,71 @@
             display: contents;
         }
 
-        .hero-container {
+        .banner-container {
             display: flex;
             flex-direction: column;
             height: 100%;
-            padding: 30px 40px;
-            gap: 20px;
+            padding: 40px;
+            gap: 30px;
         }
 
-        .hero-title {
-            font-size: clamp(2rem, 3vw, 3rem);
+        .banner-title {
+            font-size: clamp(2.5rem, 3.5vw, 4rem);
+            font-weight: 900;
+            letter-spacing: 0.08em;
+        }
+
+        .banner-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            flex: 1;
+        }
+
+        .banner-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, rgba(0,0,0,0.6), rgba(0,0,0,0.3));
+            border: 2px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+
+        .banner-emoji {
+            font-size: clamp(4rem, 6vw, 6rem);
+            margin-bottom: 10px;
+        }
+
+        .banner-name {
+            font-size: clamp(1.8rem, 2.5vw, 2.5rem);
             font-weight: 800;
             letter-spacing: 0.05em;
         }
 
-        .hero-chart {
-            flex: 1;
+        .banner-points {
+            font-size: clamp(3rem, 4vw, 5rem);
+            font-weight: 900;
+            margin-top: 10px;
+        }
+
+        .banner-card[data-house="gryffindor"] {
+            background: linear-gradient(135deg, rgba(239,68,68,0.35), rgba(0,0,0,0.5));
+        }
+
+        .banner-card[data-house="slytherin"] {
+            background: linear-gradient(135deg, rgba(34,197,94,0.35), rgba(0,0,0,0.5));
+        }
+
+        .banner-card[data-house="ravenclaw"] {
+            background: linear-gradient(135deg, rgba(59,130,246,0.35), rgba(0,0,0,0.5));
+        }
+
+        .banner-card[data-house="hufflepuff"] {
+            background: linear-gradient(135deg, rgba(250,204,21,0.4), rgba(0,0,0,0.5));
         }
 
         .weather-container {
@@ -1460,25 +1509,69 @@
 
     </div>
 
-    <div class="tv-screen" id="screen-term">
+    <div class="tv-screen" id="screen-term-banners">
 
-        <div class="hero-container">
+        <div class="banner-container">
 
-            <div class="hero-title">📈 TERM PERFORMANCE</div>
+            <div class="banner-title">🏰 TERM TOTALS</div>
 
-            <div class="hero-chart" id="termChart"></div>
+            <div class="banner-grid">
+
+                @foreach($termTotals as $house)
+
+                <div class="banner-card" data-house="{{ strtolower($house->house_name) }}">
+
+                    <div class="banner-emoji">
+                        {{ houseEmoji($house->house_name) }}
+                    </div>
+
+                    <div class="banner-name">
+                        {{ strtoupper($house->house_name) }}
+                    </div>
+
+                    <div class="banner-points">
+                        {{ number_format($house->total) }}
+                    </div>
+
+                </div>
+
+                @endforeach
+
+            </div>
 
         </div>
 
     </div>
 
-    <div class="tv-screen" id="screen-annual">
+    <div class="tv-screen" id="screen-annual-banners">
 
-        <div class="hero-container">
+        <div class="banner-container">
 
-            <div class="hero-title">📊 ANNUAL PERFORMANCE</div>
+            <div class="banner-title">🏛️ ANNUAL TOTALS</div>
 
-            <div class="hero-chart" id="annualChart"></div>
+            <div class="banner-grid">
+
+                @foreach($annualTotals as $house)
+
+                <div class="banner-card" data-house="{{ strtolower($house->house_name) }}">
+
+                    <div class="banner-emoji">
+                        {{ houseEmoji($house->house_name) }}
+                    </div>
+
+                    <div class="banner-name">
+                        {{ strtoupper($house->house_name) }}
+                    </div>
+
+                    <div class="banner-points">
+                        {{ number_format($house->total) }}
+                    </div>
+
+                </div>
+
+                @endforeach
+
+            </div>
 
         </div>
 
@@ -1754,7 +1847,6 @@
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     console.log('OMM SCRIPT LOADED');
@@ -1873,97 +1965,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    const houseColors = {
-        gryffindor: '#ef4444',
-        slytherin: '#22c55e',
-        ravenclaw: '#3b82f6',
-        hufflepuff: '#facc15'
-    };
-
-    function buildSeries(data, key) {
-        const grouped = {};
-
-        data.forEach(row => {
-            const house = String(row.house_name || '').toLowerCase();
-            if (!grouped[house]) grouped[house] = [];
-            grouped[house].push(Number(row.total) || 0);
-        });
-
-        return Object.keys(grouped).map(house => ({
-            name: house,
-            data: grouped[house]
-        }));
-    }
-
-    const termChart = new ApexCharts(document.querySelector("#termChart"), {
-        chart: {
-            type: 'line',
-            height: '100%',
-            toolbar: { show: false },
-            background: 'transparent'
-        },
-        stroke: {
-            curve: 'smooth',
-            width: 4
-        },
-        markers: {
-            size: 0
-        },
-        colors: [
-            houseColors.gryffindor,
-            houseColors.slytherin,
-            houseColors.ravenclaw,
-            houseColors.hufflepuff
-        ],
-        series: buildSeries(@json($termPoints), 'week'),
-        xaxis: {
-            labels: { style: { fontSize: '14px' } }
-        },
-        yaxis: {
-            labels: { style: { fontSize: '14px' } }
-        },
-        legend: {
-            position: 'top',
-            labels: { colors: '#fff' }
-        }
-    });
-
-    termChart.render();
-
-    const annualChart = new ApexCharts(document.querySelector("#annualChart"), {
-        chart: {
-            type: 'line',
-            height: '100%',
-            toolbar: { show: false },
-            background: 'transparent'
-        },
-        stroke: {
-            curve: 'smooth',
-            width: 4
-        },
-        markers: {
-            size: 0
-        },
-        colors: [
-            houseColors.gryffindor,
-            houseColors.slytherin,
-            houseColors.ravenclaw,
-            houseColors.hufflepuff
-        ],
-        series: buildSeries(@json($annualPoints), 'month'),
-        xaxis: {
-            labels: { style: { fontSize: '14px' } }
-        },
-        yaxis: {
-            labels: { style: { fontSize: '14px' } }
-        },
-        legend: {
-            position: 'top',
-            labels: { colors: '#fff' }
-        }
-    });
-
-    annualChart.render();
 
     showScreen(currentScreen);
     animatePoints();
