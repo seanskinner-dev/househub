@@ -373,12 +373,30 @@
         }
 
         .activity-title {
-            font-size: clamp(40px, 6vw, 80px);
+            position: relative;
+            font-size: clamp(32px, 5vw, 60px);
             font-weight: 800;
-            margin-bottom: 20px;
-            text-align: center;
-            letter-spacing: 0.04em;
-            text-shadow: 0 8px 28px rgba(0, 0, 0, 0.6);
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        .activity-title::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.1),
+                transparent
+            );
+            animation: shimmer 3s infinite;
+            pointer-events: none;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
         }
 
         @keyframes activityFadeIn {
@@ -825,12 +843,8 @@
             height: 100%;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            padding: 18px 28px;
             background: transparent;
-            backdrop-filter: none;
-            border-radius: 20px;
-            padding: 20px;
             color: #ffffff;
         }
 
@@ -870,8 +884,7 @@
 
             display: grid;
             grid-template-columns: 1fr 1fr;
-            grid-auto-rows: minmax(70px, auto);
-            gap: 10px 14px;
+            gap: 8px 12px;
 
             overflow: hidden;
             max-height: 100%;
@@ -898,66 +911,138 @@
         .leaderboard-column {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 0;
         }
 
         .student-card {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 16px;
-            border-radius: 18px;
-            background: linear-gradient(
-                145deg,
-                rgba(20,20,20,0.95),
-                rgba(10,10,10,0.95)
-            );
-            border: 1px solid rgba(255,255,255,0.1);
-            font-size: 1.25rem;
-            font-weight: 700;
+            padding: 14px 18px;
+            margin-bottom: 10px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(6px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.2s ease;
             position: relative;
             overflow: hidden;
-            box-shadow:
-                0 8px 25px rgba(0,0,0,0.7),
-                0 0 16px var(--house-color);
-            backdrop-filter: blur(6px);
             color: #ffffff;
-            text-shadow: 0 2px 8px rgba(0,0,0,0.45);
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
             height: auto;
             width: 100%;
             max-width: 100%;
-            animation: studentPulse 5.2s ease-in-out infinite;
+            font-size: 1rem;
+            font-weight: 700;
+            box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+        }
+
+        .student-card:not([data-house]),
+        .student-card[data-house=""] {
+            box-shadow: 0 8px 22px rgba(0, 0, 0, 0.5);
+        }
+
+        .student-card[data-house] {
+            box-shadow:
+                0 8px 22px rgba(0, 0, 0, 0.5),
+                0 0 12px rgba(255, 255, 255, 0.05);
+        }
+
+        .student-card[data-house="gryffindor"] {
+            --house-color: #740001;
+            box-shadow:
+                0 8px 22px rgba(0, 0, 0, 0.5),
+                0 0 12px rgba(255, 255, 255, 0.05),
+                0 0 18px rgba(116, 0, 1, 0.35);
+        }
+
+        .student-card[data-house="slytherin"] {
+            --house-color: #1a472a;
+            box-shadow:
+                0 8px 22px rgba(0, 0, 0, 0.5),
+                0 0 12px rgba(255, 255, 255, 0.05),
+                0 0 18px rgba(26, 71, 42, 0.35);
+        }
+
+        .student-card[data-house="ravenclaw"] {
+            --house-color: #0e1a40;
+            box-shadow:
+                0 8px 22px rgba(0, 0, 0, 0.5),
+                0 0 12px rgba(255, 255, 255, 0.05),
+                0 0 18px rgba(14, 26, 64, 0.35);
+        }
+
+        .student-card[data-house="hufflepuff"] {
+            --house-color: #ffcc00;
+            box-shadow:
+                0 8px 22px rgba(0, 0, 0, 0.5),
+                0 0 12px rgba(255, 255, 255, 0.05),
+                0 0 18px rgba(255, 204, 0, 0.35);
+        }
+
+        .leaderboard-column .student-card:last-child {
+            margin-bottom: 0;
+        }
+
+        .student-grid .student-card,
+        .streak-list .student-card,
+        .activity-list .student-card {
+            margin-bottom: 0;
+        }
+
+        .student-card:not(.is-top-1):hover {
+            transform: scale(1.01);
+            background: rgba(255, 255, 255, 0.08);
         }
 
         .student-card::before {
             content: "";
             position: absolute;
-            left: -50px;
+            left: 0;
             top: 0;
-            width: 140px;
             height: 100%;
-            background: radial-gradient(circle, var(--house-color), transparent 70%);
-            opacity: 0.18;
+            width: 6px;
+            background: var(--house-color, #888);
+            border-top-left-radius: 14px;
+            border-bottom-left-radius: 14px;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .student-card.is-compact::before {
+            border-top-left-radius: 12px;
+            border-bottom-left-radius: 12px;
         }
 
         .student-card::after {
             content: "";
             position: absolute;
             inset: 0;
+            z-index: 0;
             background: linear-gradient(to bottom, rgba(255,255,255,0.08), rgba(0,0,0,0.25));
             pointer-events: none;
         }
 
         .student-card > * {
             position: relative;
-            z-index: 1;
+            z-index: 2;
         }
 
         .student-left {
             display: flex;
+            flex-direction: row;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
             min-width: 0;
+            flex: 1;
+        }
+
+        .student-left-main {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            min-width: 0;
+            gap: 2px;
         }
 
         .student-emoji {
@@ -966,20 +1051,71 @@
         }
 
         .student-name {
-            font-size: 1.6rem;
-            font-weight: 800;
-            letter-spacing: 0.4px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.6);
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+        }
+
+        .student-card:not(.is-compact) .student-name {
+            font-size: clamp(1.15rem, 1.6vw, 1.55rem);
+        }
+
+        .student-name strong {
+            font-weight: 900;
+            letter-spacing: 0.05em;
+        }
+
+        .student-meta {
+            font-size: 0.85rem;
+            opacity: 0.7;
+            font-weight: 600;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .student-meta:empty {
+            display: none;
+        }
+
+        .student-sub {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 700;
+            opacity: 0.82;
+            margin-top: 2px;
+        }
+
+        .student-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 6px;
+            flex-shrink: 0;
+            font-size: 1rem;
+            font-weight: 700;
+            text-align: right;
+        }
+
+        .student-right .student-points {
+            display: block;
+            font-size: 1rem;
+            font-weight: 700;
+            opacity: 1;
+            margin-top: 0;
         }
 
         .student-points {
             display: block;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-weight: 700;
-            opacity: 0.75;
+            opacity: 0.82;
             margin-top: 2px;
         }
 
@@ -995,15 +1131,17 @@
         }
 
         .student-card.is-top-1 {
-            transform: scale(1.03);
+            transform: scale(1.02);
             box-shadow:
-                0 0 16px var(--house-color),
-                0 14px 42px rgba(0,0,0,0.85);
+                0 12px 36px rgba(0, 0, 0, 0.75),
+                0 0 12px rgba(255, 255, 255, 0.06),
+                0 0 24px var(--house-color, #888);
             animation: studentPulseTop1 5s ease-in-out infinite;
         }
 
         .student-card.is-top-1:hover {
-            transform: scale(1.07);
+            transform: scale(1.04);
+            background: rgba(255, 255, 255, 0.1);
         }
 
         .student-card.is-top-1 .student-rank::before {
@@ -1012,53 +1150,48 @@
 
         .student-card.is-top-2,
         .student-card.is-top-3 {
+            background: rgba(255, 255, 255, 0.07);
             box-shadow:
-                0 0 16px var(--house-color),
-                0 11px 32px rgba(0,0,0,0.7),
-                inset 0 1px 0 rgba(255,255,255,0.05);
-        }
-
-        .student-card:not(.is-top-1):not(.is-top-2):not(.is-top-3) {
-            box-shadow:
-                0 8px 25px rgba(0,0,0,0.7),
-                0 0 16px var(--house-color);
+                0 10px 28px rgba(0, 0, 0, 0.55),
+                0 0 12px rgba(255, 255, 255, 0.05),
+                0 0 16px var(--house-color, #888),
+                inset 0 1px 0 rgba(255, 255, 255, 0.06);
         }
 
         .student-card.is-compact {
-            padding: 10px 14px;
-            border-radius: 16px;
+            padding: 12px 16px;
+            border-radius: 12px;
         }
 
         .student-card.is-compact .student-name {
-            font-size: 1.3rem;
+            font-size: 1.05rem;
+        }
+
+        .student-card.is-compact .student-right .student-points {
+            font-size: 0.95rem;
         }
 
         .student-card.is-compact .student-emoji {
-            font-size: 1.6rem;
+            font-size: 1.2rem;
         }
 
         .student-card.is-compact .student-rank {
             font-size: 0.95rem;
         }
 
-        .student-card[data-house="Hufflepuff"] {
+        .student-card[data-house="hufflepuff"] {
             color: #ffffff;
         }
 
-        .student-card[data-house="Hufflepuff"] .student-rank {
+        .student-card[data-house="hufflepuff"] .student-rank {
             border-color: rgba(0,0,0,0.25);
             background: rgba(255,255,255,0.35);
             color: #111;
         }
 
-        @keyframes studentPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-        }
-
         @keyframes studentPulseTop1 {
-            0%, 100% { transform: scale(1.03); }
-            50% { transform: scale(1.06); }
+            0%, 100% { transform: scale(1.02); }
+            50% { transform: scale(1.05); }
         }
 
         html, body, .tv-container {
@@ -1074,26 +1207,19 @@
         .top-container,
         .streak-container,
         .activity-container,
-        .points-race-container {
-            background: rgba(0, 0, 0, 0.35);
-            border-radius: 20px;
-            padding: 20px;
-            width: 100%;
+        .weather-container {
+            background: transparent;
         }
 
         .top-title,
         .streak-title,
         .activity-title,
-        .screen-title,
         .house-name,
-        .student-name,
-        .student-meta,
-        .student-points {
+        .student-name {
             color: #fff;
             font-weight: 700;
         }
 
-        .student-points,
         .student-rank,
         .break-card .label,
         .weather-break span:first-child,
@@ -1106,223 +1232,12 @@
             padding: 16px 20px;
         }
 
-        .top-container,
-        .streak-container,
-        .activity-container {
-            padding: 40px 40px;
-        }
-
-        .activity-container {
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: center;
-            padding-top: 40px;
-        }
-
-        .total-banner {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100%;
-            width: 100%;
-        }
-
-        .total-number {
-            font-size: clamp(120px, 18vw, 240px);
-            font-weight: 900;
-            line-height: 1;
-            text-align: center;
-        }
-
-        .student-card {
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        .student-card,
-        .house-card,
-        .activity-card,
-        .streak-card {
-            background: rgba(20, 20, 20, 0.85);
-            color: #fff;
-            border-radius: 16px;
-            padding: 16px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
-        }
-
-        .points { color: #ffffff; }
         .student-grid,
         .top-list,
         .streak-list,
         .break-container {
             gap: 10px 14px;
         }
-
-        .top-list {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            width: 100%;
-            height: 100%;
-        }
-
-        .top-students,
-        .activity-feed,
-        .weather-screen,
-        .streaks-screen {
-            background: transparent;
-            color: #ffffff;
-        }
-
-        .student-card,
-        .house-card,
-        .activity-card,
-        .streak-card {
-            background: linear-gradient(
-                145deg,
-                rgba(30,30,30,0.95),
-                rgba(10,10,10,0.95)
-            ) !important;
-        }
-
-        .card {
-            background: transparent;
-            border: none;
-        }
-
-        /* Neon Apple unified system */
-        .card-base,
-        .student-card,
-        .house-card,
-        .activity-card,
-        .streak-card {
-            background: linear-gradient(
-                145deg,
-                rgba(25,25,25,0.95),
-                rgba(10,10,10,0.95)
-            );
-            border-radius: 18px;
-            padding: 20px;
-            color: #ffffff;
-            box-shadow:
-                0 10px 30px rgba(0,0,0,0.6),
-                0 0 12px rgba(255,255,255,0.05);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .student-card:hover {
-            transform: scale(1.02);
-        }
-
-        .student-card {
-            min-height: 120px;
-            height: 100%;
-        }
-
-        .house-hero {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-            width: 100%;
-            height: 35%;
-        }
-
-        .house-hero .house-card {
-            width: 100%;
-            height: 100%;
-        }
-
-        .house-hero .house-card.winner {
-            transform: scale(1.05);
-            box-shadow:
-                0 14px 34px rgba(0,0,0,0.65),
-                0 0 22px var(--house-color);
-        }
-
-        .top-list {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            grid-auto-rows: 1fr;
-            gap: 20px;
-            width: 100%;
-            height: 65%;
-        }
-
-        .top-student-hero {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: flex-start;
-        }
-
-        .top-right-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 14px;
-            height: 100%;
-            align-content: start;
-        }
-
-        /* Responsive student-card layout system for TV screens */
-        .student-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 16px;
-            padding: 20px;
-            height: 100%;
-            box-sizing: border-box;
-            grid-auto-rows: 1fr;
-            width: 100%;
-            min-height: 0;
-            align-content: start;
-        }
-
-        .tv-screen .screen-inner {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .streak-list.student-grid,
-        .activity-list.student-grid,
-        .top-right-grid.student-grid,
-        .leaderboard-grid.student-grid {
-            max-width: 100%;
-            margin: 0;
-            padding: 20px;
-        }
-
-        .student-card {
-            width: 100%;
-            height: 100%;
-            min-height: 120px;
-        }
-
-        .total-banner {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100%;
-            width: 100%;
-        }
-
-        .total-number {
-            font-size: clamp(120px, 20vw, 260px);
-            font-weight: 900;
-            color: #ffffff;
-            line-height: 1;
-        }
-
-        .tv-screen.gryffindor { background: radial-gradient(#740001, #0a0a0a); }
-        .tv-screen.slytherin { background: radial-gradient(#1a472a, #0a0a0a); }
-        .tv-screen.ravenclaw { background: radial-gradient(#0e1a40, #0a0a0a); }
-        .tv-screen.hufflepuff { background: radial-gradient(#ffcc00, #0a0a0a); }
     </style>
 </head>
 
@@ -1358,7 +1273,7 @@
                 🔥 STREAKS
             </div>
 
-            <div class="streak-list student-grid">
+            <div class="streak-list">
                 @php
                     $streakData = collect([
                         ['student_name' => 'JOSH', 'student_last_name' => 'ALLEN', 'house_name' => 'Gryffindor', 'days' => 10],
@@ -1378,15 +1293,22 @@
                         $meta = houseMeta($streak['house_name']);
                         $rankClass = $loop->iteration === 1 ? ' is-top-1' : ($loop->iteration <= 3 ? ' is-top-2' : '');
                     @endphp
-                    <div class="student-card{{ $rankClass }}" data-house="{{ $streak['house_name'] }}" style="--house-color: {{ $meta['color'] }}">
+                    <div class="student-card{{ $rankClass }}" data-house="{{ strtolower($streak['house_name'] ?? '') }}">
                         <div class="student-left">
                             <span class="student-emoji">{{ $meta['emoji'] }}</span>
-                            <span>
-                                <span class="student-name">{{ $streak['student_name'] . ' ' . $streak['student_last_name'] }}</span>
-                                <span class="student-points">{{ $streak['days'] }} DAY STREAK</span>
-                            </span>
+                            <div class="student-left-main">
+                                <span class="student-name">
+                                    {{ $streak['student_name'] }}
+                                    <strong>{{ $streak['student_last_name'] }}</strong>
+                                </span>
+                                <div class="student-meta">{{ $streak['house_name'] ?? '' }}</div>
+                                <span class="student-sub">{{ $streak['days'] }} DAY STREAK</span>
+                            </div>
                         </div>
-                        <div class="student-rank">{{ $streak['days'] }} DAY STREAK</div>
+                        <div class="student-right">
+                            <span class="student-points">{{ $streak['days'] }} DAY STREAK</span>
+                            <div class="student-rank">{{ $streak['days'] }} DAY STREAK</div>
+                        </div>
                     </div>
                 @endforeach
             </div>
@@ -1400,40 +1322,45 @@
         <div class="activity-container">
 
             <div class="activity-scale">
-            @php
-                $activityLimit = 12;
-                $activityData = collect([
-                    ['student_name' => 'JOSH', 'student_last_name' => 'ALLEN', 'house_name' => 'Gryffindor', 'points' => 5, 'action' => 'Award', 'teacher' => 'Ms Blake'],
-                    ['student_name' => 'EMMA', 'student_last_name' => 'BROOKS', 'house_name' => 'Slytherin', 'points' => 4, 'action' => 'Commendation', 'teacher' => 'Mr Lee'],
-                    ['student_name' => 'LIAM', 'student_last_name' => 'CLARK', 'house_name' => 'Ravenclaw', 'points' => 3, 'action' => 'Award', 'teacher' => 'Ms Stone'],
-                    ['student_name' => 'AVA', 'student_last_name' => 'DEAN', 'house_name' => 'Hufflepuff', 'points' => 2, 'action' => 'Point', 'teacher' => 'Mr Cole'],
-                    ['student_name' => 'NOAH', 'student_last_name' => 'ELLIS', 'house_name' => 'Gryffindor', 'points' => 4, 'action' => 'Award', 'teacher' => 'Ms Blake'],
-                    ['student_name' => 'MIA', 'student_last_name' => 'FORD', 'house_name' => 'Ravenclaw', 'points' => 1, 'action' => 'Point', 'teacher' => 'Mr Wren'],
-                    ['student_name' => 'ETHAN', 'student_last_name' => 'GRANT', 'house_name' => 'Slytherin', 'points' => 5, 'action' => 'Commendation', 'teacher' => 'Mr Lee'],
-                    ['student_name' => 'ISLA', 'student_last_name' => 'HAYES', 'house_name' => 'Hufflepuff', 'points' => 2, 'action' => 'Point', 'teacher' => 'Ms Frost'],
-                    ['student_name' => 'LUCAS', 'student_last_name' => 'IRWIN', 'house_name' => 'Gryffindor', 'points' => 3, 'action' => 'Award', 'teacher' => 'Mr Cole'],
-                    ['student_name' => 'ARIA', 'student_last_name' => 'JONES', 'house_name' => 'Ravenclaw', 'points' => 1, 'action' => 'Point', 'teacher' => 'Ms Stone'],
-                ])->take($activityLimit);
-            @endphp
 
             <div class="activity-title">
-                ⚡ LATEST ACTIVITY (TOP {{ $activityData->count() }})
+                ⚡ LIVE ACTIVITY
             </div>
 
-            <div class="activity-list student-grid">
-                @foreach($activityData as $activity)
+            <div class="activity-list">
+                @php
+                    $activityData = collect([
+                        ['student_name' => 'JOSH', 'student_last_name' => 'ALLEN', 'house_name' => 'Gryffindor', 'points' => 5, 'action' => 'Award', 'teacher' => 'Ms Blake'],
+                        ['student_name' => 'EMMA', 'student_last_name' => 'BROOKS', 'house_name' => 'Slytherin', 'points' => 4, 'action' => 'Commendation', 'teacher' => 'Mr Lee'],
+                        ['student_name' => 'LIAM', 'student_last_name' => 'CLARK', 'house_name' => 'Ravenclaw', 'points' => 3, 'action' => 'Award', 'teacher' => 'Ms Stone'],
+                        ['student_name' => 'AVA', 'student_last_name' => 'DEAN', 'house_name' => 'Hufflepuff', 'points' => 2, 'action' => 'Point', 'teacher' => 'Mr Cole'],
+                        ['student_name' => 'NOAH', 'student_last_name' => 'ELLIS', 'house_name' => 'Gryffindor', 'points' => 4, 'action' => 'Award', 'teacher' => 'Ms Blake'],
+                        ['student_name' => 'MIA', 'student_last_name' => 'FORD', 'house_name' => 'Ravenclaw', 'points' => 1, 'action' => 'Point', 'teacher' => 'Mr Wren'],
+                        ['student_name' => 'ETHAN', 'student_last_name' => 'GRANT', 'house_name' => 'Slytherin', 'points' => 5, 'action' => 'Commendation', 'teacher' => 'Mr Lee'],
+                        ['student_name' => 'ISLA', 'student_last_name' => 'HAYES', 'house_name' => 'Hufflepuff', 'points' => 2, 'action' => 'Point', 'teacher' => 'Ms Frost'],
+                        ['student_name' => 'LUCAS', 'student_last_name' => 'IRWIN', 'house_name' => 'Gryffindor', 'points' => 3, 'action' => 'Award', 'teacher' => 'Mr Cole'],
+                        ['student_name' => 'ARIA', 'student_last_name' => 'JONES', 'house_name' => 'Ravenclaw', 'points' => 1, 'action' => 'Point', 'teacher' => 'Ms Stone'],
+                    ])->take(8);
+                @endphp
+                @foreach($activityData->take(8) as $activity)
                     @php
                         $meta = houseMeta($activity['house_name']);
                     @endphp
-                    <div class="student-card is-compact" data-house="{{ $activity['house_name'] }}" style="--house-color: {{ $meta['color'] }}">
+                    <div class="student-card is-compact" data-house="{{ strtolower($activity['house_name'] ?? '') }}">
                         <div class="student-left">
                             <span class="student-emoji">{{ $meta['emoji'] }}</span>
-                            <span>
-                                <span class="student-name">{{ $activity['student_name'] }} {{ $activity['student_last_name'] }}</span>
-                                <span class="student-points">{{ $activity['action'] }} - {{ $activity['teacher'] }}</span>
-                            </span>
+                            <div class="student-left-main">
+                                <span class="student-name">
+                                    {{ $activity['student_name'] }}
+                                    <strong>{{ $activity['student_last_name'] }}</strong>
+                                </span>
+                                <div class="student-meta">{{ $activity['action'] }} - {{ $activity['teacher'] }}</div>
+                            </div>
                         </div>
-                        <div class="student-rank">+{{ $activity['points'] }}</div>
+                        <div class="student-right">
+                            <span class="student-points">+{{ $activity['points'] }} pts</span>
+                            <div class="student-rank">+{{ $activity['points'] }}</div>
+                        </div>
                     </div>
                 @endforeach
             </div>
@@ -1449,17 +1376,8 @@
         <div class="top-container">
 
             @php
-                $topDisplay = $topStudents->take(14)->values();
-                $heroStudent = $topDisplay->first();
-                $restStudents = $topDisplay->slice(1)->values();
-                $houseHeroCards = collect($houses ?? [])->map(function ($house) use ($houseTotalsYear) {
-                    $points = (int) (optional($houseTotalsYear->get($house->id))->total ?? 0);
-                    return (object) [
-                        'name' => $house->name,
-                        'points' => $points,
-                    ];
-                })->values();
-                $houseWinnerName = optional($houseHeroCards->sortByDesc('points')->first())->name;
+                $left = $topStudents->slice(0, 5)->values();
+                $right = $topStudents->slice(5, 5)->values();
             @endphp
 
             <div class="top-title">
@@ -1495,35 +1413,87 @@
                         $heroHouse = $heroStudent->house_name ?? null;
                         $heroStyle = $houseStyles[$heroHouse] ?? ['color' => '#444', 'emoji' => '🏫'];
                     @endphp
-                    <div class="student-card is-top-1 top-student-hero" data-house="{{ $heroHouse }}" style="--house-color: {{ $heroStyle['color'] }};">
+                    <div class="student-card is-top-1 top-student-hero" data-house="{{ strtolower($heroStudent->house_name ?? $heroStudent->house ?? '') }}">
                         <div class="student-left">
                             <span class="student-emoji">{{ $heroStyle['emoji'] }}</span>
-                            <span>
-                                <span class="student-name">{{ $heroStudent->first_name }} {{ $heroStudent->last_name }}</span>
-                                <span class="student-points">{{ (int) $heroStudent->house_points }} pts</span>
-                            </span>
+                            <div class="student-left-main">
+                                <span class="student-name">
+                                    {{ $heroStudent->first_name }}
+                                    <strong>{{ $heroStudent->last_name }}</strong>
+                                </span>
+                                <div class="student-meta">{{ $heroStudent->year_level ?? '' }}</div>
+                            </div>
                         </div>
-                        <div class="student-rank">#1</div>
+                        <div class="student-right">
+                            <span class="student-points">{{ (int) $heroStudent->house_points }} pts</span>
+                            <div class="student-rank">#1</div>
+                        </div>
                     </div>
                 @endif
 
                 <div class="top-right-grid student-grid">
                     @foreach($restStudents as $index => $student)
                         @php
+                            $houseStyles = [
+                                'Gryffindor' => ['color' => '#740001', 'emoji' => '🦁'],
+                                'GryffINDOR' => ['color' => '#740001', 'emoji' => '🦁'],
+                                'Slytherin' => ['color' => '#1a472a', 'emoji' => '🐍'],
+                                'Ravenclaw' => ['color' => '#3b82f6', 'emoji' => '🦅'],
+                                'Hufflepuff' => ['color' => '#ffcc00', 'emoji' => '🦡'],
+                            ];
                             $house = $student->house_name ?? null;
                             $style = $houseStyles[$house] ?? ['color' => '#444', 'emoji' => '🏫'];
-                            $rankNumber = $index + 2;
-                            $rankClass = $rankNumber <= 3 ? ' is-top-2' : '';
+                            $rankNumber = $index + 1;
+                            $rankClass = $rankNumber === 1 ? ' is-top-1' : ($rankNumber <= 3 ? ' is-top-2' : '');
                         @endphp
-                        <div class="student-card{{ $rankClass }}" data-house="{{ $house }}" style="--house-color: {{ $style['color'] }};">
+                        <div class="student-card{{ $rankClass }}" data-house="{{ strtolower($student->house_name ?? $student->house ?? '') }}">
                             <div class="student-left">
                                 <span class="student-emoji">{{ $style['emoji'] }}</span>
-                                <span>
-                                    <span class="student-name">{{ $student->first_name }} {{ $student->last_name }}</span>
-                                    <span class="student-points">{{ (int) $student->house_points }} pts</span>
-                                </span>
+                                <div class="student-left-main">
+                                    <span class="student-name">
+                                        {{ $student->first_name }}
+                                        <strong>{{ $student->last_name }}</strong>
+                                    </span>
+                                    <div class="student-meta">{{ $student->year_level ?? '' }}</div>
+                                </div>
                             </div>
-                            <div class="student-rank">#{{ $rankNumber }}</div>
+                            <div class="student-right">
+                                <span class="student-points">{{ (int) $student->house_points }} pts</span>
+                                <div class="student-rank">#{{ $rankNumber }}</div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+                <div class="leaderboard-column">
+                    @foreach($right as $index => $student)
+                        @php
+                            $houseStyles = [
+                                'Gryffindor' => ['color' => '#740001', 'emoji' => '🦁'],
+                                'GryffINDOR' => ['color' => '#740001', 'emoji' => '🦁'],
+                                'Slytherin' => ['color' => '#1a472a', 'emoji' => '🐍'],
+                                'Ravenclaw' => ['color' => '#3b82f6', 'emoji' => '🦅'],
+                                'Hufflepuff' => ['color' => '#ffcc00', 'emoji' => '🦡'],
+                            ];
+                            $house = $student->house_name ?? null;
+                            $style = $houseStyles[$house] ?? ['color' => '#444', 'emoji' => '🏫'];
+                            $rankNumber = $index + 6;
+                            $rankClass = $rankNumber <= 3 ? ' is-top-2' : '';
+                        @endphp
+                        <div class="student-card{{ $rankClass }}" data-house="{{ strtolower($student->house_name ?? $student->house ?? '') }}">
+                            <div class="student-left">
+                                <span class="student-emoji">{{ $style['emoji'] }}</span>
+                                <div class="student-left-main">
+                                    <span class="student-name">
+                                        {{ $student->first_name }}
+                                        <strong>{{ $student->last_name }}</strong>
+                                    </span>
+                                    <div class="student-meta">{{ $student->year_level ?? '' }}</div>
+                                </div>
+                            </div>
+                            <div class="student-right">
+                                <span class="student-points">{{ (int) $student->house_points }} pts</span>
+                                <div class="student-rank">#{{ $rankNumber }}</div>
+                            </div>
                         </div>
                     @endforeach
                 </div>
@@ -1625,126 +1595,236 @@
 
     <div class="tv-screen" id="screen-top-gryffindor">
         <div class="screen-inner gryffindor">
-            <h1 class="screen-title">Top 14 - Gryffindor</h1>
+            <h1 class="screen-title">Top 10 - Gryffindor</h1>
             @php
-                $gryffindorStudents = $topGryffindor->take(14)->values();
+                $left = $topGryffindor->slice(0, 5)->values();
+                $right = $topGryffindor->slice(5, 5)->values();
             @endphp
-            <div class="leaderboard-grid student-grid">
-                @foreach($gryffindorStudents as $index => $student)
-                    @php
-                        $meta = houseMeta($student->house_name ?? 'Gryffindor');
-                        $rankClass = $loop->iteration === 1 ? ' is-top-1' : ($loop->iteration <= 3 ? ' is-top-2' : '');
-                    @endphp
-                    <div class="student-card{{ $rankClass }}" data-house="Gryffindor" style="--house-color: {{ $meta['color'] }}">
-                        <div class="student-left">
-                            <span class="student-emoji">{{ $meta['emoji'] }}</span>
-                            <span>
-                                <span class="student-name">{{ $student->first_name }} {{ $student->last_name }}</span>
+            <div class="leaderboard-grid">
+                <div class="leaderboard-column">
+                    @foreach($left as $index => $student)
+                        @php
+                            $meta = houseMeta($student->house_name ?? 'Gryffindor');
+                            $rankClass = $loop->iteration === 1 ? ' is-top-1' : ($loop->iteration <= 3 ? ' is-top-2' : '');
+                        @endphp
+                        <div class="student-card{{ $rankClass }}" data-house="{{ strtolower($student->house_name ?? $student->house ?? 'gryffindor') }}">
+                            <div class="student-left">
+                                <span class="student-emoji">{{ $meta['emoji'] }}</span>
+                                <div class="student-left-main">
+                                    <span class="student-name">
+                                        {{ $student->first_name }}
+                                        <strong>{{ $student->last_name }}</strong>
+                                    </span>
+                                    <div class="student-meta">{{ $student->year_level ?? '' }}</div>
+                                </div>
+                            </div>
+                            <div class="student-right">
                                 <span class="student-points">{{ (int) $student->house_points }} pts</span>
-                            </span>
+                                <div class="student-rank">#{{ $index + 1 }}</div>
+                            </div>
                         </div>
-                        <div class="student-rank">#{{ $index + 1 }}</div>
-                    </div>
-                @endforeach
+                    @endforeach
+                </div>
+                <div class="leaderboard-column">
+                    @foreach($right as $index => $student)
+                        @php
+                            $meta = houseMeta($student->house_name ?? 'Gryffindor');
+                        @endphp
+                        <div class="student-card" data-house="{{ strtolower($student->house_name ?? $student->house ?? 'gryffindor') }}">
+                            <div class="student-left">
+                                <span class="student-emoji">{{ $meta['emoji'] }}</span>
+                                <div class="student-left-main">
+                                    <span class="student-name">
+                                        {{ $student->first_name }}
+                                        <strong>{{ $student->last_name }}</strong>
+                                    </span>
+                                    <div class="student-meta">{{ $student->year_level ?? '' }}</div>
+                                </div>
+                            </div>
+                            <div class="student-right">
+                                <span class="student-points">{{ (int) $student->house_points }} pts</span>
+                                <div class="student-rank">#{{ $index + 6 }}</div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
             </div>
         </div>
     </div>
 
     <div class="tv-screen" id="screen-top-slytherin">
         <div class="screen-inner slytherin">
-            <h1 class="screen-title">Top 14 - Slytherin</h1>
+            <h1 class="screen-title">Top 10 - Slytherin</h1>
             @php
-                $slytherinStudents = $topSlytherin->take(14)->values();
+                $left = $topSlytherin->slice(0, 5)->values();
+                $right = $topSlytherin->slice(5, 5)->values();
             @endphp
-            <div class="leaderboard-grid student-grid">
-                @foreach($slytherinStudents as $index => $student)
-                    @php
-                        $meta = houseMeta($student->house_name ?? 'Slytherin');
-                        $rankClass = $loop->iteration === 1 ? ' is-top-1' : ($loop->iteration <= 3 ? ' is-top-2' : '');
-                    @endphp
-                    <div class="student-card{{ $rankClass }}" data-house="Slytherin" style="--house-color: {{ $meta['color'] }}">
-                        <div class="student-left">
-                            <span class="student-emoji">{{ $meta['emoji'] }}</span>
-                            <span>
-                                <span class="student-name">{{ $student->first_name }} {{ $student->last_name }}</span>
+            <div class="leaderboard-grid">
+                <div class="leaderboard-column">
+                    @foreach($left as $index => $student)
+                        @php
+                            $meta = houseMeta($student->house_name ?? 'Slytherin');
+                            $rankClass = $loop->iteration === 1 ? ' is-top-1' : ($loop->iteration <= 3 ? ' is-top-2' : '');
+                        @endphp
+                        <div class="student-card{{ $rankClass }}" data-house="{{ strtolower($student->house_name ?? $student->house ?? 'slytherin') }}">
+                            <div class="student-left">
+                                <span class="student-emoji">{{ $meta['emoji'] }}</span>
+                                <div class="student-left-main">
+                                    <span class="student-name">
+                                        {{ $student->first_name }}
+                                        <strong>{{ $student->last_name }}</strong>
+                                    </span>
+                                    <div class="student-meta">{{ $student->year_level ?? '' }}</div>
+                                </div>
+                            </div>
+                            <div class="student-right">
                                 <span class="student-points">{{ (int) $student->house_points }} pts</span>
-                            </span>
+                                <div class="student-rank">#{{ $index + 1 }}</div>
+                            </div>
                         </div>
-                        <div class="student-rank">#{{ $index + 1 }}</div>
-                    </div>
-                @endforeach
+                    @endforeach
+                </div>
+                <div class="leaderboard-column">
+                    @foreach($right as $index => $student)
+                        @php
+                            $meta = houseMeta($student->house_name ?? 'Slytherin');
+                        @endphp
+                        <div class="student-card" data-house="{{ strtolower($student->house_name ?? $student->house ?? 'slytherin') }}">
+                            <div class="student-left">
+                                <span class="student-emoji">{{ $meta['emoji'] }}</span>
+                                <div class="student-left-main">
+                                    <span class="student-name">
+                                        {{ $student->first_name }}
+                                        <strong>{{ $student->last_name }}</strong>
+                                    </span>
+                                    <div class="student-meta">{{ $student->year_level ?? '' }}</div>
+                                </div>
+                            </div>
+                            <div class="student-right">
+                                <span class="student-points">{{ (int) $student->house_points }} pts</span>
+                                <div class="student-rank">#{{ $index + 6 }}</div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
             </div>
         </div>
     </div>
 
     <div class="tv-screen" id="screen-top-ravenclaw">
         <div class="screen-inner ravenclaw">
-            <h1 class="screen-title">Top 14 - Ravenclaw</h1>
+            <h1 class="screen-title">Top 10 - Ravenclaw</h1>
             @php
-                $ravenclawStudents = $topRavenclaw->take(14)->values();
+                $left = $topRavenclaw->slice(0, 5)->values();
+                $right = $topRavenclaw->slice(5, 5)->values();
             @endphp
-            <div class="leaderboard-grid student-grid">
-                @foreach($ravenclawStudents as $index => $student)
-                    @php
-                        $meta = houseMeta($student->house_name ?? 'Ravenclaw');
-                        $rankClass = $loop->iteration === 1 ? ' is-top-1' : ($loop->iteration <= 3 ? ' is-top-2' : '');
-                    @endphp
-                    <div class="student-card{{ $rankClass }}" data-house="Ravenclaw" style="--house-color: {{ $meta['color'] }}">
-                        <div class="student-left">
-                            <span class="student-emoji">{{ $meta['emoji'] }}</span>
-                            <span>
-                                <span class="student-name">{{ $student->first_name }} {{ $student->last_name }}</span>
+            <div class="leaderboard-grid">
+                <div class="leaderboard-column">
+                    @foreach($left as $index => $student)
+                        @php
+                            $meta = houseMeta($student->house_name ?? 'Ravenclaw');
+                            $rankClass = $loop->iteration === 1 ? ' is-top-1' : ($loop->iteration <= 3 ? ' is-top-2' : '');
+                        @endphp
+                        <div class="student-card{{ $rankClass }}" data-house="{{ strtolower($student->house_name ?? $student->house ?? 'ravenclaw') }}">
+                            <div class="student-left">
+                                <span class="student-emoji">{{ $meta['emoji'] }}</span>
+                                <div class="student-left-main">
+                                    <span class="student-name">
+                                        {{ $student->first_name }}
+                                        <strong>{{ $student->last_name }}</strong>
+                                    </span>
+                                    <div class="student-meta">{{ $student->year_level ?? '' }}</div>
+                                </div>
+                            </div>
+                            <div class="student-right">
                                 <span class="student-points">{{ (int) $student->house_points }} pts</span>
-                            </span>
+                                <div class="student-rank">#{{ $index + 1 }}</div>
+                            </div>
                         </div>
-                        <div class="student-rank">#{{ $index + 1 }}</div>
-                    </div>
-                @endforeach
+                    @endforeach
+                </div>
+                <div class="leaderboard-column">
+                    @foreach($right as $index => $student)
+                        @php
+                            $meta = houseMeta($student->house_name ?? 'Ravenclaw');
+                        @endphp
+                        <div class="student-card" data-house="{{ strtolower($student->house_name ?? $student->house ?? 'ravenclaw') }}">
+                            <div class="student-left">
+                                <span class="student-emoji">{{ $meta['emoji'] }}</span>
+                                <div class="student-left-main">
+                                    <span class="student-name">
+                                        {{ $student->first_name }}
+                                        <strong>{{ $student->last_name }}</strong>
+                                    </span>
+                                    <div class="student-meta">{{ $student->year_level ?? '' }}</div>
+                                </div>
+                            </div>
+                            <div class="student-right">
+                                <span class="student-points">{{ (int) $student->house_points }} pts</span>
+                                <div class="student-rank">#{{ $index + 6 }}</div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
             </div>
         </div>
     </div>
 
     <div class="tv-screen" id="screen-top-hufflepuff">
         <div class="screen-inner hufflepuff">
-            <h1 class="screen-title">Top 14 - Hufflepuff</h1>
+            <h1 class="screen-title">Top 10 - Hufflepuff</h1>
             @php
-                $hufflepuffStudents = $topHufflepuff->take(14)->values();
+                $left = $topHufflepuff->slice(0, 5)->values();
+                $right = $topHufflepuff->slice(5, 5)->values();
             @endphp
-            <div class="leaderboard-grid student-grid">
-                @foreach($hufflepuffStudents as $index => $student)
-                    @php
-                        $meta = houseMeta($student->house_name ?? 'Hufflepuff');
-                        $rankClass = $loop->iteration === 1 ? ' is-top-1' : ($loop->iteration <= 3 ? ' is-top-2' : '');
-                    @endphp
-                    <div class="student-card{{ $rankClass }}" data-house="Hufflepuff" style="--house-color: {{ $meta['color'] }}">
-                        <div class="student-left">
-                            <span class="student-emoji">{{ $meta['emoji'] }}</span>
-                            <span>
-                                <span class="student-name">{{ $student->first_name }} {{ $student->last_name }}</span>
+            <div class="leaderboard-grid">
+                <div class="leaderboard-column">
+                    @foreach($left as $index => $student)
+                        @php
+                            $meta = houseMeta($student->house_name ?? 'Hufflepuff');
+                            $rankClass = $loop->iteration === 1 ? ' is-top-1' : ($loop->iteration <= 3 ? ' is-top-2' : '');
+                        @endphp
+                        <div class="student-card{{ $rankClass }}" data-house="{{ strtolower($student->house_name ?? $student->house ?? 'hufflepuff') }}">
+                            <div class="student-left">
+                                <span class="student-emoji">{{ $meta['emoji'] }}</span>
+                                <div class="student-left-main">
+                                    <span class="student-name">
+                                        {{ $student->first_name }}
+                                        <strong>{{ $student->last_name }}</strong>
+                                    </span>
+                                    <div class="student-meta">{{ $student->year_level ?? '' }}</div>
+                                </div>
+                            </div>
+                            <div class="student-right">
                                 <span class="student-points">{{ (int) $student->house_points }} pts</span>
-                            </span>
+                                <div class="student-rank">#{{ $index + 1 }}</div>
+                            </div>
                         </div>
-                        <div class="student-rank">#{{ $index + 1 }}</div>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-    </div>
-
-    <div class="tv-screen" id="screen-total-year" data-leading-house="{{ $leadingHouseYear }}">
-        <div class="screen-inner">
-            <h1 class="screen-title">TOTAL HOUSE POINTS (YEAR)</h1>
-            <div class="total-banner">
-                <div class="total-number">{{ (int) collect($houseTotalsYear ?? [])->sum('total') }}</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="tv-screen" id="screen-total-term" data-leading-house="{{ $leadingHouseTerm }}">
-        <div class="screen-inner">
-            <h1 class="screen-title">TOTAL HOUSE POINTS (TERM)</h1>
-            <div class="total-banner">
-                <div class="total-number">{{ (int) collect($houseTotalsTerm ?? [])->sum('total') }}</div>
+                    @endforeach
+                </div>
+                <div class="leaderboard-column">
+                    @foreach($right as $index => $student)
+                        @php
+                            $meta = houseMeta($student->house_name ?? 'Hufflepuff');
+                        @endphp
+                        <div class="student-card" data-house="{{ strtolower($student->house_name ?? $student->house ?? 'hufflepuff') }}">
+                            <div class="student-left">
+                                <span class="student-emoji">{{ $meta['emoji'] }}</span>
+                                <div class="student-left-main">
+                                    <span class="student-name">
+                                        {{ $student->first_name }}
+                                        <strong>{{ $student->last_name }}</strong>
+                                    </span>
+                                    <div class="student-meta">{{ $student->year_level ?? '' }}</div>
+                                </div>
+                            </div>
+                            <div class="student-right">
+                                <span class="student-points">{{ (int) $student->house_points }} pts</span>
+                                <div class="student-rank">#{{ $index + 6 }}</div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
             </div>
         </div>
     </div>
@@ -1845,16 +1925,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (current) current.classList.remove('active');
         next.classList.add('active');
-
-        screens.forEach(function (s) {
-            s.classList.remove('gryffindor', 'slytherin', 'ravenclaw', 'hufflepuff');
-        });
-        if (nextId === 'screen-total-term' || nextId === 'screen-total-year') {
-            var house = next.dataset.leadingHouse ? String(next.dataset.leadingHouse).toLowerCase() : '';
-            if (house) {
-                next.classList.add(house);
-            }
-        }
 
         if (nextId === 'screen-points-race') {
             const screen = document.getElementById('screen-points-race');
