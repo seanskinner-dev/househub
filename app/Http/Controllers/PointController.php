@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Award;
 use App\Models\Commendation;
+use App\Models\Student;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -383,16 +384,8 @@ class PointController extends Controller
             return Carbon::parse($d)->format('D');
         });
 
-        $topStudents = DB::table('students')
-            ->join('houses', 'students.house_id', '=', 'houses.id')
-            ->select(
-                'students.*',
-                DB::raw("TRIM(COALESCE(students.first_name, '') || ' ' || COALESCE(students.last_name, '')) as name"),
-                'houses.name as house_name',
-                'houses.colour_hex as house_colour'
-            )
-            ->orderByDesc('students.house_points')
-            ->limit(16)
+        $topStudents = Student::orderByDesc('house_points')
+            ->take(16)
             ->get();
 
         $topTeachers = DB::table('point_transactions')
@@ -583,11 +576,6 @@ class PointController extends Controller
 
         $houseWinnerName = $leadingHouseYear;
 
-        $heroStudent = $topStudents->isEmpty() ? null : $topStudents->first();
-        $restStudents = $topStudents->count() > 1
-            ? $topStudents->slice(1, 4)->values()
-            : collect();
-
         return view('tv.index', [
             'series' => $apexSeries,
             'dates' => $labels,
@@ -602,8 +590,6 @@ class PointController extends Controller
             'leadingHouseYear' => $leadingHouseYear,
             'houseHeroCards' => $houseHeroCards,
             'houseWinnerName' => $houseWinnerName,
-            'heroStudent' => $heroStudent,
-            'restStudents' => $restStudents,
             'topGryffindor' => $topGryffindor,
             'topSlytherin' => $topSlytherin,
             'topRavenclaw' => $topRavenclaw,
