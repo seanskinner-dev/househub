@@ -9,9 +9,23 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Schema;
 
 class PointController extends Controller
 {
+    private function pointTransactionsHasTeacherName(): bool
+    {
+        static $hasTeacherName = null;
+
+        if ($hasTeacherName !== null) {
+            return $hasTeacherName;
+        }
+
+        $hasTeacherName = Schema::hasColumn('point_transactions', 'teacher_name');
+
+        return $hasTeacherName;
+    }
+
     public function index()
     {
         // 🔥 ONLY CHANGE: JOIN houses to get house_name
@@ -24,6 +38,12 @@ class PointController extends Controller
             ->orderBy('students.id')
             ->get();
 
+        $hasTeacherName = $this->pointTransactionsHasTeacherName();
+
+        $recentTeacherSelect = $hasTeacherName
+            ? DB::raw("COALESCE(point_transactions.teacher_name, users.name, 'Unknown') as teacher")
+            : DB::raw("COALESCE(users.name, 'Unknown') as teacher");
+
         $recent = DB::table('point_transactions')
             ->leftJoin('students', 'point_transactions.student_id', '=', 'students.id')
             ->leftJoin('houses', 'point_transactions.house_id', '=', 'houses.id')
@@ -35,7 +55,7 @@ class PointController extends Controller
                 'point_transactions.amount',
                 'point_transactions.category',
                 'point_transactions.created_at',
-                DB::raw("COALESCE(point_transactions.teacher_name, users.name, 'Unknown') as teacher")
+                $recentTeacherSelect
             )
             ->orderByDesc('point_transactions.created_at')
             ->limit(6)
@@ -67,8 +87,9 @@ class PointController extends Controller
             $teacherLabel = $demoTeachers[array_rand($demoTeachers)];
             $userId = null;
         }
+        $hasTeacherName = $this->pointTransactionsHasTeacherName();
 
-        return DB::transaction(function () use ($request, $amount, $userId, $teacherLabel) {
+        return DB::transaction(function () use ($request, $amount, $userId, $teacherLabel, $hasTeacherName) {
 
             $student = null;
             $house = null;
@@ -99,17 +120,20 @@ class PointController extends Controller
                     ->where('id', $house->id)
                     ->value('points') ?? 0);
 
-                DB::table('point_transactions')->insert([
+                $houseInsert = [
                     'student_id' => null,
                     'house_id' => $house->id,
                     'amount' => $amount,
                     'category' => 'manual',
                     'description' => 'House points awarded',
                     'awarded_by' => $userId,
-                    'teacher_name' => $teacherLabel,
                     'created_at' => now(),
                     'updated_at' => now(),
-                ]);
+                ];
+                if ($hasTeacherName) {
+                    $houseInsert['teacher_name'] = $teacherLabel;
+                }
+                DB::table('point_transactions')->insert($houseInsert);
 
                 $recentEntry = [
                     'amount' => $amount,
@@ -156,7 +180,7 @@ class PointController extends Controller
                             ->value('points') ?? 0);
                     }
 
-                    DB::table('point_transactions')->insert([
+                    $studentInsert = [
                         'student_id' => $student->id,
                         'house_id' => $house->id ?? null,
                         'amount' => $amount,
@@ -164,10 +188,13 @@ class PointController extends Controller
                         'category' => $request->input('type', 'manual'),
                         'description' => $request->input('description', ''),
                         'awarded_by' => $userId,
-                        'teacher_name' => $teacherLabel,
                         'created_at' => now(),
                         'updated_at' => now(),
-                    ]);
+                    ];
+                    if ($hasTeacherName) {
+                        $studentInsert['teacher_name'] = $teacherLabel;
+                    }
+                    DB::table('point_transactions')->insert($studentInsert);
 
                     $recentEntry = [
                         'amount' => $amount,
@@ -210,6 +237,7 @@ class PointController extends Controller
             $teacherName = $demoTeachers[array_rand($demoTeachers)];
             $userId = null;
         }
+        $hasTeacherName = $this->pointTransactionsHasTeacherName();
 
         $data = validator($request->all(), [
             'student_id' => 'required|integer|exists:students,id',
@@ -223,7 +251,7 @@ class PointController extends Controller
 
         $houseId = $student->house_id ?? null;
 
-        DB::transaction(function () use ($data, $userId, $teacherName, $student, $houseId) {
+        DB::transaction(function () use ($data, $userId, $teacherName, $student, $houseId, $hasTeacherName) {
             $description = trim((string) ($data['description'] ?? ''));
             if ($description === '') {
                 $description = 'Commendation';
@@ -234,17 +262,20 @@ class PointController extends Controller
                 'awarded_by' => $userId,
             ]);
 
-            DB::table('point_transactions')->insert([
+            $insertData = [
                 'student_id' => $student->id,
                 'house_id' => $houseId,
                 'amount' => 0,
                 'category' => 'commendation',
                 'description' => $description,
                 'awarded_by' => $userId,
-                'teacher_name' => $teacherName,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]);
+            ];
+            if ($hasTeacherName) {
+                $insertData['teacher_name'] = $teacherName;
+            }
+            DB::table('point_transactions')->insert($insertData);
         });
 
         $who = trim(($student->first_name ?? '').' '.($student->last_name ?? ''));
@@ -282,6 +313,7 @@ class PointController extends Controller
             $teacherName = $demoTeachers[array_rand($demoTeachers)];
             $userId = null;
         }
+        $hasTeacherName = $this->pointTransactionsHasTeacherName();
 
         $data = validator($request->all(), [
             'student_id' => 'required|integer|exists:students,id',
@@ -296,7 +328,7 @@ class PointController extends Controller
 
         $houseId = $student->house_id ?? null;
 
-        DB::transaction(function () use ($data, $userId, $teacherName, $student, $houseId) {
+        DB::transaction(function () use ($data, $userId, $teacherName, $student, $houseId, $hasTeacherName) {
             Award::create([
                 'student_id' => $student->id,
                 'awarded_by' => $userId,
@@ -304,17 +336,20 @@ class PointController extends Controller
                 'description' => $data['description'],
             ]);
 
-            DB::table('point_transactions')->insert([
+            $insertData = [
                 'student_id' => $student->id,
                 'house_id' => $houseId,
                 'amount' => 0,
                 'category' => 'award',
                 'description' => $data['award_name'].': '.$data['description'],
                 'awarded_by' => $userId,
-                'teacher_name' => $teacherName,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]);
+            ];
+            if ($hasTeacherName) {
+                $insertData['teacher_name'] = $teacherName;
+            }
+            DB::table('point_transactions')->insert($insertData);
         });
 
         $who = trim(($student->first_name ?? '').' '.($student->last_name ?? ''));
@@ -347,9 +382,15 @@ class PointController extends Controller
             ->orderByDesc('created_at')
             ->get();
 
+        $hasTeacherName = $this->pointTransactionsHasTeacherName();
+
+        $teacherNameSelect = $hasTeacherName
+            ? DB::raw("COALESCE(point_transactions.teacher_name, users.name, 'Unknown') as teacher_name")
+            : DB::raw("COALESCE(users.name, 'Unknown') as teacher_name");
+
         $pointTransactions = DB::table('point_transactions')
             ->leftJoin('users', 'point_transactions.awarded_by', '=', 'users.id')
-            ->select('point_transactions.*', DB::raw("COALESCE(point_transactions.teacher_name, users.name, 'Unknown') as teacher_name"))
+            ->select('point_transactions.*', $teacherNameSelect)
             ->where('point_transactions.student_id', $id)
             ->where('point_transactions.amount', '!=', 0)
             ->orderByDesc('point_transactions.created_at')
@@ -357,7 +398,7 @@ class PointController extends Controller
 
         $commendations = DB::table('point_transactions')
             ->leftJoin('users', 'point_transactions.awarded_by', '=', 'users.id')
-            ->select('point_transactions.*', DB::raw("COALESCE(point_transactions.teacher_name, users.name, 'Unknown') as teacher_name"))
+            ->select('point_transactions.*', $teacherNameSelect)
             ->where('point_transactions.student_id', $id)
             ->where('point_transactions.category', 'commendation')
             ->whereNotNull('point_transactions.description')
