@@ -900,40 +900,40 @@
             --house-color: var(--gryffindor);
             background: linear-gradient(
                 135deg,
-                rgba(239, 68, 68, 0.18),
+                rgba(239, 68, 68, 0.35),
                 rgba(255,255,255,0.04)
             );
-            box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
+            box-shadow: 0 0 18px rgba(239, 68, 68, 0.4);
         }
 
         .student-card[data-house="slytherin"] {
             --house-color: var(--slytherin);
             background: linear-gradient(
                 135deg,
-                rgba(34, 197, 94, 0.18),
+                rgba(34, 197, 94, 0.35),
                 rgba(255,255,255,0.04)
             );
-            box-shadow: 0 0 12px rgba(34, 197, 94, 0.4);
+            box-shadow: 0 0 18px rgba(34, 197, 94, 0.4);
         }
 
         .student-card[data-house="ravenclaw"] {
             --house-color: var(--ravenclaw);
             background: linear-gradient(
                 135deg,
-                rgba(59, 130, 246, 0.18),
+                rgba(59, 130, 246, 0.35),
                 rgba(255,255,255,0.04)
             );
-            box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
+            box-shadow: 0 0 18px rgba(59, 130, 246, 0.4);
         }
 
         .student-card[data-house="hufflepuff"] {
             --house-color: var(--hufflepuff);
             background: linear-gradient(
                 135deg,
-                rgba(250, 204, 21, 0.20),
+                rgba(250, 204, 21, 0.40),
                 rgba(255,255,255,0.04)
             );
-            box-shadow: 0 0 12px rgba(250, 204, 21, 0.4);
+            box-shadow: 0 0 18px rgba(250, 204, 21, 0.4);
         }
 
         .leaderboard-column .student-card:last-child {
@@ -1403,11 +1403,11 @@
                     {{ $index === 0 ? 'is-top-1' : '' }}
                     {{ $index === 1 ? 'is-top-2' : '' }}
                     {{ $index === 2 ? 'is-top-3' : '' }}"
-                    data-house="{{ strtolower($student->house_name) }}">
+                    data-house="{{ strtolower($student->house_name ?? $student->house->name ?? '') }}">
 
                     <div class="student-left">
 
-                        <span class="student-emoji">{{ houseEmoji($student->house_name) }}</span>
+                        <span class="student-emoji">{{ houseEmoji($student->house_name ?? $student->house->name ?? '') }}</span>
 
                         <div class="student-left-main">
                             <span class="student-name">
@@ -1416,7 +1416,7 @@
                             </span>
 
                             <div class="student-meta">
-                                {{ $student->house_name }}
+                                {{ $student->house_name ?? $student->house->name ?? '' }}
                             </div>
 
                             <span class="student-sub">
