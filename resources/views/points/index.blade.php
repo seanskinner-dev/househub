@@ -237,6 +237,29 @@
             border-radius: 8px;
         }
 
+        .points-index-page .points-header {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(16px);
+            border-radius: 20px;
+            padding: 18px 20px;
+            margin-bottom: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow:
+                0 10px 40px rgba(0, 0, 0, 0.6),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .points-index-page .points-header .house-bar {
+            margin-bottom: 0;
+        }
+
+        .points-index-page .points-header .search-container {
+            margin-bottom: 0;
+        }
+
         .points-index-page .house-bar {
             display: flex;
             gap: 8px;
@@ -298,8 +321,6 @@
 
     <div class="container-fluid points-index-page" style="max-width: 1200px;">
 
-        <h1 class="h4 mb-3" style="color: #f1f5f9;">Award points</h1>
-
         @php
             $pillPoints = [
                 'gryffindor' => 0,
@@ -315,34 +336,34 @@
             }
         @endphp
 
+        <div class="points-header">
+            <h1 class="h4 mb-0" style="color: #f1f5f9;">Award points</h1>
+
+            <div class="house-bar">
+                <div class="house-item gryffindor">
+                    Gryffindor <span id="gryffindor-points">{{ $pillPoints['gryffindor'] }}</span>
+                </div>
+                <div class="house-item slytherin">
+                    Slytherin <span id="slytherin-points">{{ $pillPoints['slytherin'] }}</span>
+                </div>
+                <div class="house-item ravenclaw">
+                    Ravenclaw <span id="ravenclaw-points">{{ $pillPoints['ravenclaw'] }}</span>
+                </div>
+                <div class="house-item hufflepuff">
+                    Hufflepuff <span id="hufflepuff-points">{{ $pillPoints['hufflepuff'] }}</span>
+                </div>
+            </div>
+
+            <div class="search-container">
+                <input type="text"
+                       id="student-search"
+                       class="form-control border-0 shadow-none"
+                       placeholder="Search students..."
+                       autocomplete="off">
+            </div>
+        </div>
+
         <div class="row g-3">
-
-            <div class="col-12">
-                <div class="house-bar">
-                    <div class="house-item gryffindor">
-                        Gryffindor <span id="gryffindor-points">{{ $pillPoints['gryffindor'] }}</span>
-                    </div>
-                    <div class="house-item slytherin">
-                        Slytherin <span id="slytherin-points">{{ $pillPoints['slytherin'] }}</span>
-                    </div>
-                    <div class="house-item ravenclaw">
-                        Ravenclaw <span id="ravenclaw-points">{{ $pillPoints['ravenclaw'] }}</span>
-                    </div>
-                    <div class="house-item hufflepuff">
-                        Hufflepuff <span id="hufflepuff-points">{{ $pillPoints['hufflepuff'] }}</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-12">
-                <div class="search-container">
-                    <input type="text"
-                           id="student-search"
-                           class="form-control border-0 shadow-none"
-                           placeholder="Search students..."
-                           autocomplete="off">
-                </div>
-            </div>
 
             {{-- STUDENTS --}}
             <div class="col-lg-8" id="student-list">
