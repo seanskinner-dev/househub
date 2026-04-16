@@ -52,18 +52,18 @@ class PointController extends Controller
         // 🔧 FIX: default amount
         $amount = (int) $request->input('amount', 1);
 
-        $systemUser = User::where('email', 'system@househub.local')->first();
+        $systemUser = User::firstOrCreate(
+            ['email' => 'system@househub.local'],
+            [
+                'name' => 'System',
+                'password' => bcrypt('notused123')
+            ]
+        );
         $userId = auth()->check()
             ? (int) auth()->id()
-            : (int) ($systemUser?->id ?? 0);
-        if ($userId === 0) {
-            return response()->json([
-                'success' => false,
-                'message' => 'System user missing. Run: php artisan db:seed --class=SystemTeacherSeeder',
-            ], 503);
-        }
+            : (int) $systemUser->id;
         $teacherLabel = auth()->check()
-            ? (string) (auth()->user()->name ?? 'Teacher')
+            ? (string) auth()->user()->name
             : 'System';
 
         return DB::transaction(function () use ($request, $amount, $userId, $teacherLabel) {
