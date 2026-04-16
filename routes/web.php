@@ -38,94 +38,87 @@ Route::post('/points/commendation', [PointController::class, 'storeCommendation'
 Route::post('/points/award', [PointController::class, 'storeAward'])->name('points.award');
 
 // =============================
-// AUTHENTICATED ROUTES
+// CORE SYSTEM
 // =============================
-Route::middleware(['auth'])->group(function () {
+// =============================
+// OFFICE MESSAGE MODE (OMM)
+// =============================
+Route::post('/office-messages', [OfficeMessageController::class, 'store'])->name('office-messages.store');
+Route::patch('/office-messages/{id}', [OfficeMessageController::class, 'update'])->name('office-messages.update');
 
-    // =============================
-    // CORE SYSTEM
-    // =============================
-    // =============================
-    // OFFICE MESSAGE MODE (OMM)
-    // =============================
-    Route::post('/office-messages', [OfficeMessageController::class, 'store'])->name('office-messages.store');
-    Route::patch('/office-messages/{id}', [OfficeMessageController::class, 'update'])->name('office-messages.update');
+// =============================
+// OFFICE MESSAGE MODE
+// =============================
+Route::post('/broadcast-messages', [BroadcastMessageController::class, 'store'])->name('broadcast-messages.store');
+Route::post('/broadcast/clear', [BroadcastMessageController::class, 'clear'])->name('broadcast.clear');
+Route::post('/omm/clear', [BroadcastMessageController::class, 'clear'])->name('omm.clear');
+Route::post('/emergency-mode', [BroadcastMessageController::class, 'storeEmergency'])->name('emergency.store');
+Route::post('/emergency-mode/clear', [BroadcastMessageController::class, 'clearEmergency'])->name('emergency.clear');
 
-    // =============================
-    // OFFICE MESSAGE MODE
-    // =============================
-    Route::post('/broadcast-messages', [BroadcastMessageController::class, 'store'])->name('broadcast-messages.store');
-    Route::post('/broadcast/clear', [BroadcastMessageController::class, 'clear'])->name('broadcast.clear');
-    Route::post('/omm/clear', [BroadcastMessageController::class, 'clear'])->name('omm.clear');
-    Route::post('/emergency-mode', [BroadcastMessageController::class, 'storeEmergency'])->name('emergency.store');
-    Route::post('/emergency-mode/clear', [BroadcastMessageController::class, 'clearEmergency'])->name('emergency.clear');
+// =============================
+// STUDENT PROFILE
+// =============================
+Route::get('/students/{id}', [PointController::class, 'showStudent'])->name('students.show');
 
-    // =============================
-    // STUDENT PROFILE
-    // =============================
-    Route::get('/students/{id}', [PointController::class, 'showStudent'])->name('students.show');
+// =============================
+// CERTIFICATES
+// =============================
+Route::get('/certificate/{id}', [PointController::class, 'certificate'])->name('certificate.show');
 
-    // =============================
-    // CERTIFICATES
-    // =============================
-    Route::get('/certificate/{id}', [PointController::class, 'certificate'])->name('certificate.show');
+// =============================
+// TV MODE
+// =============================
+Route::get('/tv', [PointController::class, 'tv'])->name('tv');
 
-    // =============================
-    // TV MODE
-    // =============================
-    Route::get('/tv', [PointController::class, 'tv'])->name('tv');
+// =============================
+// REPORTS
+// =============================
+Route::get('/reports/house-performance', [App\Http\Controllers\ReportController::class, 'housePerformance'])
+    ->name('reports.house');
 
-    // =============================
-    // REPORTS
-    // =============================
-    Route::get('/reports/house-performance', [App\Http\Controllers\ReportController::class, 'housePerformance'])
-        ->name('reports.house');
+Route::get('/reports/pc', [App\Http\Controllers\ReportController::class, 'atRiskStudents'])
+    ->name('reports.pc');
 
-    Route::get('/reports/pc', [App\Http\Controllers\ReportController::class, 'atRiskStudents'])
-        ->name('reports.pc');
+Route::get('/reports/leadership', [ReportController::class, 'leadership'])
+    ->name('reports.leadership');
 
-    Route::get('/reports/leadership', [ReportController::class, 'leadership'])
-        ->name('reports.leadership');
+Route::get('/reports/teachers', [ReportController::class, 'teachers'])
+    ->name('reports.teachers');
 
-    Route::get('/reports/teachers', [ReportController::class, 'teachers'])
-        ->name('reports.teachers');
+Route::get('/reports/houses', [ReportController::class, 'houses'])
+    ->name('reports.houses');
 
-    Route::get('/reports/houses', [ReportController::class, 'houses'])
-        ->name('reports.houses');
+Route::get('/reports/data', [App\Http\Controllers\ReportController::class, 'reportChartData'])
+    ->name('reports.data');
 
-    Route::get('/reports/data', [App\Http\Controllers\ReportController::class, 'reportChartData'])
-        ->name('reports.data');
+Route::match(['get', 'post'], '/reports/drilldown', [App\Http\Controllers\ReportController::class, 'reportDrilldown'])
+    ->name('reports.drilldown');
 
-    Route::match(['get', 'post'], '/reports/drilldown', [App\Http\Controllers\ReportController::class, 'reportDrilldown'])
-        ->name('reports.drilldown');
+// =============================
+// DASHBOARD
+// =============================
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->name('dashboard');
 
-    // =============================
-    // DASHBOARD
-    // =============================
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+// =============================
+// USER PROFILE
+// =============================
+Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // =============================
-    // USER PROFILE
-    // =============================
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+// =============================
+// ADMIN
+// =============================
+Route::get('/admin', function () {
+    $houses = DB::table('houses')
+        ->select('id', 'name')
+        ->orderBy('name')
+        ->get();
 
-    // =============================
-    // ADMIN
-    // =============================
-    Route::get('/admin', function () {
-        $houses = DB::table('houses')
-            ->select('id', 'name')
-            ->orderBy('name')
-            ->get();
-
-        return view('admin.index', ['houses' => $houses]);
-    })->name('admin.index');
-
-});
+    return view('admin.index', ['houses' => $houses]);
+})->name('admin.index');
 
 // =============================
 // AUTH ROUTES

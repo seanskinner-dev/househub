@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Student;
 use App\Models\Award;
 use App\Models\Commendation;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -56,13 +57,25 @@ class AwardController extends Controller
      */
     public function storeCommendation(Request $request)
     {
+        $systemUser = User::firstOrCreate(
+            ['email' => 'system@househub.local'],
+            [
+                'name' => 'System',
+                'password' => bcrypt('notused123')
+            ]
+        );
+
+        $userId = auth()->check()
+            ? auth()->id()
+            : $systemUser->id;
+
         $request->validate([
             'student_id' => 'required|exists:students,id'
         ]);
 
         Commendation::create([
             'student_id' => $request->student_id,
-            'awarded_by' => auth()->id() ?? 1, // Fallback to user 1 if not logged in
+            'awarded_by' => $userId,
         ]);
 
         return back()->with('success', 'Commendation recorded!');
@@ -73,6 +86,18 @@ class AwardController extends Controller
      */
     public function storeAward(Request $request)
     {
+        $systemUser = User::firstOrCreate(
+            ['email' => 'system@househub.local'],
+            [
+                'name' => 'System',
+                'password' => bcrypt('notused123')
+            ]
+        );
+
+        $userId = auth()->check()
+            ? auth()->id()
+            : $systemUser->id;
+
         $request->validate([
             'student_id' => 'required|exists:students,id',
             'award_name' => 'required|string|max:255',
@@ -81,7 +106,7 @@ class AwardController extends Controller
 
         Award::create([
             'student_id' => $request->student_id,
-            'awarded_by' => auth()->id() ?? 1,
+            'awarded_by' => $userId,
             'name' => $request->award_name,
             'description' => $request->award_description,
         ]);
