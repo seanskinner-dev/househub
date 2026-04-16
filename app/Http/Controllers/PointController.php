@@ -36,7 +36,7 @@ class PointController extends Controller
                 'point_transactions.amount',
                 'point_transactions.category',
                 'point_transactions.created_at',
-                DB::raw("CASE WHEN users.email = 'demo@househub.local' THEN 'Demo' ELSE COALESCE(users.name, 'System') END as teacher")
+                DB::raw("CASE WHEN users.email = 'system@househub.local' THEN 'System' ELSE COALESCE(users.name, 'System') END as teacher")
             )
             ->orderByDesc('point_transactions.created_at')
             ->limit(6)
@@ -52,21 +52,19 @@ class PointController extends Controller
         // 🔧 FIX: default amount
         $amount = (int) $request->input('amount', 1);
 
-        $demoUser = User::where('email', 'demo@househub.local')->first();
+        $systemUser = User::where('email', 'system@househub.local')->first();
         $userId = auth()->check()
             ? (int) auth()->id()
-            : (int) ($demoUser?->id ?? 0);
+            : (int) ($systemUser?->id ?? 0);
         if ($userId === 0) {
             return response()->json([
                 'success' => false,
-                'message' => 'Demo user missing. Run: php artisan db:seed --class=DemoTeacherSeeder',
+                'message' => 'System user missing. Run: php artisan db:seed --class=SystemTeacherSeeder',
             ], 503);
         }
-        $teacherName = auth()->check()
+        $teacherLabel = auth()->check()
             ? (string) (auth()->user()->name ?? 'Teacher')
-            : (string) ($demoUser->name ?? 'Demo Teacher');
-        $demoUserId = (int) ($demoUser?->id ?? 0);
-        $teacherLabel = ($demoUserId > 0 && $userId === $demoUserId) ? 'Demo' : $teacherName;
+            : 'System';
 
         return DB::transaction(function () use ($request, $amount, $userId, $teacherLabel) {
 
