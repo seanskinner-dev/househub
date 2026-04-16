@@ -1,6 +1,19 @@
 @extends('layouts.app')
 
 @section('content')
+    @php
+        if (!function_exists('houseEmoji')) {
+            function houseEmoji($house) {
+                return match (strtolower((string) ($house ?? ''))) {
+                    'gryffindor' => '🦁',
+                    'slytherin' => '🐍',
+                    'ravenclaw' => '🦅',
+                    'hufflepuff' => '🦡',
+                    default => '🏫',
+                };
+            }
+        }
+    @endphp
     <style>
         body {
             background: #020617;
@@ -48,8 +61,25 @@
         }
 
         .points-index-page .student-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
             min-width: 0;
             flex: 1;
+        }
+
+        .points-index-page .student-left-main {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .points-index-page .student-emoji {
+            font-size: 1.8rem;
+            opacity: 0.9;
+            flex-shrink: 0;
+            line-height: 1;
+            filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
         }
 
         .points-index-page .student-card {
@@ -144,13 +174,22 @@
         }
 
         .points-index-page .student-points-big {
-            font-size: 2rem;
-            font-weight: 900;
-            letter-spacing: 0.05em;
-            min-width: 70px;
+            font-size: 1.8rem;
+            font-weight: 800;
+            min-width: 3ch;
             text-align: right;
-            text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            opacity: 0.75;
             line-height: 1;
+            text-shadow: none;
+        }
+
+        .points-index-page .btn-minus {
+            transform: scale(0.85);
+            opacity: 0.8;
+        }
+
+        .points-index-page .btn-plus {
+            transform: scale(1.05);
         }
 
         .points-index-page .action-group {
@@ -316,15 +355,18 @@
                          data-house="{{ $houseKey }}"
                          data-name="{{ strtolower($student->first_name . ' ' . $student->last_name) }}">
                         <div class="student-left">
-                            <div class="student-name">
-                                <a href="/students/{{ $student->id }}" class="student-link">
-                                    {{ $student->first_name }} {{ $student->last_name }}
-                                </a>
-                            </div>
-                            <div class="student-meta">
-                                Year {{ $student->year_level }}
-                                |
-                                {{ $student->house_name ?? '—' }}
+                            <span class="student-emoji">{{ houseEmoji($student->house_name) }}</span>
+                            <div class="student-left-main">
+                                <div class="student-name">
+                                    <a href="/students/{{ $student->id }}" class="student-link">
+                                        {{ $student->first_name }} {{ $student->last_name }}
+                                    </a>
+                                </div>
+                                <div class="student-meta">
+                                    Year {{ $student->year_level }}
+                                    |
+                                    {{ $student->house_name ?? '—' }}
+                                </div>
                             </div>
                         </div>
 
@@ -335,13 +377,13 @@
 
                             <div class="action-group" role="group">
                                 <button type="button"
-                                        class="btn btn-sm btn-sub"
+                                        class="btn btn-sm btn-sub btn-minus"
                                         data-id="{{ (int) $student->id }}"
                                         data-student-id="{{ (int) $student->id }}">
                                     −1
                                 </button>
                                 <button type="button"
-                                        class="btn btn-sm btn-add"
+                                        class="btn btn-sm btn-add btn-plus"
                                         data-id="{{ (int) $student->id }}"
                                         data-student-id="{{ (int) $student->id }}">
                                     +1
