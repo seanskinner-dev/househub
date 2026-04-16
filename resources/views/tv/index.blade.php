@@ -1397,21 +1397,18 @@
             </div>
 
             <div class="streak-list">
-                @foreach($topStudents->take(10) as $index => $student)
-                @php
-                    $houseName = $student->house_name ?? optional($student->house)->name ?? '';
-                @endphp
+                @foreach($topStudents as $index => $student)
 
                 <div class="student-card
                     {{ $index === 0 ? 'is-top-1' : '' }}
                     {{ $index === 1 ? 'is-top-2' : '' }}
                     {{ $index === 2 ? 'is-top-3' : '' }}"
-                    data-house="{{ strtolower($houseName) }}">
+                    data-house="{{ strtolower($student->house_name) }}">
 
                     <div class="student-left">
 
                         <span class="student-emoji">
-                            {{ houseEmoji($houseName) }}
+                            {{ houseEmoji($student->house_name) }}
                         </span>
 
                         <div class="student-left-main">
@@ -1421,7 +1418,7 @@
                             </span>
 
                             <div class="student-meta">
-                                {{ $houseName }}
+                                {{ $student->house_name }}
                             </div>
 
                             <span class="student-sub">

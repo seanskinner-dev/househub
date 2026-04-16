@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Award;
 use App\Models\Commendation;
-use App\Models\Student;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -384,8 +383,17 @@ class PointController extends Controller
             return Carbon::parse($d)->format('D');
         });
 
-        $topStudents = Student::orderByDesc('house_points')
-            ->take(16)
+        $topStudents = DB::table('students')
+            ->join('houses', 'students.house_id', '=', 'houses.id')
+            ->select(
+                'students.id',
+                'students.first_name',
+                'students.last_name',
+                'students.house_points',
+                'houses.name as house_name'
+            )
+            ->orderByDesc('students.house_points')
+            ->limit(10)
             ->get();
 
         $topTeachers = DB::table('point_transactions')
