@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Award;
 use App\Models\Commendation;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -35,7 +36,7 @@ class PointController extends Controller
                 'point_transactions.amount',
                 'point_transactions.category',
                 'point_transactions.created_at',
-                'users.name as teacher'
+                DB::raw("CASE WHEN users.email = 'demo@househub.local' THEN 'Demo' ELSE COALESCE(users.name, 'System') END as teacher")
             )
             ->orderByDesc('point_transactions.created_at')
             ->limit(6)
@@ -51,10 +52,23 @@ class PointController extends Controller
         // 🔧 FIX: default amount
         $amount = (int) $request->input('amount', 1);
 
-        $userId = auth()->id() ?? 1;
-        $teacherName = auth()->user()->name ?? 'System';
+        $demoUser = User::where('email', 'demo@househub.local')->first();
+        $userId = auth()->check()
+            ? (int) auth()->id()
+            : (int) ($demoUser?->id ?? 0);
+        if ($userId === 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Demo user missing. Run: php artisan db:seed --class=DemoTeacherSeeder',
+            ], 503);
+        }
+        $teacherName = auth()->check()
+            ? (string) (auth()->user()->name ?? 'Teacher')
+            : (string) ($demoUser->name ?? 'Demo Teacher');
+        $demoUserId = (int) ($demoUser?->id ?? 0);
+        $teacherLabel = ($demoUserId > 0 && $userId === $demoUserId) ? 'Demo' : $teacherName;
 
-        return DB::transaction(function () use ($request, $amount, $userId, $teacherName) {
+        return DB::transaction(function () use ($request, $amount, $userId, $teacherLabel) {
 
             $student = null;
             $house = null;
@@ -94,7 +108,7 @@ class PointController extends Controller
                     'amount' => $amount,
                     'who' => $house->name,
                     'category' => 'manual',
-                    'teacher' => $teacherName,
+                    'teacher' => $teacherLabel,
                 ];
             }
 
@@ -143,7 +157,7 @@ class PointController extends Controller
                         'amount' => $amount,
                         'who' => trim(($student->first_name ?? '').' '.($student->last_name ?? '')),
                         'category' => $request->input('type', 'manual'),
-                        'teacher' => $teacherName,
+                        'teacher' => $teacherLabel,
                     ];
                 }
             }
@@ -154,7 +168,7 @@ class PointController extends Controller
                 'amount' => $amount,
                 'student' => $student ? $student->first_name.' '.$student->last_name : null,
                 'house' => $house ? $house->name : null,
-                'teacher' => $teacherName,
+                'teacher' => $teacherLabel,
                 'recent_entry' => $recentEntry,
             ]);
         });

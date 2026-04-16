@@ -20,6 +20,8 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@househub.com',
         ]);
 
+        $this->call(DemoTeacherSeeder::class);
+
         // 2. Create 50 random students
         Student::factory(50)->create();
 
