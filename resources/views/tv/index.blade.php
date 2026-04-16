@@ -1150,6 +1150,11 @@
             animation: none;
         }
 
+        .student-card.is-top-1 {
+            border: 2px solid rgba(255,255,255,0.25);
+            box-shadow: 0 0 20px rgba(255,255,255,0.15);
+        }
+
         .student-card.is-top-1:hover {
             transform: scale(1.04);
             background: rgba(255, 255, 255, 0.1);
@@ -1167,6 +1172,10 @@
                 0 0 12px rgba(255, 255, 255, 0.05),
                 0 0 16px var(--house-color, #888),
                 inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        }
+
+        .student-card.is-top-3 {
+            background: rgba(255,255,255,0.08);
         }
 
         .student-card.is-compact {
@@ -1395,7 +1404,7 @@
 
             <div class="top-list">
                 @foreach($topStudents as $index => $student)
-                    <div class="student-card" data-house="{{ strtolower($student->house_name ?? '') }}">
+                    <div class="student-card {{ $index === 0 ? 'is-top-1' : '' }} {{ $index < 3 ? 'is-top-3' : '' }}" data-house="{{ strtolower($student->house_name ?? '') }}">
                         <div class="student-left">
                             <span class="student-name">
                                 {{ $student->first_name }}
