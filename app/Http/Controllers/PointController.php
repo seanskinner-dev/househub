@@ -408,30 +408,24 @@ class PointController extends Controller
             ->limit(6)
             ->get();
 
-        // TERM (last 12 weeks)
-        $termPoints = DB::table('point_transactions')
+        $termTotals = DB::table('point_transactions')
             ->join('houses', 'point_transactions.house_id', '=', 'houses.id')
             ->select(
-                DB::raw("DATE_TRUNC('week', point_transactions.created_at) as week"),
                 'houses.name as house_name',
                 DB::raw('SUM(point_transactions.amount) as total')
             )
             ->where('point_transactions.created_at', '>=', now()->subWeeks(12))
-            ->groupBy('week', 'houses.name')
-            ->orderBy('week')
+            ->groupBy('houses.name')
             ->get();
 
-        // ANNUAL (monthly)
-        $annualPoints = DB::table('point_transactions')
+        $annualTotals = DB::table('point_transactions')
             ->join('houses', 'point_transactions.house_id', '=', 'houses.id')
             ->select(
-                DB::raw("DATE_TRUNC('month', point_transactions.created_at) as month"),
                 'houses.name as house_name',
                 DB::raw('SUM(point_transactions.amount) as total')
             )
             ->where('point_transactions.created_at', '>=', now()->subYear())
-            ->groupBy('month', 'houses.name')
-            ->orderBy('month')
+            ->groupBy('houses.name')
             ->get();
 
         $recent = DB::table('point_transactions')
@@ -453,7 +447,7 @@ class PointController extends Controller
             . 'WHEN EXTRACT(MONTH FROM point_transactions.created_at)::integer BETWEEN 7 AND 9 THEN 3 '
             . 'ELSE 4 END';
 
-        $termTotals = DB::table('point_transactions')
+        $termBreakdownTotals = DB::table('point_transactions')
             ->join('houses', 'point_transactions.house_id', '=', 'houses.id')
             ->select(
                 'houses.name as house',
@@ -472,7 +466,7 @@ class PointController extends Controller
             ];
         }
 
-        foreach ($termTotals as $row) {
+        foreach ($termBreakdownTotals as $row) {
             $idx = array_search($row->house, $houseOrder, true);
             $term = (int) $row->term;
             if ($idx !== false && $term >= 1 && $term <= 4) {
@@ -628,8 +622,8 @@ class PointController extends Controller
             'dates' => $labels,
             'topStudents' => $topStudents,
             'topTeachers' => $topTeachers,
-            'termPoints' => $termPoints,
-            'annualPoints' => $annualPoints,
+            'termTotals' => $termTotals,
+            'annualTotals' => $annualTotals,
             'recent' => $recent,
             'weather' => $weather,
             'houses' => $houses,
