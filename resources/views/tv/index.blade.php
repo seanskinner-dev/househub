@@ -898,22 +898,22 @@
 
         .student-card[data-house="gryffindor"] {
             --house-color: var(--gryffindor);
-            box-shadow: 0 0 12px rgba(239, 68, 68, 0.35);
+            box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
         }
 
         .student-card[data-house="slytherin"] {
             --house-color: var(--slytherin);
-            box-shadow: 0 0 12px rgba(34, 197, 94, 0.35);
+            box-shadow: 0 0 12px rgba(34, 197, 94, 0.4);
         }
 
         .student-card[data-house="ravenclaw"] {
             --house-color: var(--ravenclaw);
-            box-shadow: 0 0 12px rgba(59, 130, 246, 0.35);
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
         }
 
         .student-card[data-house="hufflepuff"] {
             --house-color: var(--hufflepuff);
-            box-shadow: 0 0 12px rgba(250, 204, 21, 0.35);
+            box-shadow: 0 0 12px rgba(250, 204, 21, 0.4);
         }
 
         .leaderboard-column .student-card:last-child {
@@ -1387,7 +1387,7 @@
 
                     <div class="student-left">
 
-                        <span class="student-emoji">{{ houseEmoji($student->house_name ?? '') }}</span>
+                        <span class="student-emoji">{{ houseEmoji($student->house_name) }}</span>
 
                         <div class="student-left-main">
                             <span class="student-name">
