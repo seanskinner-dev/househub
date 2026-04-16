@@ -392,7 +392,7 @@ class PointController extends Controller
                 'houses.colour_hex as house_colour'
             )
             ->orderByDesc('students.house_points')
-            ->limit(12)
+            ->limit(16)
             ->get();
 
         $topTeachers = DB::table('point_transactions')
