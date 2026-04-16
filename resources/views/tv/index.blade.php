@@ -871,10 +871,6 @@
             margin-right: auto;
         }
 
-        .streak-list {
-            grid-auto-rows: auto;
-        }
-
         .activity-list {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -985,6 +981,18 @@
         .streak-list .student-card,
         .activity-list .student-card {
             height: 100%;
+        }
+
+        .top-list,
+        .streak-list,
+        .activity-list {
+            height: 100%;
+        }
+
+        .top-container,
+        .streak-container,
+        .activity-container {
+            min-height: 0;
         }
 
         .student-card:not(.is-top-1):hover {
