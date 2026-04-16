@@ -1,6 +1,18 @@
 @extends('layouts.app')
 
 @section('content')
+    <div style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 9999;
+        background: red;
+        color: white;
+        padding: 10px;
+        font-weight: bold;
+    ">
+        LIVE SERVER TEST V3
+    </div>
     <style>
         body {
             background: #020617;
