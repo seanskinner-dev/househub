@@ -426,9 +426,9 @@
 
         .top-title {
             flex-shrink: 0;
-            font-size: clamp(40px, 6vw, 80px);
+            font-size: clamp(32px, 4vw, 48px);
             font-weight: 800;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             text-align: center;
             letter-spacing: 0.04em;
             text-shadow: 0 8px 28px rgba(0, 0, 0, 0.6);
@@ -489,12 +489,12 @@
             flex: 1;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
+            gap: 10px;
             width: 100%;
             max-width: 1400px;
             margin: 0 auto;
-            align-content: stretch;
-            grid-auto-rows: 1fr;
+            align-content: start;
+            grid-auto-rows: minmax(60px, auto);
             padding: 6px;
         }
 
@@ -1146,13 +1146,9 @@
         }
 
         .student-card.is-top-1 {
-            padding: 22px 26px;
-            transform: scale(1.01);
-            box-shadow:
-                0 12px 36px rgba(0, 0, 0, 0.75),
-                0 0 12px rgba(255, 255, 255, 0.06),
-                0 0 24px var(--house-color, #888);
-            animation: studentPulseTop1 5s ease-in-out infinite;
+            padding: 14px 18px;
+            transform: none;
+            animation: none;
         }
 
         .student-card.is-top-1:hover {
@@ -1401,19 +1397,6 @@
 
             <div class="top-title">
                 🏆 TOP STUDENTS
-            </div>
-
-            <div class="house-hero">
-                @foreach($houseHeroCards as $houseCard)
-                    @php
-                        $meta = houseMeta($houseCard->name);
-                        $winnerClass = $houseCard->name === $houseWinnerName ? ' winner' : '';
-                    @endphp
-                    <div class="house-card {{ strtolower($houseCard->name) }}{{ $winnerClass }}" style="--house-color: {{ $meta['color'] }}">
-                        <div class="house-name">{{ strtoupper($houseCard->name) }}</div>
-                        <div class="points">{{ $houseCard->points }}</div>
-                    </div>
-                @endforeach
             </div>
 
             <div class="top-list">
