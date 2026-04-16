@@ -7,6 +7,13 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&display=swap');
 
+        :root {
+            --gryffindor: #ef4444;
+            --slytherin: #22c55e;
+            --ravenclaw: #3b82f6;
+            --hufflepuff: #facc15;
+        }
+
         html, body {
             margin: 0;
             height: 100%;
@@ -871,6 +878,11 @@
             font-size: 1rem;
             font-weight: 700;
             box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+            background: linear-gradient(
+                135deg,
+                rgba(255,255,255,0.06),
+                rgba(255,255,255,0.02)
+            );
         }
 
         .student-card:not([data-house]),
@@ -885,35 +897,23 @@
         }
 
         .student-card[data-house="gryffindor"] {
-            --house-color: #740001;
-            box-shadow:
-                0 8px 22px rgba(0, 0, 0, 0.5),
-                0 0 12px rgba(255, 255, 255, 0.05),
-                0 0 18px rgba(116, 0, 1, 0.35);
+            --house-color: var(--gryffindor);
+            box-shadow: 0 0 12px rgba(239, 68, 68, 0.35);
         }
 
         .student-card[data-house="slytherin"] {
-            --house-color: #1a472a;
-            box-shadow:
-                0 8px 22px rgba(0, 0, 0, 0.5),
-                0 0 12px rgba(255, 255, 255, 0.05),
-                0 0 18px rgba(26, 71, 42, 0.35);
+            --house-color: var(--slytherin);
+            box-shadow: 0 0 12px rgba(34, 197, 94, 0.35);
         }
 
         .student-card[data-house="ravenclaw"] {
-            --house-color: #2563eb;
-            box-shadow:
-                0 8px 22px rgba(0, 0, 0, 0.5),
-                0 0 12px rgba(255, 255, 255, 0.05),
-                0 0 18px rgba(37, 99, 235, 0.35);
+            --house-color: var(--ravenclaw);
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.35);
         }
 
         .student-card[data-house="hufflepuff"] {
-            --house-color: #ffcc00;
-            box-shadow:
-                0 8px 22px rgba(0, 0, 0, 0.5),
-                0 0 12px rgba(255, 255, 255, 0.05),
-                0 0 18px rgba(255, 204, 0, 0.35);
+            --house-color: var(--hufflepuff);
+            box-shadow: 0 0 12px rgba(250, 204, 21, 0.35);
         }
 
         .leaderboard-column .student-card:last-child {
@@ -954,7 +954,8 @@
             left: 0;
             top: 0;
             height: 100%;
-            width: 4px;
+            width: 5px;
+            opacity: 0.9;
             background: var(--house-color, #888);
             border-top-left-radius: 14px;
             border-bottom-left-radius: 14px;
@@ -999,12 +1000,11 @@
         }
 
         .student-emoji {
-            font-size: clamp(2rem, 3vw, 3.2rem);
-            margin-right: 12px;
+            font-size: clamp(2.4rem, 3.5vw, 3.6rem);
+            margin-right: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            opacity: 0.9;
             filter: drop-shadow(0 0 10px rgba(0,0,0,0.6));
         }
 
@@ -1094,6 +1094,10 @@
             padding: 14px 18px;
             transform: none;
             animation: none;
+        }
+
+        .is-top-1 {
+            box-shadow: 0 0 25px rgba(255,255,255,0.25);
         }
 
         .student-card.is-top-1 {
