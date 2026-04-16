@@ -1443,7 +1443,7 @@
                             ];
                             $house = $student->house_name ?? null;
                             $style = $houseStyles[$house] ?? ['color' => '#444', 'emoji' => '🏫'];
-                            $rankNumber = $index + 1;
+                            $rankNumber = $index + 2;
                             $rankClass = $rankNumber === 1 ? ' is-top-1' : ($rankNumber <= 3 ? ' is-top-2' : '');
                         @endphp
                         <div class="student-card{{ $rankClass }}" data-house="{{ strtolower($student->house_name ?? $student->house ?? '') }}">

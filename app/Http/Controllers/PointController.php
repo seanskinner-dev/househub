@@ -572,6 +572,22 @@ class PointController extends Controller
         $topRavenclaw = $topByHouse('Ravenclaw');
         $topHufflepuff = $topByHouse('Hufflepuff');
 
+        $houseHeroCards = collect($houseOrder)->map(function (string $name) use ($houseTotalsLookup) {
+            $row = $houseTotalsLookup->get($name);
+
+            return (object) [
+                'name' => $name,
+                'points' => (int) (($row['total'] ?? 0)),
+            ];
+        });
+
+        $houseWinnerName = $leadingHouseYear;
+
+        $heroStudent = $topStudents->isEmpty() ? null : $topStudents->first();
+        $restStudents = $topStudents->count() > 1
+            ? $topStudents->slice(1, 4)->values()
+            : collect();
+
         return view('tv.index', [
             'series' => $apexSeries,
             'dates' => $labels,
@@ -584,6 +600,10 @@ class PointController extends Controller
             'houseTotalsTerm' => $houseTotalsTerm,
             'leadingHouseTerm' => $leadingHouseTerm,
             'leadingHouseYear' => $leadingHouseYear,
+            'houseHeroCards' => $houseHeroCards,
+            'houseWinnerName' => $houseWinnerName,
+            'heroStudent' => $heroStudent,
+            'restStudents' => $restStudents,
             'topGryffindor' => $topGryffindor,
             'topSlytherin' => $topSlytherin,
             'topRavenclaw' => $topRavenclaw,
