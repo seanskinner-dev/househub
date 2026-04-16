@@ -57,17 +57,21 @@ class AwardController extends Controller
      */
     public function storeCommendation(Request $request)
     {
-        $systemUser = User::firstOrCreate(
-            ['email' => 'system@househub.local'],
-            [
-                'name' => 'System',
-                'password' => bcrypt('notused123')
-            ]
-        );
+        $demoTeachers = User::where('email', 'like', '%@househub.local')->get();
+        if ($demoTeachers->isEmpty()) {
+            $fallbackTeacher = User::firstOrCreate(
+                ['email' => 'mr.smith@househub.local'],
+                [
+                    'name' => 'Mr Smith',
+                    'password' => bcrypt('notused123')
+                ]
+            );
+            $demoTeachers = collect([$fallbackTeacher]);
+        }
 
         $userId = auth()->check()
             ? auth()->id()
-            : $systemUser->id;
+            : $demoTeachers->random()->id;
 
         $request->validate([
             'student_id' => 'required|exists:students,id'
@@ -86,17 +90,21 @@ class AwardController extends Controller
      */
     public function storeAward(Request $request)
     {
-        $systemUser = User::firstOrCreate(
-            ['email' => 'system@househub.local'],
-            [
-                'name' => 'System',
-                'password' => bcrypt('notused123')
-            ]
-        );
+        $demoTeachers = User::where('email', 'like', '%@househub.local')->get();
+        if ($demoTeachers->isEmpty()) {
+            $fallbackTeacher = User::firstOrCreate(
+                ['email' => 'mr.smith@househub.local'],
+                [
+                    'name' => 'Mr Smith',
+                    'password' => bcrypt('notused123')
+                ]
+            );
+            $demoTeachers = collect([$fallbackTeacher]);
+        }
 
         $userId = auth()->check()
             ? auth()->id()
-            : $systemUser->id;
+            : $demoTeachers->random()->id;
 
         $request->validate([
             'student_id' => 'required|exists:students,id',

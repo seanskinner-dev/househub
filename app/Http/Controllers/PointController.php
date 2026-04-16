@@ -36,7 +36,7 @@ class PointController extends Controller
                 'point_transactions.amount',
                 'point_transactions.category',
                 'point_transactions.created_at',
-                DB::raw("CASE WHEN users.email = 'system@househub.local' THEN 'System' ELSE COALESCE(users.name, 'System') END as teacher")
+                DB::raw("COALESCE(users.name, 'Unknown Teacher') as teacher")
             )
             ->orderByDesc('point_transactions.created_at')
             ->limit(6)
@@ -52,19 +52,25 @@ class PointController extends Controller
         // 🔧 FIX: default amount
         $amount = (int) $request->input('amount', 1);
 
-        $systemUser = User::firstOrCreate(
-            ['email' => 'system@househub.local'],
-            [
-                'name' => 'System',
-                'password' => bcrypt('notused123')
-            ]
-        );
+        $demoTeachers = User::where('email', 'like', '%@househub.local')->get();
+        if ($demoTeachers->isEmpty()) {
+            $fallbackTeacher = User::firstOrCreate(
+                ['email' => 'mr.smith@househub.local'],
+                [
+                    'name' => 'Mr Smith',
+                    'password' => bcrypt('notused123')
+                ]
+            );
+            $demoTeachers = collect([$fallbackTeacher]);
+        }
+
         $userId = auth()->check()
-            ? (int) auth()->id()
-            : (int) $systemUser->id;
+            ? auth()->id()
+            : $demoTeachers->random()->id;
+
         $teacherLabel = auth()->check()
-            ? (string) auth()->user()->name
-            : 'System';
+            ? auth()->user()->name
+            : optional($demoTeachers->where('id', $userId)->first())->name;
 
         return DB::transaction(function () use ($request, $amount, $userId, $teacherLabel) {
 
@@ -190,24 +196,30 @@ class PointController extends Controller
 
     public function storeCommendation(Request $request)
     {
-        $systemUser = User::firstOrCreate(
-            ['email' => 'system@househub.local'],
-            [
-                'name' => 'System',
-                'password' => bcrypt('notused123')
-            ]
-        );
+        $demoTeachers = User::where('email', 'like', '%@househub.local')->get();
+        if ($demoTeachers->isEmpty()) {
+            $fallbackTeacher = User::firstOrCreate(
+                ['email' => 'mr.smith@househub.local'],
+                [
+                    'name' => 'Mr Smith',
+                    'password' => bcrypt('notused123')
+                ]
+            );
+            $demoTeachers = collect([$fallbackTeacher]);
+        }
 
         $userId = auth()->check()
             ? auth()->id()
-            : $systemUser->id;
+            : $demoTeachers->random()->id;
 
         $data = validator($request->all(), [
             'student_id' => 'required|integer|exists:students,id',
             'description' => 'nullable|string|max:5000',
         ])->validate();
 
-        $teacherName = auth()->check() ? auth()->user()->name : 'System';
+        $teacherName = auth()->check()
+            ? auth()->user()->name
+            : optional($demoTeachers->where('id', $userId)->first())->name;
 
         $student = DB::table('students')->where('id', $data['student_id'])->first();
         if (! $student) {
@@ -258,17 +270,21 @@ class PointController extends Controller
 
     public function storeAward(Request $request)
     {
-        $systemUser = User::firstOrCreate(
-            ['email' => 'system@househub.local'],
-            [
-                'name' => 'System',
-                'password' => bcrypt('notused123')
-            ]
-        );
+        $demoTeachers = User::where('email', 'like', '%@househub.local')->get();
+        if ($demoTeachers->isEmpty()) {
+            $fallbackTeacher = User::firstOrCreate(
+                ['email' => 'mr.smith@househub.local'],
+                [
+                    'name' => 'Mr Smith',
+                    'password' => bcrypt('notused123')
+                ]
+            );
+            $demoTeachers = collect([$fallbackTeacher]);
+        }
 
         $userId = auth()->check()
             ? auth()->id()
-            : $systemUser->id;
+            : $demoTeachers->random()->id;
 
         $data = validator($request->all(), [
             'student_id' => 'required|integer|exists:students,id',
@@ -276,7 +292,9 @@ class PointController extends Controller
             'description' => 'required|string|max:5000',
         ])->validate();
 
-        $teacherName = auth()->check() ? auth()->user()->name : 'System';
+        $teacherName = auth()->check()
+            ? auth()->user()->name
+            : optional($demoTeachers->where('id', $userId)->first())->name;
 
         $student = DB::table('students')->where('id', $data['student_id'])->first();
         if (! $student) {
