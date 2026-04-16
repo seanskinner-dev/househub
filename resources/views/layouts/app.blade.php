@@ -50,6 +50,14 @@
             gap: 20px;
         }
 
+        .user-indicator {
+            font-size: 12px;
+            opacity: 0.7;
+            color: #cbd5e1;
+            margin-left: 8px;
+            white-space: nowrap;
+        }
+
         .nav-right > a {
             color: white;
             text-decoration: none;
@@ -362,6 +370,13 @@
 
             <a href="/tv">TV</a>
             <a href="/admin">Admin</a>
+            <div class="user-indicator">
+                @auth
+                    {{ auth()->user()->name }}
+                @else
+                    Guest
+                @endauth
+            </div>
         </div>
     </div>
 
