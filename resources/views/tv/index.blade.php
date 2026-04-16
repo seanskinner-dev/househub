@@ -466,6 +466,24 @@
             display: contents;
         }
 
+        .hero-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            padding: 30px 40px;
+            gap: 20px;
+        }
+
+        .hero-title {
+            font-size: clamp(2rem, 3vw, 3rem);
+            font-weight: 800;
+            letter-spacing: 0.05em;
+        }
+
+        .hero-chart {
+            flex: 1;
+        }
+
         .weather-container {
             flex: 1;
             display: flex;
@@ -1442,6 +1460,30 @@
 
     </div>
 
+    <div class="tv-screen" id="screen-term">
+
+        <div class="hero-container">
+
+            <div class="hero-title">📈 TERM PERFORMANCE</div>
+
+            <div class="hero-chart" id="termChart"></div>
+
+        </div>
+
+    </div>
+
+    <div class="tv-screen" id="screen-annual">
+
+        <div class="hero-container">
+
+            <div class="hero-title">📊 ANNUAL PERFORMANCE</div>
+
+            <div class="hero-chart" id="annualChart"></div>
+
+        </div>
+
+    </div>
+
     <div class="tv-screen" id="screen-weather">
 
         <div class="weather-container">
@@ -1712,6 +1754,7 @@
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     console.log('OMM SCRIPT LOADED');
@@ -1829,6 +1872,98 @@ document.addEventListener("DOMContentLoaded", function () {
             }, 20);
         });
     }
+
+    const houseColors = {
+        gryffindor: '#ef4444',
+        slytherin: '#22c55e',
+        ravenclaw: '#3b82f6',
+        hufflepuff: '#facc15'
+    };
+
+    function buildSeries(data, key) {
+        const grouped = {};
+
+        data.forEach(row => {
+            const house = String(row.house_name || '').toLowerCase();
+            if (!grouped[house]) grouped[house] = [];
+            grouped[house].push(Number(row.total) || 0);
+        });
+
+        return Object.keys(grouped).map(house => ({
+            name: house,
+            data: grouped[house]
+        }));
+    }
+
+    const termChart = new ApexCharts(document.querySelector("#termChart"), {
+        chart: {
+            type: 'line',
+            height: '100%',
+            toolbar: { show: false },
+            background: 'transparent'
+        },
+        stroke: {
+            curve: 'smooth',
+            width: 4
+        },
+        markers: {
+            size: 0
+        },
+        colors: [
+            houseColors.gryffindor,
+            houseColors.slytherin,
+            houseColors.ravenclaw,
+            houseColors.hufflepuff
+        ],
+        series: buildSeries(@json($termPoints), 'week'),
+        xaxis: {
+            labels: { style: { fontSize: '14px' } }
+        },
+        yaxis: {
+            labels: { style: { fontSize: '14px' } }
+        },
+        legend: {
+            position: 'top',
+            labels: { colors: '#fff' }
+        }
+    });
+
+    termChart.render();
+
+    const annualChart = new ApexCharts(document.querySelector("#annualChart"), {
+        chart: {
+            type: 'line',
+            height: '100%',
+            toolbar: { show: false },
+            background: 'transparent'
+        },
+        stroke: {
+            curve: 'smooth',
+            width: 4
+        },
+        markers: {
+            size: 0
+        },
+        colors: [
+            houseColors.gryffindor,
+            houseColors.slytherin,
+            houseColors.ravenclaw,
+            houseColors.hufflepuff
+        ],
+        series: buildSeries(@json($annualPoints), 'month'),
+        xaxis: {
+            labels: { style: { fontSize: '14px' } }
+        },
+        yaxis: {
+            labels: { style: { fontSize: '14px' } }
+        },
+        legend: {
+            position: 'top',
+            labels: { colors: '#fff' }
+        }
+    });
+
+    annualChart.render();
 
     showScreen(currentScreen);
     animatePoints();

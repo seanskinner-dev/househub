@@ -408,6 +408,32 @@ class PointController extends Controller
             ->limit(6)
             ->get();
 
+        // TERM (last 12 weeks)
+        $termPoints = DB::table('point_transactions')
+            ->join('houses', 'point_transactions.house_id', '=', 'houses.id')
+            ->select(
+                DB::raw("DATE_TRUNC('week', point_transactions.created_at) as week"),
+                'houses.name as house_name',
+                DB::raw('SUM(point_transactions.amount) as total')
+            )
+            ->where('point_transactions.created_at', '>=', now()->subWeeks(12))
+            ->groupBy('week', 'houses.name')
+            ->orderBy('week')
+            ->get();
+
+        // ANNUAL (monthly)
+        $annualPoints = DB::table('point_transactions')
+            ->join('houses', 'point_transactions.house_id', '=', 'houses.id')
+            ->select(
+                DB::raw("DATE_TRUNC('month', point_transactions.created_at) as month"),
+                'houses.name as house_name',
+                DB::raw('SUM(point_transactions.amount) as total')
+            )
+            ->where('point_transactions.created_at', '>=', now()->subYear())
+            ->groupBy('month', 'houses.name')
+            ->orderBy('month')
+            ->get();
+
         $recent = DB::table('point_transactions')
             ->leftJoin('students', 'point_transactions.student_id', '=', 'students.id')
             ->leftJoin('houses', 'point_transactions.house_id', '=', 'houses.id')
@@ -602,6 +628,8 @@ class PointController extends Controller
             'dates' => $labels,
             'topStudents' => $topStudents,
             'topTeachers' => $topTeachers,
+            'termPoints' => $termPoints,
+            'annualPoints' => $annualPoints,
             'recent' => $recent,
             'weather' => $weather,
             'houses' => $houses,
