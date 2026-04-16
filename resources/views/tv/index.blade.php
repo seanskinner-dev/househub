@@ -342,6 +342,8 @@
             align-items: stretch;
             text-align: center;
             padding-bottom: 10px;
+            padding-left: 6px;
+            padding-right: 6px;
         }
 
         .streak-title {
@@ -359,7 +361,7 @@
             margin: 0 auto;
             align-content: stretch;
             grid-auto-rows: 1fr;
-            padding: 6px;
+            padding: 16px 18px 18px 18px;
         }
 
         .activity-container {
@@ -1015,7 +1017,7 @@
             left: 0;
             top: 0;
             height: 100%;
-            width: 6px;
+            width: 4px;
             background: var(--house-color, #888);
             border-top-left-radius: 14px;
             border-bottom-left-radius: 14px;
