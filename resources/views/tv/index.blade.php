@@ -1389,11 +1389,6 @@
 
         <div class="top-container">
 
-            @php
-                $left = $topStudents->slice(0, 5)->values();
-                $right = $topStudents->slice(5, 5)->values();
-            @endphp
-
             <div class="top-title">
                 🏆 TOP STUDENTS
             </div>
@@ -1409,73 +1404,12 @@
                     ];
                 @endphp
 
-                @if($heroStudent)
+                @foreach($topStudents as $index => $student)
                     @php
-                        $heroHouse = $heroStudent->house_name ?? null;
-                        $heroStyle = $houseStyles[$heroHouse] ?? ['color' => '#444', 'emoji' => '🏫'];
-                    @endphp
-                    <div class="student-card is-top-1" data-house="{{ strtolower($heroStudent->house_name ?? $heroStudent->house ?? '') }}">
-                        <div class="student-left">
-                            <span class="student-emoji">{{ $heroStyle['emoji'] }}</span>
-                            <div class="student-left-main">
-                                <span class="student-name">
-                                    {{ $heroStudent->first_name }}
-                                    <strong>{{ $heroStudent->last_name }}</strong>
-                                </span>
-                                <div class="student-meta">{{ $heroStudent->year_level ?? '' }}</div>
-                            </div>
-                        </div>
-                        <div class="student-right">
-                            <span class="student-points">{{ (int) $heroStudent->house_points }} pts</span>
-                            <div class="student-rank">#1</div>
-                        </div>
-                    </div>
-                @endif
-
-                @foreach($restStudents as $index => $student)
-                    @php
-                        $houseStyles = [
-                            'Gryffindor' => ['color' => '#740001', 'emoji' => '🦁'],
-                            'GryffINDOR' => ['color' => '#740001', 'emoji' => '🦁'],
-                            'Slytherin' => ['color' => '#1a472a', 'emoji' => '🐍'],
-                            'Ravenclaw' => ['color' => '#3b82f6', 'emoji' => '🦅'],
-                            'Hufflepuff' => ['color' => '#ffcc00', 'emoji' => '🦡'],
-                        ];
                         $house = $student->house_name ?? null;
                         $style = $houseStyles[$house] ?? ['color' => '#444', 'emoji' => '🏫'];
-                        $rankNumber = $index + 2;
+                        $rankNumber = $index + 1;
                         $rankClass = $rankNumber === 1 ? ' is-top-1' : ($rankNumber <= 3 ? ' is-top-2' : '');
-                    @endphp
-                    <div class="student-card{{ $rankClass }}" data-house="{{ strtolower($student->house_name ?? $student->house ?? '') }}">
-                        <div class="student-left">
-                            <span class="student-emoji">{{ $style['emoji'] }}</span>
-                            <div class="student-left-main">
-                                <span class="student-name">
-                                    {{ $student->first_name }}
-                                    <strong>{{ $student->last_name }}</strong>
-                                </span>
-                                <div class="student-meta">{{ $student->year_level ?? '' }}</div>
-                            </div>
-                        </div>
-                        <div class="student-right">
-                            <span class="student-points">{{ (int) $student->house_points }} pts</span>
-                            <div class="student-rank">#{{ $rankNumber }}</div>
-                        </div>
-                    </div>
-                @endforeach
-                @foreach($right as $index => $student)
-                    @php
-                        $houseStyles = [
-                            'Gryffindor' => ['color' => '#740001', 'emoji' => '🦁'],
-                            'GryffINDOR' => ['color' => '#740001', 'emoji' => '🦁'],
-                            'Slytherin' => ['color' => '#1a472a', 'emoji' => '🐍'],
-                            'Ravenclaw' => ['color' => '#3b82f6', 'emoji' => '🦅'],
-                            'Hufflepuff' => ['color' => '#ffcc00', 'emoji' => '🦡'],
-                        ];
-                        $house = $student->house_name ?? null;
-                        $style = $houseStyles[$house] ?? ['color' => '#444', 'emoji' => '🏫'];
-                        $rankNumber = $index + 6;
-                        $rankClass = $rankNumber <= 3 ? ' is-top-2' : '';
                     @endphp
                     <div class="student-card{{ $rankClass }}" data-house="{{ strtolower($student->house_name ?? $student->house ?? '') }}">
                         <div class="student-left">
