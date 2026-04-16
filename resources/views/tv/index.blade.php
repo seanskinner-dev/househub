@@ -470,7 +470,7 @@
             display: flex;
             flex-direction: column;
             height: 100%;
-            padding: 20px 28px 20px 28px;
+            padding: 12px 18px;
             gap: 16px;
             box-sizing: border-box;
         }
@@ -479,13 +479,15 @@
             font-size: clamp(2.5rem, 3.5vw, 4rem);
             font-weight: 900;
             letter-spacing: 0.08em;
+            margin-bottom: 10px;
         }
 
         .banner-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            flex: 1;
+            grid-template-rows: 1fr 1fr;
+            gap: 12px;
+            height: 100%;
             min-height: 0;
         }
 
@@ -497,6 +499,7 @@
             align-items: center;
             padding: 24px;
             height: 100%;
+            min-height: 0;
             border-radius: 20px;
             text-align: center;
             border: 2px solid rgba(255,255,255,0.15);
@@ -545,7 +548,7 @@
         }
 
         .banner-card.winner {
-            transform: scale(1.05);
+            transform: scale(1.02);
             box-shadow:
                 0 0 80px rgba(255,255,255,0.4),
                 0 20px 80px rgba(0,0,0,0.7);
