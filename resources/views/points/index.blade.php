@@ -460,9 +460,6 @@
                                         <strong>{{ ($r->amount > 0 ? '+' : '') . $r->amount }}</strong>
                                         {{ $who }}
                                     </div>
-                                    @if (!empty($r->category))
-                                        <div class="text-muted" style="color: #94a3b8 !important;">{{ $r->category }}</div>
-                                    @endif
                                     @if (!empty($r->teacher))
                                         <div class="text-muted" style="color: #94a3b8 !important;">{{ $r->teacher }}</div>
                                     @endif

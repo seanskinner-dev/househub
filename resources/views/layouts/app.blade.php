@@ -506,15 +506,11 @@
                 var who = entry.who != null ? String(entry.who) : '—';
                 var amt = entry.amount != null ? Number(entry.amount) : 0;
                 var sign = amt > 0 ? '+' : '';
-                var cat = entry.category != null ? String(entry.category) : '';
                 var teacher = entry.teacher != null ? String(entry.teacher) : '';
                 var row = document.createElement('div');
                 row.className = 'activity-item mb-3 pb-2 border-bottom border-secondary';
                 row.style.borderColor = '#334155';
                 var html = '<div><strong>' + sign + amt + '</strong> ' + escapeReportHtml(who) + '</div>';
-                if (cat) {
-                    html += '<div class="text-muted" style="color: #94a3b8 !important;">' + escapeReportHtml(cat) + '</div>';
-                }
                 if (teacher) {
                     html += '<div class="text-muted" style="color: #94a3b8 !important;">' + escapeReportHtml(teacher) + '</div>';
                 }
