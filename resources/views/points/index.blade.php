@@ -40,8 +40,13 @@
             box-shadow:
                 0 8px 30px rgba(0, 0, 0, 0.6),
                 inset 0 1px 0 rgba(255, 255, 255, 0.05);
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
             color: #f1f5f9;
+        }
+
+        .points-index-page .student-card.pulse {
+            transform: scale(0.98);
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
         }
 
         .points-index-page .student-card[data-house="gryffindor"] {
@@ -282,7 +287,8 @@
         }
 
         .points-index-page .house-item.clicked {
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            transform: scale(0.96);
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.3);
         }
 
         .points-index-page .house-item span {

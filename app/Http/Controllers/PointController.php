@@ -71,6 +71,8 @@ class PointController extends Controller
             $student = null;
             $house = null;
             $recentEntry = null;
+            $newPoints = null;
+            $newHousePoints = null;
 
             $resolveHouseFromRequest = function () use ($request) {
                 if ($request->filled('house_id')) {
@@ -90,6 +92,10 @@ class PointController extends Controller
                 DB::table('houses')
                     ->where('id', $house->id)
                     ->increment('points', $amount);
+
+                $newHousePoints = (int) (DB::table('houses')
+                    ->where('id', $house->id)
+                    ->value('points') ?? 0);
 
                 DB::table('point_transactions')->insert([
                     'student_id' => null,
@@ -125,6 +131,10 @@ class PointController extends Controller
                         ->where('id', $student->id)
                         ->increment('house_points', $amount);
 
+                    $newPoints = (int) (DB::table('students')
+                        ->where('id', $student->id)
+                        ->value('house_points') ?? 0);
+
                     $house = null;
                     if (! empty($student->house_id)) {
                         $house = DB::table('houses')->where('id', $student->house_id)->first();
@@ -137,6 +147,10 @@ class PointController extends Controller
                         DB::table('houses')
                             ->where('id', $house->id)
                             ->increment('points', $amount);
+
+                        $newHousePoints = (int) (DB::table('houses')
+                            ->where('id', $house->id)
+                            ->value('points') ?? 0);
                     }
 
                     DB::table('point_transactions')->insert([
@@ -167,6 +181,8 @@ class PointController extends Controller
                 'student' => $student ? $student->first_name.' '.$student->last_name : null,
                 'house' => $house ? $house->name : null,
                 'teacher' => $teacherLabel,
+                'points' => $newPoints,
+                'house_points' => $newHousePoints,
                 'recent_entry' => $recentEntry,
             ]);
         });

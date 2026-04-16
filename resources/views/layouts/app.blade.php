@@ -654,44 +654,76 @@
             }
 
             function reportSendPoint(studentId, amount) {
-                var meta = document.querySelector('meta[name="csrf-token"]');
-                var token = meta ? meta.getAttribute('content') : '';
-                fetch(@json(url('/points')), {
+                function showToast(message, type) {
+                    if (type === 'error') {
+                        reportShowToast(message || 'Unable to update points');
+                        return;
+                    }
+                    reportShowToast(message || 'Points updated');
+                }
+
+                function updateUI(data) {
+                    if (data && data.recent_entry) {
+                        window.houseHubPrependRecentActivity(data.recent_entry);
+                    }
+
+                    var el = document.querySelector('[data-student-id="' + String(studentId) + '"].td-points');
+                    if (!el) {
+                        return;
+                    }
+
+                    var start = parseInt(el.innerText || '0', 10);
+                    if (isNaN(start)) {
+                        start = 0;
+                    }
+                    var end = parseInt(data && data.points != null ? data.points : start, 10);
+                    if (isNaN(end)) {
+                        end = start;
+                    }
+
+                    var i = start;
+                    var interval = setInterval(function () {
+                        if (i === end) {
+                            clearInterval(interval);
+                        } else {
+                            i += (end > start ? 1 : -1);
+                            el.innerText = String(i);
+                        }
+                    }, 20);
+
+                    var card = el.closest('.student-card');
+                    if (card) {
+                        card.classList.add('pulse');
+                        setTimeout(function () {
+                            card.classList.remove('pulse');
+                        }, 150);
+                    }
+                }
+
+                fetch('/points', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': token
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     },
-                    credentials: 'same-origin',
-                    body: JSON.stringify({ student_id: studentId, amount: amount })
+                    body: JSON.stringify({
+                        student_id: studentId,
+                        amount: amount
+                    })
                 })
-                    .then(function (res) {
-                        if (!res.ok) {
-                            throw new Error('bad status');
-                        }
-                        return res.json();
-                    })
+                    .then(function (res) { return res.json(); })
                     .then(function (data) {
-                        if (data && data.recent_entry) {
-                            window.houseHubPrependRecentActivity(data.recent_entry);
-                        }
-                        reportShowToast('Points updated');
-                        var cell = document.querySelector('.td-points[data-student-id="' + String(studentId) + '"]');
-                        if (cell) {
-                            var current = parseInt(cell.innerText || '0', 10);
-                            if (isNaN(current)) {
-                                current = 0;
-                            }
-                            cell.innerText = String(current + Number(amount || 0));
-                            cell.style.transform = 'scale(1.1)';
-                            setTimeout(function () {
-                                cell.style.transform = 'scale(1)';
-                            }, 150);
+                        if (data && data.success) {
+                            updateUI(data);
+                            showToast('Points updated');
+                        } else {
+                            showToast('Failed to update', 'error');
                         }
                     })
-                    .catch(function () { reportShowToast('Unable to update points'); });
+                    .catch(function () {
+                        showToast('Unable to update points', 'error');
+                    });
             }
 
             function studentIdUsable(sid) {
