@@ -1234,6 +1234,18 @@
 
 <div class="tv-container">
     @php
+        if (!function_exists('houseEmoji')) {
+            function houseEmoji($house) {
+                return match(strtolower($house)) {
+                    'gryffindor' => '🦁',
+                    'slytherin'  => '🐍',
+                    'ravenclaw'  => '🦅',
+                    'hufflepuff' => '🦡',
+                    default      => '🏫',
+                };
+            }
+        }
+
         if (!function_exists('houseMeta')) {
             function houseMeta($house) {
                 return match($house) {
@@ -1279,12 +1291,11 @@
                 @endphp
                 @foreach($streakData as $streak)
                     @php
-                        $meta = houseMeta($streak['house_name']);
                         $rankClass = $loop->iteration === 1 ? ' is-top-1' : ($loop->iteration <= 3 ? ' is-top-2' : '');
                     @endphp
                     <div class="student-card{{ $rankClass }}" data-house="{{ strtolower($streak['house_name'] ?? '') }}">
                         <div class="student-left">
-                            <span class="student-emoji">{{ $meta['emoji'] }}</span>
+                            <span class="student-emoji">{{ houseEmoji($streak['house_name'] ?? '') }}</span>
                             <div class="student-left-main">
                                 <span class="student-name">
                                     {{ $streak['student_name'] }}
@@ -1323,14 +1334,7 @@
 
                     <div class="student-left">
 
-                        <span class="student-emoji">
-                            @if(strtolower($item->house_name) === 'gryffindor') 🦁
-                            @elseif(strtolower($item->house_name) === 'slytherin') 🐍
-                            @elseif(strtolower($item->house_name) === 'ravenclaw') 🦅
-                            @elseif(strtolower($item->house_name) === 'hufflepuff') 🦡
-                            @else 🏫
-                            @endif
-                        </span>
+                        <span class="student-emoji">{{ houseEmoji($item->house_name ?? '') }}</span>
 
                         <div class="student-left-main">
                             <span class="student-name">
@@ -1383,14 +1387,7 @@
 
                     <div class="student-left">
 
-                        <span class="student-emoji">
-                            @if(strtolower($student->house_name) === 'gryffindor') 🦁
-                            @elseif(strtolower($student->house_name) === 'slytherin') 🐍
-                            @elseif(strtolower($student->house_name) === 'ravenclaw') 🦅
-                            @elseif(strtolower($student->house_name) === 'hufflepuff') 🦡
-                            @else 🏫
-                            @endif
-                        </span>
+                        <span class="student-emoji">{{ houseEmoji($student->house_name ?? '') }}</span>
 
                         <div class="student-left-main">
                             <span class="student-name">
@@ -1515,14 +1512,12 @@
 
     <div class="tv-screen" id="screen-top-gryffindor">
         <div class="top-container">
-            <div class="top-title">🦁 Gryffindor Leaders</div>
+            <div class="top-title">{{ houseEmoji('gryffindor') }} Gryffindor Leaders</div>
             <div class="top-list">
                 @foreach($topGryffindor as $index => $student)
                     <div class="student-card {{ $index === 0 ? 'is-gold' : '' }} {{ $index === 1 ? 'is-silver' : '' }} {{ $index === 2 ? 'is-bronze' : '' }}" data-house="{{ strtolower($student->house_name ?? '') }}">
                         <div class="student-left">
-                            <div class="student-emoji">
-                                {{ $student->house_emoji ?? '🏫' }}
-                            </div>
+                            <div class="student-emoji">{{ houseEmoji($student->house_name ?? '') }}</div>
                             <div class="student-left-main">
                                 <span class="student-name">
                                     {{ $student->first_name }}
@@ -1552,14 +1547,12 @@
 
     <div class="tv-screen" id="screen-top-slytherin">
         <div class="top-container">
-            <div class="top-title">🐍 Slytherin Leaders</div>
+            <div class="top-title">{{ houseEmoji('slytherin') }} Slytherin Leaders</div>
             <div class="top-list">
                 @foreach($topSlytherin as $index => $student)
                     <div class="student-card {{ $index === 0 ? 'is-gold' : '' }} {{ $index === 1 ? 'is-silver' : '' }} {{ $index === 2 ? 'is-bronze' : '' }}" data-house="{{ strtolower($student->house_name ?? '') }}">
                         <div class="student-left">
-                            <div class="student-emoji">
-                                {{ $student->house_emoji ?? '🏫' }}
-                            </div>
+                            <div class="student-emoji">{{ houseEmoji($student->house_name ?? '') }}</div>
                             <div class="student-left-main">
                                 <span class="student-name">
                                     {{ $student->first_name }}
@@ -1589,14 +1582,12 @@
 
     <div class="tv-screen" id="screen-top-ravenclaw">
         <div class="top-container">
-            <div class="top-title">🦅 Ravenclaw Leaders</div>
+            <div class="top-title">{{ houseEmoji('ravenclaw') }} Ravenclaw Leaders</div>
             <div class="top-list">
                 @foreach($topRavenclaw as $index => $student)
                     <div class="student-card {{ $index === 0 ? 'is-gold' : '' }} {{ $index === 1 ? 'is-silver' : '' }} {{ $index === 2 ? 'is-bronze' : '' }}" data-house="{{ strtolower($student->house_name ?? '') }}">
                         <div class="student-left">
-                            <div class="student-emoji">
-                                {{ $student->house_emoji ?? '🏫' }}
-                            </div>
+                            <div class="student-emoji">{{ houseEmoji($student->house_name ?? '') }}</div>
                             <div class="student-left-main">
                                 <span class="student-name">
                                     {{ $student->first_name }}
@@ -1626,14 +1617,12 @@
 
     <div class="tv-screen" id="screen-top-hufflepuff">
         <div class="top-container">
-            <div class="top-title">🦡 Hufflepuff Leaders</div>
+            <div class="top-title">{{ houseEmoji('hufflepuff') }} Hufflepuff Leaders</div>
             <div class="top-list">
                 @foreach($topHufflepuff as $index => $student)
                     <div class="student-card {{ $index === 0 ? 'is-gold' : '' }} {{ $index === 1 ? 'is-silver' : '' }} {{ $index === 2 ? 'is-bronze' : '' }}" data-house="{{ strtolower($student->house_name ?? '') }}">
                         <div class="student-left">
-                            <div class="student-emoji">
-                                {{ $student->house_emoji ?? '🏫' }}
-                            </div>
+                            <div class="student-emoji">{{ houseEmoji($student->house_name ?? '') }}</div>
                             <div class="student-left-main">
                                 <span class="student-name">
                                     {{ $student->first_name }}
