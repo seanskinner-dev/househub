@@ -1306,8 +1306,9 @@
                             </div>
                         </div>
                         <div class="student-right">
-                            <span class="student-points">{{ $streak['days'] }} DAY STREAK</span>
-                            <div class="student-rank">{{ $streak['days'] }} DAY STREAK</div>
+                            <div class="student-rank">
+                                🔥 {{ $streak['days'] }}
+                            </div>
                         </div>
                     </div>
                 @endforeach
