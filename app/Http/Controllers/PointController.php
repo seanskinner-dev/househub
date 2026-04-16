@@ -556,7 +556,7 @@ class PointController extends Controller
                 ->select('students.first_name', 'students.last_name', 'students.house_points', 'houses.name as house_name')
                 ->where('houses.name', $houseName)
                 ->orderByDesc('students.house_points')
-                ->limit(12)
+                ->limit(16)
                 ->get();
         };
 
