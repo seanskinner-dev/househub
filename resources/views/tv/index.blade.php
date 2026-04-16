@@ -915,7 +915,8 @@
             overflow: hidden;
             color: #ffffff;
             text-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
-            height: auto;
+            height: 100%;
+            min-height: 0;
             width: 100%;
             max-width: 100%;
             font-size: 1rem;
@@ -987,12 +988,14 @@
         .streak-list,
         .activity-list {
             height: 100%;
+            overflow: hidden;
         }
 
         .top-container,
         .streak-container,
         .activity-container {
             min-height: 0;
+            overflow: hidden;
         }
 
         .student-card:not(.is-top-1):hover {
@@ -1136,7 +1139,6 @@
         }
 
         .student-card.is-top-1 {
-            grid-column: span 2;
             padding: 22px 26px;
             transform: scale(1.02);
             box-shadow:
@@ -1217,6 +1219,14 @@
         .activity-container,
         .weather-container {
             background: transparent;
+        }
+
+        .screen-inner,
+        .top-container,
+        .streak-container,
+        .activity-container {
+            min-height: 0;
+            overflow: hidden;
         }
 
         .top-title,
