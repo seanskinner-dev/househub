@@ -1060,7 +1060,12 @@
         }
 
         .student-emoji {
-            font-size: 2.2rem;
+            font-size: clamp(2rem, 3vw, 3.2rem);
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.9;
             filter: drop-shadow(0 0 10px rgba(0,0,0,0.6));
         }
 
@@ -1119,16 +1124,18 @@
 
         .student-right .student-points {
             display: block;
-            font-size: 1rem;
-            font-weight: 700;
+            font-size: clamp(1.6rem, 2.5vw, 2.4rem);
+            font-weight: 800;
+            letter-spacing: 0.03em;
             opacity: 1;
             margin-top: 0;
         }
 
         .student-points {
             display: block;
-            font-size: 0.9rem;
-            font-weight: 700;
+            font-size: clamp(1.6rem, 2.5vw, 2.4rem);
+            font-weight: 800;
+            letter-spacing: 0.03em;
             opacity: 0.82;
             margin-top: 2px;
         }
@@ -1176,6 +1183,22 @@
 
         .student-card.is-top-3 {
             background: rgba(255,255,255,0.08);
+        }
+
+        .student-card.is-gold {
+            border: 2px solid #ffd700;
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.4);
+            background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,255,255,0.05));
+        }
+
+        .student-card.is-silver {
+            border: 2px solid #c0c0c0;
+            box-shadow: 0 0 20px rgba(192,192,192,0.3);
+        }
+
+        .student-card.is-bronze {
+            border: 2px solid #cd7f32;
+            box-shadow: 0 0 15px rgba(205,127,50,0.3);
         }
 
         .student-card.is-compact {
@@ -1404,17 +1427,31 @@
 
             <div class="top-list">
                 @foreach($topStudents as $index => $student)
-                    <div class="student-card {{ $index === 0 ? 'is-top-1' : '' }} {{ $index < 3 ? 'is-top-3' : '' }}" data-house="{{ strtolower($student->house_name ?? '') }}">
+                    <div class="student-card {{ $index === 0 ? 'is-gold' : '' }} {{ $index === 1 ? 'is-silver' : '' }} {{ $index === 2 ? 'is-bronze' : '' }}" data-house="{{ strtolower($student->house_name ?? '') }}">
                         <div class="student-left">
-                            <span class="student-name">
-                                {{ $student->first_name }}
-                                <strong>{{ $student->last_name }}</strong>
-                            </span>
-                            <span class="student-meta">{{ $student->year_level ?? '' }}</span>
+                            <div class="student-emoji">
+                                {{ $student->house_emoji ?? '🏫' }}
+                            </div>
+                            <div class="student-left-main">
+                                <span class="student-name">
+                                    {{ $student->first_name }}
+                                    <strong>{{ $student->last_name }}</strong>
+                                </span>
+
+                                <span class="student-meta">
+                                    {{ $student->year_level ?? '' }}
+                                </span>
+                            </div>
                         </div>
                         <div class="student-right">
                             <span class="student-points">{{ (int) $student->house_points }} pts</span>
-                            <div class="student-rank">#{{ $index + 1 }}</div>
+                            <div class="student-rank">
+                                @if($index === 0) 🥇
+                                @elseif($index === 1) 🥈
+                                @elseif($index === 2) 🥉
+                                @else #{{ $index + 1 }}
+                                @endif
+                            </div>
                         </div>
                     </div>
                 @endforeach
@@ -1519,17 +1556,31 @@
             <div class="top-title">Top 10 - Gryffindor</div>
             <div class="top-list">
                 @foreach($topGryffindor as $index => $student)
-                    <div class="student-card" data-house="{{ strtolower($student->house_name ?? '') }}">
+                    <div class="student-card {{ $index === 0 ? 'is-gold' : '' }} {{ $index === 1 ? 'is-silver' : '' }} {{ $index === 2 ? 'is-bronze' : '' }}" data-house="{{ strtolower($student->house_name ?? '') }}">
                         <div class="student-left">
-                            <span class="student-name">
-                                {{ $student->first_name }}
-                                <strong>{{ $student->last_name }}</strong>
-                            </span>
-                            <span class="student-meta">{{ $student->year_level ?? '' }}</span>
+                            <div class="student-emoji">
+                                {{ $student->house_emoji ?? '🏫' }}
+                            </div>
+                            <div class="student-left-main">
+                                <span class="student-name">
+                                    {{ $student->first_name }}
+                                    <strong>{{ $student->last_name }}</strong>
+                                </span>
+
+                                <span class="student-meta">
+                                    {{ $student->year_level ?? '' }}
+                                </span>
+                            </div>
                         </div>
                         <div class="student-right">
                             <span class="student-points">{{ (int) $student->house_points }} pts</span>
-                            <div class="student-rank">#{{ $index + 1 }}</div>
+                            <div class="student-rank">
+                                @if($index === 0) 🥇
+                                @elseif($index === 1) 🥈
+                                @elseif($index === 2) 🥉
+                                @else #{{ $index + 1 }}
+                                @endif
+                            </div>
                         </div>
                     </div>
                 @endforeach
@@ -1542,17 +1593,31 @@
             <div class="top-title">Top 10 - Slytherin</div>
             <div class="top-list">
                 @foreach($topSlytherin as $index => $student)
-                    <div class="student-card" data-house="{{ strtolower($student->house_name ?? '') }}">
+                    <div class="student-card {{ $index === 0 ? 'is-gold' : '' }} {{ $index === 1 ? 'is-silver' : '' }} {{ $index === 2 ? 'is-bronze' : '' }}" data-house="{{ strtolower($student->house_name ?? '') }}">
                         <div class="student-left">
-                            <span class="student-name">
-                                {{ $student->first_name }}
-                                <strong>{{ $student->last_name }}</strong>
-                            </span>
-                            <span class="student-meta">{{ $student->year_level ?? '' }}</span>
+                            <div class="student-emoji">
+                                {{ $student->house_emoji ?? '🏫' }}
+                            </div>
+                            <div class="student-left-main">
+                                <span class="student-name">
+                                    {{ $student->first_name }}
+                                    <strong>{{ $student->last_name }}</strong>
+                                </span>
+
+                                <span class="student-meta">
+                                    {{ $student->year_level ?? '' }}
+                                </span>
+                            </div>
                         </div>
                         <div class="student-right">
                             <span class="student-points">{{ (int) $student->house_points }} pts</span>
-                            <div class="student-rank">#{{ $index + 1 }}</div>
+                            <div class="student-rank">
+                                @if($index === 0) 🥇
+                                @elseif($index === 1) 🥈
+                                @elseif($index === 2) 🥉
+                                @else #{{ $index + 1 }}
+                                @endif
+                            </div>
                         </div>
                     </div>
                 @endforeach
@@ -1565,17 +1630,31 @@
             <div class="top-title">Top 10 - Ravenclaw</div>
             <div class="top-list">
                 @foreach($topRavenclaw as $index => $student)
-                    <div class="student-card" data-house="{{ strtolower($student->house_name ?? '') }}">
+                    <div class="student-card {{ $index === 0 ? 'is-gold' : '' }} {{ $index === 1 ? 'is-silver' : '' }} {{ $index === 2 ? 'is-bronze' : '' }}" data-house="{{ strtolower($student->house_name ?? '') }}">
                         <div class="student-left">
-                            <span class="student-name">
-                                {{ $student->first_name }}
-                                <strong>{{ $student->last_name }}</strong>
-                            </span>
-                            <span class="student-meta">{{ $student->year_level ?? '' }}</span>
+                            <div class="student-emoji">
+                                {{ $student->house_emoji ?? '🏫' }}
+                            </div>
+                            <div class="student-left-main">
+                                <span class="student-name">
+                                    {{ $student->first_name }}
+                                    <strong>{{ $student->last_name }}</strong>
+                                </span>
+
+                                <span class="student-meta">
+                                    {{ $student->year_level ?? '' }}
+                                </span>
+                            </div>
                         </div>
                         <div class="student-right">
                             <span class="student-points">{{ (int) $student->house_points }} pts</span>
-                            <div class="student-rank">#{{ $index + 1 }}</div>
+                            <div class="student-rank">
+                                @if($index === 0) 🥇
+                                @elseif($index === 1) 🥈
+                                @elseif($index === 2) 🥉
+                                @else #{{ $index + 1 }}
+                                @endif
+                            </div>
                         </div>
                     </div>
                 @endforeach
@@ -1588,17 +1667,31 @@
             <div class="top-title">Top 10 - Hufflepuff</div>
             <div class="top-list">
                 @foreach($topHufflepuff as $index => $student)
-                    <div class="student-card" data-house="{{ strtolower($student->house_name ?? '') }}">
+                    <div class="student-card {{ $index === 0 ? 'is-gold' : '' }} {{ $index === 1 ? 'is-silver' : '' }} {{ $index === 2 ? 'is-bronze' : '' }}" data-house="{{ strtolower($student->house_name ?? '') }}">
                         <div class="student-left">
-                            <span class="student-name">
-                                {{ $student->first_name }}
-                                <strong>{{ $student->last_name }}</strong>
-                            </span>
-                            <span class="student-meta">{{ $student->year_level ?? '' }}</span>
+                            <div class="student-emoji">
+                                {{ $student->house_emoji ?? '🏫' }}
+                            </div>
+                            <div class="student-left-main">
+                                <span class="student-name">
+                                    {{ $student->first_name }}
+                                    <strong>{{ $student->last_name }}</strong>
+                                </span>
+
+                                <span class="student-meta">
+                                    {{ $student->year_level ?? '' }}
+                                </span>
+                            </div>
                         </div>
                         <div class="student-right">
                             <span class="student-points">{{ (int) $student->house_points }} pts</span>
-                            <div class="student-rank">#{{ $index + 1 }}</div>
+                            <div class="student-rank">
+                                @if($index === 0) 🥇
+                                @elseif($index === 1) 🥈
+                                @elseif($index === 2) 🥉
+                                @else #{{ $index + 1 }}
+                                @endif
+                            </div>
                         </div>
                     </div>
                 @endforeach
