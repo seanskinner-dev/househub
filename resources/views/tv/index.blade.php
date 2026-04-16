@@ -493,8 +493,8 @@
             width: 100%;
             max-width: 1400px;
             margin: 0 auto;
-            align-content: start;
-            grid-auto-rows: minmax(60px, auto);
+            align-content: stretch;
+            grid-auto-rows: 1fr;
             padding: 6px;
         }
 
@@ -993,7 +993,6 @@
         .top-list,
         .streak-list,
         .activity-list {
-            height: 100%;
             overflow: hidden;
             padding-right: 10px;
         }
