@@ -356,8 +356,8 @@
             width: 100%;
             max-width: 1400px;
             margin: 0 auto;
-            align-content: start;
-            min-height: 0;
+            align-content: stretch;
+            grid-auto-rows: 1fr;
         }
 
         .activity-container {
@@ -368,20 +368,6 @@
             align-items: stretch;
             padding-top: 10px;
             overflow: hidden;
-        }
-
-        .activity-scale {
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-            min-height: 0;
-            width: 100%;
-        }
-
-        .activity-scale .activity-list {
-            flex: 1;
-            align-content: start;
-            min-height: 0;
         }
 
         .activity-title {
@@ -500,12 +486,11 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
-            align-content: start;
             width: 100%;
             max-width: 1400px;
-            min-height: 0;
             margin: 0 auto;
-            overflow: hidden;
+            align-content: stretch;
+            grid-auto-rows: 1fr;
         }
 
         .top-list .top-right-grid,
@@ -894,6 +879,11 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            align-content: stretch;
+            grid-auto-rows: 1fr;
         }
 
         .leaderboard-grid {
@@ -989,6 +979,12 @@
         .streak-list .student-card,
         .activity-list .student-card {
             margin-bottom: 0;
+        }
+
+        .top-list .student-card,
+        .streak-list .student-card,
+        .activity-list .student-card {
+            height: 100%;
         }
 
         .student-card:not(.is-top-1):hover {
@@ -1323,8 +1319,6 @@
 
         <div class="activity-container">
 
-            <div class="activity-scale">
-
             <div class="activity-title">
                 ⚡ LIVE ACTIVITY
             </div>
@@ -1365,8 +1359,6 @@
                         </div>
                     </div>
                 @endforeach
-            </div>
-
             </div>
 
         </div>
