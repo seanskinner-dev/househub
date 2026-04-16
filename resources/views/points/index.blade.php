@@ -278,6 +278,22 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+
+        .points-index-page .house-item:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .points-index-page .house-item:active {
+            transform: scale(0.98);
+        }
+
+        .points-index-page .house-item.clicked {
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
         }
 
         .points-index-page .house-item span {
@@ -340,16 +356,16 @@
             <h1 class="h4 mb-0" style="color: #f1f5f9;">Award points</h1>
 
             <div class="house-bar">
-                <div class="house-item gryffindor">
+                <div class="house-item gryffindor" data-house="gryffindor">
                     Gryffindor <span id="gryffindor-points">{{ $pillPoints['gryffindor'] }}</span>
                 </div>
-                <div class="house-item slytherin">
+                <div class="house-item slytherin" data-house="slytherin">
                     Slytherin <span id="slytherin-points">{{ $pillPoints['slytherin'] }}</span>
                 </div>
-                <div class="house-item ravenclaw">
+                <div class="house-item ravenclaw" data-house="ravenclaw">
                     Ravenclaw <span id="ravenclaw-points">{{ $pillPoints['ravenclaw'] }}</span>
                 </div>
-                <div class="house-item hufflepuff">
+                <div class="house-item hufflepuff" data-house="hufflepuff">
                     Hufflepuff <span id="hufflepuff-points">{{ $pillPoints['hufflepuff'] }}</span>
                 </div>
             </div>
@@ -579,6 +595,20 @@
             btn.addEventListener('click', function () {
                 var studentId = this.dataset.studentId;
                 window.openAwardModal(studentId);
+            });
+        });
+
+        document.querySelectorAll('.points-header .house-item').forEach(function (el) {
+            el.addEventListener('click', function () {
+                var house = el.getAttribute('data-house');
+                if (!house) {
+                    return;
+                }
+                el.classList.add('clicked');
+                setTimeout(function () {
+                    el.classList.remove('clicked');
+                }, 200);
+                awardHouse(house);
             });
         });
     </script>
