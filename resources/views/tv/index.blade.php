@@ -842,7 +842,7 @@
 
         .screen-inner {
             width: 100%;
-            max-width: 1400px;
+            max-width: 1350px;
             margin: 0 auto;
             height: 100%;
             min-height: 0;
@@ -995,6 +995,7 @@
         .activity-list {
             height: 100%;
             overflow: hidden;
+            padding-right: 10px;
         }
 
         .top-container,
@@ -1146,7 +1147,7 @@
 
         .student-card.is-top-1 {
             padding: 22px 26px;
-            transform: scale(1.02);
+            transform: scale(1.01);
             box-shadow:
                 0 12px 36px rgba(0, 0, 0, 0.75),
                 0 0 12px rgba(255, 255, 255, 0.06),
@@ -1206,8 +1207,8 @@
         }
 
         @keyframes studentPulseTop1 {
-            0%, 100% { transform: scale(1.02); }
-            50% { transform: scale(1.05); }
+            0%, 100% { transform: scale(1.01); }
+            50% { transform: scale(1.02); }
         }
 
         html, body, .tv-container {
