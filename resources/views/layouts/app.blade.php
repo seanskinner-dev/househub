@@ -1366,7 +1366,6 @@
     @stack('scripts')
     <script>
         (function () {
-            var pointsCommendationUrl = @json(route('points.commendation'));
             var pointsAwardUrl = @json(route('points.award'));
 
             function hhCsrf() {
@@ -1407,32 +1406,35 @@
                         }
                         return;
                     }
-                    fetch(pointsCommendationUrl, {
+                    var selectedStudentId = Number(sid);
+                    fetch('/points', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'Accept': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'X-CSRF-TOKEN': hhCsrf()
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                         },
-                        credentials: 'same-origin',
                         body: JSON.stringify({
-                            student_id: Number(sid),
+                            student_id: selectedStudentId,
                             amount: 1,
                             category: 'commendation',
                             description: text
                         })
                     })
-                        .then(hhParseJsonResponse)
-                        .then(function (data) {
-                            if (!data || !data.success) {
-                                throw new Error('Failed');
+                        .then(async function (res) {
+                            const data = await res.json();
+
+                            if (!res.ok) {
+                                console.error('ERROR RESPONSE:', data);
+                                alert(JSON.stringify(data));
+                                return;
                             }
+
                             location.reload();
                         })
                         .catch(function (err) {
-                            console.error(err);
-                            alert('Failed to save');
+                            console.error('FETCH ERROR:', err);
+                            alert('Fetch failed - check console');
                         });
                 });
             }
