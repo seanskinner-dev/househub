@@ -1416,7 +1416,12 @@
                             'X-CSRF-TOKEN': hhCsrf()
                         },
                         credentials: 'same-origin',
-                        body: JSON.stringify({ student_id: Number(sid), description: text })
+                        body: JSON.stringify({
+                            student_id: Number(sid),
+                            amount: 1,
+                            category: 'commendation',
+                            description: text
+                        })
                     })
                         .then(hhParseJsonResponse)
                         .then(function (data) {
