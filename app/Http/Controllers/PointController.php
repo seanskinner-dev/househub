@@ -311,7 +311,7 @@ class PointController extends Controller
             $teacherName = auth()->user()->name;
         } else {
             $teacherName = $demoTeachers[array_rand($demoTeachers)];
-            $userId = null;
+            $userId = auth()->id() ?? 1;
         }
         $hasTeacherName = $this->pointTransactionsHasTeacherName();
 
