@@ -277,9 +277,29 @@
             user-select: none;
         }
 
+        .points-index-page .house-item.gryffindor {
+            background: linear-gradient(135deg, #740001, #ae0001);
+            color: #ffffff;
+        }
+
+        .points-index-page .house-item.slytherin {
+            background: linear-gradient(135deg, #1a472a, #2a623d);
+            color: #ffffff;
+        }
+
+        .points-index-page .house-item.ravenclaw {
+            background: linear-gradient(135deg, #0e1a40, #1e40af);
+            color: #ffffff;
+        }
+
+        .points-index-page .house-item.hufflepuff {
+            background: linear-gradient(135deg, #ffcc00, #eab308);
+            color: #1a1a1a;
+        }
+
         .points-index-page .house-item:hover {
-            transform: translateY(-2px);
-            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px) scale(1.02);
+            filter: brightness(1.1);
         }
 
         .points-index-page .house-item:active {
