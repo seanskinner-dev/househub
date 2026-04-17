@@ -709,6 +709,7 @@
                 }
 
                 fetch('/points', {
+                    credentials: 'same-origin',
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1408,6 +1409,7 @@
                     }
                     var selectedStudentId = Number(sid);
                     fetch('/points', {
+                        credentials: 'same-origin',
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
