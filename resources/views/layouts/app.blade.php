@@ -1408,35 +1408,36 @@
                         return;
                     }
                     var selectedStudentId = Number(sid);
+                    const formData = new FormData();
+                    formData.append('student_id', selectedStudentId);
+                    formData.append('amount', 1);
+                    formData.append('category', 'commendation');
+                    formData.append('description', text);
+
                     fetch('/points', {
-                        credentials: 'same-origin',
                         method: 'POST',
+                        credentials: 'same-origin',
                         headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                         },
-                        body: JSON.stringify({
-                            student_id: selectedStudentId,
-                            amount: 1,
-                            category: 'commendation',
-                            description: text
-                        })
+                        body: formData
                     })
                         .then(async function (res) {
-                            const data = await res.json();
+                            const text = await res.text();
+
+                            console.log('STATUS:', res.status);
+                            console.log('RESPONSE:', text);
 
                             if (!res.ok) {
-                                console.error('ERROR RESPONSE:', data);
-                                alert(JSON.stringify(data));
+                                alert('ERROR:\n' + text);
                                 return;
                             }
 
                             location.reload();
                         })
                         .catch(function (err) {
-                            console.error('FETCH ERROR:', err);
-                            alert('Fetch failed - check console');
+                            console.error(err);
+                            alert('Fetch completely failed');
                         });
                 });
             }
