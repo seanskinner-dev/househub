@@ -386,7 +386,7 @@
         {{ $slot ?? '' }}
     </div>
 
-    <div id="commendationModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:2000;align-items:center;justify-content:center;padding:16px;" aria-hidden="true">
+    <div id="commendationModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:2000;align-items:center;justify-content:center;padding:16px;">
         <div role="dialog" aria-modal="true" aria-labelledby="commendationModalTitle" style="background:#1e293b;color:#f1f5f9;max-width:480px;width:100%;border-radius:10px;padding:20px;border:1px solid #334155;">
             <h2 id="commendationModalTitle" class="h5 mb-3">Commendation</h2>
             <input type="hidden" id="commendationModalStudentId" value="">
@@ -399,7 +399,7 @@
         </div>
     </div>
 
-    <div id="awardModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:2000;align-items:center;justify-content:center;padding:16px;" aria-hidden="true">
+    <div id="awardModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:2000;align-items:center;justify-content:center;padding:16px;">
         <div role="dialog" aria-modal="true" aria-labelledby="awardModalTitle" style="background:#1e293b;color:#f1f5f9;max-width:480px;width:100%;border-radius:10px;padding:20px;border:1px solid #334155;">
             <h2 id="awardModalTitle" class="h5 mb-3">Award</h2>
             <input type="hidden" id="awardModalStudentId" value="">
@@ -478,9 +478,6 @@
 
         (function () {
             window._reportDrilldownSortState = window._reportDrilldownSortState || new Map();
-
-            var pointsCommendationUrl = @json(route('points.commendation'));
-            var pointsAwardUrl = @json(route('points.award'));
 
             function escapeReportHtml(value) {
                 return String(value == null ? '' : value)
@@ -656,7 +653,7 @@
                 if (!el) {
                     el = document.createElement('div');
                     el.id = 'report-global-toast';
-                    el.style.cssText = 'position:fixed;right:20px;bottom:20px;background:#0f172a;color:#e2e8f0;border:1px solid #334155;padding:10px 14px;border-radius:8px;z-index:1200;display:none;';
+                    el.style.cssText = 'position:fixed;right:20px;bottom:20px;background:#0f172a;color:#e2e8f0;border:1px solid #334155;padding:10px 14px;border-radius:8px;z-index:3000;display:none;';
                     document.body.appendChild(el);
                 }
                 el.textContent = message;
@@ -1125,56 +1122,6 @@
                 if (cCancel) {
                     cCancel.addEventListener('click', closeCommendationModal);
                 }
-                var cSubmit = document.getElementById('commendationModalSubmit');
-                if (cSubmit) {
-                    cSubmit.addEventListener('click', function () {
-                        var sid = document.getElementById('commendationModalStudentId').value;
-                        var desc = document.getElementById('commendationModalText').value.trim();
-                        if (!sid || !desc) {
-                            reportShowToast('Please enter a message');
-                            return;
-                        }
-                        fetch(pointsCommendationUrl, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json',
-                                'X-Requested-With': 'XMLHttpRequest',
-                                'X-CSRF-TOKEN': houseHubCsrf()
-                            },
-                            credentials: 'same-origin',
-                            body: JSON.stringify({ student_id: Number(sid), description: desc })
-                        })
-                            .then(async function (res) {
-                                var text = await res.text();
-                                var data;
-                                try {
-                                    data = JSON.parse(text);
-                                } catch (err) {
-                                    console.error('Invalid response:', text);
-                                    throw new Error('Invalid response');
-                                }
-                                if (!res.ok) {
-                                    throw new Error((data && data.message) ? data.message : 'Failed');
-                                }
-                                return data;
-                            })
-                            .then(function (data) {
-                                if (!data || !data.success) {
-                                    throw new Error('Failed');
-                                }
-                                closeAndResetRewardModals();
-                                if (data && data.recent_entry) {
-                                    window.houseHubPrependRecentActivity(data.recent_entry);
-                                }
-                                reportShowToast('Saved successfully');
-                            })
-                            .catch(function (err) {
-                                console.error(err);
-                                reportShowToast('Could not save');
-                            });
-                    });
-                }
 
                 var aShell = document.getElementById('awardModal');
                 if (aShell) {
@@ -1187,63 +1134,6 @@
                 var aCancel = document.getElementById('awardModalCancel');
                 if (aCancel) {
                     aCancel.addEventListener('click', closeAwardModal);
-                }
-                var aSubmit = document.getElementById('awardModalSubmit');
-                if (aSubmit) {
-                    aSubmit.addEventListener('click', function () {
-                        var sid = document.getElementById('awardModalStudentId').value;
-                        var nameEl = document.getElementById('awardModalName');
-                        var descEl = document.getElementById('awardModalDescription');
-                        var awardName = nameEl ? nameEl.value.trim() : '';
-                        var desc = descEl ? descEl.value.trim() : '';
-                        if (!sid || !awardName || !desc) {
-                            reportShowToast('Please complete all fields');
-                            return;
-                        }
-                        fetch(pointsAwardUrl, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json',
-                                'X-Requested-With': 'XMLHttpRequest',
-                                'X-CSRF-TOKEN': houseHubCsrf()
-                            },
-                            credentials: 'same-origin',
-                            body: JSON.stringify({
-                                student_id: Number(sid),
-                                award_name: awardName,
-                                description: desc
-                            })
-                        })
-                            .then(async function (res) {
-                                var text = await res.text();
-                                var data;
-                                try {
-                                    data = JSON.parse(text);
-                                } catch (err) {
-                                    console.error('Invalid response:', text);
-                                    throw new Error('Invalid response');
-                                }
-                                if (!res.ok) {
-                                    throw new Error((data && data.message) ? data.message : 'Failed');
-                                }
-                                return data;
-                            })
-                            .then(function (data) {
-                                if (!data || !data.success) {
-                                    throw new Error('Failed');
-                                }
-                                closeAndResetRewardModals();
-                                if (data && data.recent_entry) {
-                                    window.houseHubPrependRecentActivity(data.recent_entry);
-                                }
-                                reportShowToast('Saved successfully');
-                            })
-                            .catch(function (err) {
-                                console.error(err);
-                                reportShowToast('Could not save');
-                            });
-                    });
                 }
             })();
 
@@ -1474,6 +1364,120 @@
         };
     </script>
     @stack('scripts')
+    <script>
+        (function () {
+            var pointsCommendationUrl = @json(route('points.commendation'));
+            var pointsAwardUrl = @json(route('points.award'));
+
+            function hhCsrf() {
+                var m = document.querySelector('meta[name="csrf-token"]');
+                return m ? m.getAttribute('content') : '';
+            }
+
+            function hhParseJsonResponse(res) {
+                return res.text().then(function (text) {
+                    var data;
+                    try {
+                        data = JSON.parse(text);
+                    } catch (e) {
+                        console.error('Invalid response:', text);
+                        throw new Error('Invalid response');
+                    }
+                    if (!res.ok) {
+                        throw new Error((data && data.message) ? data.message : 'Failed');
+                    }
+                    return data;
+                });
+            }
+
+            var saveCommendationBtn = document.getElementById('commendationModalSubmit');
+            var saveAwardBtn = document.getElementById('awardModalSubmit');
+
+            if (saveCommendationBtn) {
+                saveCommendationBtn.addEventListener('click', function () {
+                    var textEl = document.getElementById('commendationModalText');
+                    var sidEl = document.getElementById('commendationModalStudentId');
+                    var text = textEl ? textEl.value.trim() : '';
+                    var sid = sidEl ? sidEl.value : '';
+                    if (!sid || !text) {
+                        if (typeof window.reportShowToast === 'function') {
+                            window.reportShowToast('Please enter a message');
+                        } else {
+                            alert('Please enter a message');
+                        }
+                        return;
+                    }
+                    fetch(pointsCommendationUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': hhCsrf()
+                        },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({ student_id: Number(sid), description: text })
+                    })
+                        .then(hhParseJsonResponse)
+                        .then(function (data) {
+                            if (!data || !data.success) {
+                                throw new Error('Failed');
+                            }
+                            location.reload();
+                        })
+                        .catch(function (err) {
+                            console.error(err);
+                            alert('Failed to save');
+                        });
+                });
+            }
+
+            if (saveAwardBtn) {
+                saveAwardBtn.addEventListener('click', function () {
+                    var sidEl = document.getElementById('awardModalStudentId');
+                    var nameEl = document.getElementById('awardModalName');
+                    var descEl = document.getElementById('awardModalDescription');
+                    var sid = sidEl ? sidEl.value : '';
+                    var awardName = nameEl ? nameEl.value.trim() : '';
+                    var desc = descEl ? descEl.value.trim() : '';
+                    if (!sid || !awardName || !desc) {
+                        if (typeof window.reportShowToast === 'function') {
+                            window.reportShowToast('Please complete all fields');
+                        } else {
+                            alert('Please complete all fields');
+                        }
+                        return;
+                    }
+                    fetch(pointsAwardUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': hhCsrf()
+                        },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({
+                            student_id: Number(sid),
+                            award_name: awardName,
+                            description: desc
+                        })
+                    })
+                        .then(hhParseJsonResponse)
+                        .then(function (data) {
+                            if (!data || !data.success) {
+                                throw new Error('Failed');
+                            }
+                            location.reload();
+                        })
+                        .catch(function (err) {
+                            console.error(err);
+                            alert('Failed to save');
+                        });
+                });
+            }
+        })();
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>

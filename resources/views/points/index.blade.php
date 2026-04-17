@@ -584,18 +584,6 @@
                 });
         }
 
-        if (typeof window.openCommendationModal !== 'function') {
-            window.openCommendationModal = function (studentId) {
-                alert('Open commendation modal for student ' + studentId);
-            };
-        }
-
-        if (typeof window.openAwardModal !== 'function') {
-            window.openAwardModal = function (studentId) {
-                alert('Open award modal for student ' + studentId);
-            };
-        }
-
         document.querySelectorAll('.btn-commend').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var studentId = this.dataset.studentId;
