@@ -13,3 +13,21 @@ body::-webkit-scrollbar,
 *::-webkit-scrollbar {
     display: none; /* Chrome, Safari */
 }
+
+/* Points page — house standings buttons: 2×2 grid on small screens only */
+@media (max-width: 767px) {
+    .points-index-page .house-bar {
+        flex-wrap: wrap;
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .points-index-page .house-item {
+        flex: 1 1 calc(50% - 4px);
+        max-width: calc(50% - 4px);
+        min-width: 0;
+        box-sizing: border-box;
+    }
+}
