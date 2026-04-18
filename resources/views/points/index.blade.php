@@ -520,15 +520,6 @@
                                     @endphp
                                     <div class="activity-item mb-3 pb-2 border-bottom border-secondary" style="border-color: #334155 !important;">
                                         <div class="small" style="color: #f1f5f9;">{{ $recentSentence }}</div>
-                                        @if (! empty($r->category))
-                                            <div class="text-muted small" style="color: #94a3b8 !important;">
-                                                @if ($r->category === 'manual')
-                                                    Quick add
-                                                @else
-                                                    {{ ucfirst($r->category) }}
-                                                @endif
-                                            </div>
-                                        @endif
                                     </div>
                                 @empty
                                     <p class="text-muted mb-0" style="color: #94a3b8 !important;">No recent transactions.</p>
@@ -671,17 +662,6 @@
             return who;
         }
 
-        function recentActivityCategoryLabel(categoryRaw) {
-            var s = categoryRaw != null ? String(categoryRaw).trim() : '';
-            if (!s) {
-                return '';
-            }
-            if (s === 'manual') {
-                return 'Quick add';
-            }
-            return s.charAt(0).toUpperCase() + s.slice(1);
-        }
-
         function recentActivitySentence(r) {
             var teacher = String(r.teacher != null ? r.teacher : '');
             var who = recentActivityRecipient(r);
@@ -711,13 +691,8 @@
             var html = '';
             for (var i = 0; i < rows.length; i++) {
                 var r = rows[i];
-                var category = r.category != null ? String(r.category).trim() : '';
-                var categoryLabel = recentActivityCategoryLabel(category);
                 html += '<div class="activity-item mb-3 pb-2 border-bottom border-secondary" style="border-color: #334155 !important;">';
                 html += '<div class="small" style="color: #f1f5f9;">' + recentActivitySentence(r) + '</div>';
-                if (categoryLabel) {
-                    html += '<div class="text-muted small" style="color: #94a3b8 !important;">' + escapeRecentHtml(categoryLabel) + '</div>';
-                }
                 html += '</div>';
             }
             wrap.innerHTML = html;

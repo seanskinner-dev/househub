@@ -531,16 +531,23 @@
                 }
                 var who = entry.who != null ? String(entry.who) : '—';
                 var amt = entry.amount != null ? Number(entry.amount) : 0;
-                var sign = amt > 0 ? '+' : '';
                 var teacher = entry.teacher != null ? String(entry.teacher) : '';
+                var absAmt = Math.abs(amt);
+                var pointsWord = absAmt === 1 ? 'point' : 'points';
+                var t = escapeReportHtml(teacher);
+                var w = escapeReportHtml(who);
+                var sentence;
+                if (amt > 0) {
+                    sentence = t + ' awarded ' + absAmt + ' ' + pointsWord + ' to ' + w;
+                } else if (amt < 0) {
+                    sentence = t + ' deducted ' + absAmt + ' ' + pointsWord + ' from ' + w;
+                } else {
+                    sentence = t + ' awarded ' + absAmt + ' ' + pointsWord + ' to ' + w;
+                }
                 var row = document.createElement('div');
                 row.className = 'activity-item mb-3 pb-2 border-bottom border-secondary';
                 row.style.borderColor = '#334155';
-                var html = '<div><strong>' + sign + amt + '</strong> ' + escapeReportHtml(who) + '</div>';
-                if (teacher) {
-                    html += '<div class="text-muted" style="color: #94a3b8 !important;">' + escapeReportHtml(teacher) + '</div>';
-                }
-                row.innerHTML = html;
+                row.innerHTML = '<div class="small" style="color: #f1f5f9;">' + sentence + '</div>';
                 wrap.insertBefore(row, wrap.firstChild);
             };
 
