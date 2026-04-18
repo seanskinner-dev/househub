@@ -28,98 +28,90 @@
             color: white;
         }
 
-        /* NAVBAR (hh- prefix avoids clashing with Bootstrap .navbar) */
+        /* NAVBAR — Bootstrap navbar + dark theme (hh- prefix) */
         .hh-navbar {
-            width: 100%;
             background: #1e293b;
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             font-weight: bold;
-            box-sizing: border-box;
         }
 
-        .nav-left {
+        .hh-navbar .container-fluid {
+            padding-left: 30px;
+            padding-right: 30px;
+        }
+
+        @media (max-width: 991.98px) {
+            .hh-navbar .container-fluid {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+        }
+
+        .hh-navbar .navbar-brand {
             font-size: 18px;
+            color: #fff;
         }
 
-        .nav-right {
-            display: flex;
-            align-items: center;
-            gap: 20px;
+        .hh-navbar .navbar-brand:hover,
+        .hh-navbar .navbar-brand:focus {
+            color: #fff;
         }
 
-        .user-indicator {
-            font-size: 12px;
-            opacity: 0.7;
-            color: #cbd5e1;
-            margin-left: 8px;
-            white-space: nowrap;
-        }
-
-        .nav-right > a {
-            color: white;
-            text-decoration: none;
-        }
-
-        .nav-right > a:hover {
-            text-decoration: underline;
-        }
-
-        .nav-right > a.active {
-            text-decoration: underline;
-            border-bottom: 2px solid #fff;
-            padding-bottom: 2px;
-        }
-
-        .nav-right .dropdown-toggle {
-            color: white;
-            text-decoration: none;
+        .hh-navbar .navbar-nav .nav-link {
+            color: #fff;
             font-weight: bold;
-            padding: 0;
         }
 
-        .nav-right .dropdown-toggle:hover,
-        .nav-right .dropdown-toggle:focus {
+        .hh-navbar .navbar-nav .nav-link:hover,
+        .hh-navbar .navbar-nav .nav-link:focus {
             color: #fff;
             text-decoration: underline;
         }
 
-        .nav-right .dropdown-toggle.active {
+        .hh-navbar .navbar-nav .nav-link.active {
             text-decoration: underline;
             border-bottom: 2px solid #fff;
             padding-bottom: 2px;
         }
 
-        .nav-right .dropdown-toggle::after {
+        .hh-navbar .navbar-nav .dropdown-toggle::after {
             margin-left: 0.35em;
             vertical-align: 0.15em;
         }
 
-        .nav-right .dropdown-menu {
+        .hh-navbar .dropdown-menu {
             background: #1e293b;
             border: 1px solid #334155;
             margin-top: 0.5rem;
             padding: 0.35rem 0;
         }
 
-        .nav-right .dropdown-item {
+        .hh-navbar .dropdown-item {
             color: #f1f5f9;
             font-weight: normal;
             padding: 0.45rem 1rem;
         }
 
-        .nav-right .dropdown-item:hover,
-        .nav-right .dropdown-item:focus {
+        .hh-navbar .dropdown-item:hover,
+        .hh-navbar .dropdown-item:focus {
             background: #334155;
             color: #fff;
         }
 
-        .nav-right .dropdown-item.active,
-        .nav-right .dropdown-item:active {
+        .hh-navbar .dropdown-item.active,
+        .hh-navbar .dropdown-item:active {
             background: #475569;
             color: #fff;
+        }
+
+        .hh-navbar .user-indicator {
+            font-size: 12px;
+            opacity: 0.7;
+            color: #cbd5e1;
+            white-space: nowrap;
+        }
+
+        .hh-navbar .navbar-toggler {
+            border-color: rgba(255, 255, 255, 0.35);
         }
 
         /* PAGE CONTENT */
@@ -333,52 +325,74 @@
 <body>
 
     <!-- NAVBAR -->
-    <div class="hh-navbar">
-        <div class="nav-left">🏫 HouseHub</div>
-
-        <div class="nav-right">
-            <a href="/points">Points</a>
-
-            <div class="dropdown">
-                <a class="dropdown-toggle {{ request()->routeIs('reports.pc', 'reports.leadership', 'reports.teachers', 'reports.house', 'reports.houses') ? 'active' : '' }}"
-                   href="#" id="reportsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    Reports
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="reportsDropdown">
-                    <li>
-                        <a class="dropdown-item {{ request()->routeIs('reports.house') ? 'active' : '' }}"
-                           href="{{ route('reports.house') }}">House performance</a>
+    <nav class="navbar navbar-expand-lg navbar-dark hh-navbar py-2">
+        <div class="container-fluid">
+            <a class="navbar-brand mb-0" href="{{ url('/') }}">🏫 HouseHub</a>
+            <button class="navbar-toggler"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#mainNavbar"
+                    aria-controls="mainNavbar"
+                    aria-expanded="false"
+                    aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav ms-auto align-items-lg-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/points">Points</a>
                     </li>
-                    <li>
-                        <a class="dropdown-item {{ request()->routeIs('reports.pc') ? 'active' : '' }}"
-                           href="{{ route('reports.pc') }}">Pastoral Insights</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {{ request()->routeIs('reports.pc', 'reports.leadership', 'reports.teachers', 'reports.house', 'reports.houses') ? 'active' : '' }}"
+                           href="#"
+                           id="reportsDropdown"
+                           role="button"
+                           data-bs-toggle="dropdown"
+                           aria-expanded="false">
+                            Reports
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="reportsDropdown">
+                            <li>
+                                <a class="dropdown-item {{ request()->routeIs('reports.house') ? 'active' : '' }}"
+                                   href="{{ route('reports.house') }}">House performance</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item {{ request()->routeIs('reports.pc') ? 'active' : '' }}"
+                                   href="{{ route('reports.pc') }}">Pastoral Insights</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item {{ request()->routeIs('reports.leadership') ? 'active' : '' }}"
+                                   href="{{ route('reports.leadership') }}">Leadership Overview</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item {{ request()->routeIs('reports.teachers') ? 'active' : '' }}"
+                                   href="{{ route('reports.teachers') }}">Staff Engagement</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item {{ request()->routeIs('reports.houses') ? 'active' : '' }}"
+                                   href="{{ route('reports.houses') }}">House Performance</a>
+                            </li>
+                        </ul>
                     </li>
-                    <li>
-                        <a class="dropdown-item {{ request()->routeIs('reports.leadership') ? 'active' : '' }}"
-                           href="{{ route('reports.leadership') }}">Leadership Overview</a>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/tv">TV</a>
                     </li>
-                    <li>
-                        <a class="dropdown-item {{ request()->routeIs('reports.teachers') ? 'active' : '' }}"
-                           href="{{ route('reports.teachers') }}">Staff Engagement</a>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin">Admin</a>
                     </li>
-                    <li>
-                        <a class="dropdown-item {{ request()->routeIs('reports.houses') ? 'active' : '' }}"
-                           href="{{ route('reports.houses') }}">House Performance</a>
+                    <li class="nav-item ms-lg-2">
+                        <span class="navbar-text user-indicator mb-0">
+                            @auth
+                                {{ auth()->user()?->name ?? 'System' }}
+                            @else
+                                Guest
+                            @endauth
+                        </span>
                     </li>
                 </ul>
             </div>
-
-            <a href="/tv">TV</a>
-            <a href="/admin">Admin</a>
-            <div class="user-indicator">
-                @auth
-                    {{ auth()->user()?->name ?? 'System' }}
-                @else
-                    Guest
-                @endauth
-            </div>
         </div>
-    </div>
+    </nav>
 
     {{-- @yield for @extends; $slot for <x-app-layout> (both may be empty; only one is used) --}}
     <div class="page-content">
