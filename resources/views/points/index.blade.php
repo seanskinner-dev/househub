@@ -315,6 +315,21 @@
             opacity: 0.7;
         }
 
+        /* Mobile: 2×2 grid — nowrap + flex:1 + min-width:auto kept all four on one row and overflowed */
+        @media (max-width: 767px) {
+            .points-index-page .house-bar {
+                flex-wrap: wrap;
+                min-width: 0;
+            }
+
+            .points-index-page .house-item {
+                flex: 1 1 calc(50% - 4px);
+                max-width: calc(50% - 4px);
+                min-width: 0;
+                box-sizing: border-box;
+            }
+        }
+
         .student-link {
             color: #93c5fd;
             font-weight: 700;
