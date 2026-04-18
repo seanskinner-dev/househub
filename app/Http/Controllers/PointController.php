@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Award;
 use App\Models\Commendation;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -81,11 +82,13 @@ class PointController extends Controller
         $amount = (int) $request->input('amount', 1);
 
         $teacherId = auth()->id();
+
         if (! $teacherId) {
             $teacherId = DB::table('users')->inRandomOrder()->value('id');
         }
+
         if (! $teacherId) {
-            throw new \Exception('No users available to assign as teacher');
+            throw new Exception('No users available to assign as teacher');
         }
 
         $teacherLabel = DB::table('users')->where('id', $teacherId)->value('name');
