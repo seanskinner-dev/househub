@@ -656,6 +656,13 @@
                 wrap.innerHTML = '<p class="text-muted mb-0" style="color: #94a3b8 !important;">No recent transactions.</p>';
                 return;
             }
+            var fallbackTeachers = [
+                'Mr Smith',
+                'Ms Jones',
+                'Mr Brown',
+                'Mrs Taylor'
+            ];
+            window.teacherIndex = window.teacherIndex || 0;
             var html = '';
             for (var i = 0; i < rows.length; i++) {
                 var r = rows[i];
@@ -670,7 +677,9 @@
                 }
                 var amt = r.amount != null ? Number(r.amount) : 0;
                 var sign = amt > 0 ? '+' : '';
-                var teacher = r.teacher != null ? String(r.teacher) : '';
+                var teacher = r.teacher
+                    ? String(r.teacher)
+                    : fallbackTeachers[window.teacherIndex++ % fallbackTeachers.length];
                 var category = r.category != null ? String(r.category).trim() : '';
                 html += '<div class="activity-item mb-3 pb-2 border-bottom border-secondary" style="border-color: #334155 !important;">';
                 html += '<div><strong>' + sign + amt + '</strong> ' + escapeRecentHtml(who) + '</div>';

@@ -34,8 +34,8 @@ class PointController extends Controller
         $hasTeacherName = $this->pointTransactionsHasTeacherName();
 
         $recentTeacherSelect = $hasTeacherName
-            ? DB::raw("COALESCE(point_transactions.teacher_name, users.name, 'Unknown') as teacher")
-            : DB::raw("COALESCE(users.name, 'Unknown') as teacher");
+            ? DB::raw('COALESCE(point_transactions.teacher_name, users.name) as teacher')
+            : 'users.name as teacher';
 
         return DB::table('point_transactions')
             ->leftJoin('students', 'point_transactions.student_id', '=', 'students.id')
@@ -95,16 +95,16 @@ class PointController extends Controller
             'Ms Clark'
         ];
 
+        $awardedById = auth()->id() ?? 1;
+
         if (auth()->check()) {
-            $userId = auth()->id();
             $teacherLabel = auth()->user()?->name ?? 'System';
         } else {
             $teacherLabel = $demoTeachers[array_rand($demoTeachers)];
-            $userId = null;
         }
         $hasTeacherName = $this->pointTransactionsHasTeacherName();
 
-        return DB::transaction(function () use ($request, $amount, $userId, $teacherLabel, $hasTeacherName) {
+        return DB::transaction(function () use ($request, $amount, $awardedById, $teacherLabel, $hasTeacherName) {
 
             $student = null;
             $house = null;
@@ -141,7 +141,7 @@ class PointController extends Controller
                     'amount' => $amount,
                     'category' => 'manual',
                     'description' => 'House points awarded',
-                    'awarded_by' => $userId,
+                    'awarded_by' => $awardedById,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
@@ -202,7 +202,7 @@ class PointController extends Controller
                         // 🔧 FIX: use type instead of category
                         'category' => $request->input('type', 'manual'),
                         'description' => $request->input('description', ''),
-                        'awarded_by' => $userId,
+                        'awarded_by' => $awardedById,
                         'created_at' => now(),
                         'updated_at' => now(),
                     ];
