@@ -31,12 +31,6 @@ class PointController extends Controller
      */
     private function recentActivityQuery()
     {
-        $hasTeacherName = $this->pointTransactionsHasTeacherName();
-
-        $recentTeacherSelect = $hasTeacherName
-            ? DB::raw('COALESCE(point_transactions.teacher_name, users.name) as teacher')
-            : 'users.name as teacher';
-
         return DB::table('point_transactions')
             ->leftJoin('students', 'point_transactions.student_id', '=', 'students.id')
             ->leftJoin('houses', 'point_transactions.house_id', '=', 'houses.id')
@@ -49,7 +43,7 @@ class PointController extends Controller
                 'point_transactions.amount',
                 'point_transactions.category',
                 'point_transactions.created_at',
-                $recentTeacherSelect
+                'users.name as teacher'
             )
             ->orderByDesc('point_transactions.created_at')
             ->limit(10);
@@ -95,7 +89,7 @@ class PointController extends Controller
             'Ms Clark'
         ];
 
-        $awardedById = auth()->id() ?? 1;
+        $awardedById = auth()->id();
 
         if (auth()->check()) {
             $teacherLabel = auth()->user()?->name ?? 'System';

@@ -512,9 +512,7 @@
                                             <strong>{{ ($r->amount > 0 ? '+' : '') . $r->amount }}</strong>
                                             {{ $who }}
                                         </div>
-                                        @if (! empty($r->teacher))
-                                            <div class="text-muted" style="color: #94a3b8 !important;">{{ $r->teacher }}</div>
-                                        @endif
+                                        <div class="text-muted" style="color: #94a3b8 !important;">{{ $r->teacher ?? 'System' }}</div>
                                         @if (! empty($r->category))
                                             <div class="text-muted small" style="color: #94a3b8 !important;">{{ $r->category }}</div>
                                         @endif
@@ -656,13 +654,6 @@
                 wrap.innerHTML = '<p class="text-muted mb-0" style="color: #94a3b8 !important;">No recent transactions.</p>';
                 return;
             }
-            var fallbackTeachers = [
-                'Mr Smith',
-                'Ms Jones',
-                'Mr Brown',
-                'Mrs Taylor'
-            ];
-            window.teacherIndex = window.teacherIndex || 0;
             var html = '';
             for (var i = 0; i < rows.length; i++) {
                 var r = rows[i];
@@ -677,15 +668,13 @@
                 }
                 var amt = r.amount != null ? Number(r.amount) : 0;
                 var sign = amt > 0 ? '+' : '';
-                var teacher = r.teacher
+                var teacher = r.teacher != null && String(r.teacher).trim() !== ''
                     ? String(r.teacher)
-                    : fallbackTeachers[window.teacherIndex++ % fallbackTeachers.length];
+                    : 'System';
                 var category = r.category != null ? String(r.category).trim() : '';
                 html += '<div class="activity-item mb-3 pb-2 border-bottom border-secondary" style="border-color: #334155 !important;">';
                 html += '<div><strong>' + sign + amt + '</strong> ' + escapeRecentHtml(who) + '</div>';
-                if (teacher) {
-                    html += '<div class="text-muted" style="color: #94a3b8 !important;">' + escapeRecentHtml(teacher) + '</div>';
-                }
+                html += '<div class="text-muted" style="color: #94a3b8 !important;">' + escapeRecentHtml(teacher) + '</div>';
                 if (category) {
                     html += '<div class="text-muted small" style="color: #94a3b8 !important;">' + escapeRecentHtml(category) + '</div>';
                 }
