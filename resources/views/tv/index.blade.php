@@ -1432,7 +1432,7 @@
 
     <div id="broadcastBanner" class="omm-banner" role="status" aria-live="polite" style="display:none;">
         <span aria-hidden="true">⚠️</span>
-        <strong>Emergency Message</strong>
+        <strong>School Notice</strong>
         <span class="omm-text" id="broadcastBannerText"></span>
     </div>
 
