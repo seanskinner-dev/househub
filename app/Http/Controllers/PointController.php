@@ -88,7 +88,7 @@ class PointController extends Controller
         }
 
         if (! $teacherId) {
-            throw new Exception('No users available to assign as teacher');
+            throw new Exception('No users available');
         }
 
         $teacherLabel = DB::table('users')->where('id', $teacherId)->value('name');
