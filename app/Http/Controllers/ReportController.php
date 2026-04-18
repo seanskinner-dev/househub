@@ -63,8 +63,17 @@ class ReportController extends Controller
         ]);
     }
 
+    /**
+     * At-Risk Students (pastoral). Filter query params: house, year, start_date, end_date
+     * (applied in {@see self::getReportData} → {@see self::pcParseFilters}).
+     */
     public function atRiskStudents(Request $request)
     {
+        $house = request('house');
+        $year = request('year');
+        $startDate = request('start_date');
+        $endDate = request('end_date');
+
         $houses = DB::table('houses')->orderBy('name')->pluck('name')->values()->all();
         $data = $this->getReportData($request);
 
@@ -329,6 +338,13 @@ class ReportController extends Controller
         $houseRows = DB::table('point_transactions as pt')
             ->join('houses as h', 'pt.house_id', '=', 'h.id')
             ->whereNotNull('pt.house_id')
+            ->whereBetween('pt.created_at', [$start, $end])
+            ->whereRaw('EXTRACT(DOW FROM pt.created_at::timestamp) BETWEEN 1 AND 5')
+            ->when($house !== 'All', fn ($q) => $q->where('h.name', $house))
+            ->when($yearFilter !== 'All', function ($q) use ($yearFilter) {
+                $q->join('students as s', 'pt.student_id', '=', 's.id')
+                    ->where('s.year_level', (int) $yearFilter);
+            })
             ->selectRaw('DATE(pt.created_at) as point_date, h.name as house_name, SUM(pt.amount) as total_points')
             ->groupByRaw('DATE(pt.created_at), h.name')
             ->orderByRaw('DATE(pt.created_at)')
@@ -837,18 +853,24 @@ class ReportController extends Controller
      */
     private function pcParseFilters(Request $request): array
     {
-        $house = (string) $request->query('house', 'All');
+        $house = trim((string) ($request->input('house') ?? ''));
+        if ($house === '') {
+            $house = 'All';
+        }
         if ($house !== 'All' && ! DB::table('houses')->where('name', $house)->exists()) {
             $house = 'All';
         }
 
-        $yearFilter = (string) $request->query('year', 'All');
+        $yearFilter = trim((string) ($request->input('year') ?? 'All'));
+        if ($yearFilter === '') {
+            $yearFilter = 'All';
+        }
         if ($yearFilter !== 'All' && ! in_array($yearFilter, ['7', '8', '9', '10', '11', '12'], true)) {
             $yearFilter = 'All';
         }
 
-        $endIn = $this->pcParseDateParam($request->query('end_date'));
-        $startIn = $this->pcParseDateParam($request->query('start_date'));
+        $endIn = $this->pcParseDateParam($request->input('end_date'));
+        $startIn = $this->pcParseDateParam($request->input('start_date'));
 
         $end = $endIn ? $endIn->copy()->endOfDay() : Carbon::today()->endOfDay();
         $start = $startIn ?? $end->copy()->subDays(29)->startOfDay();

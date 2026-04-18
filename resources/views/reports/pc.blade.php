@@ -30,42 +30,42 @@
         Pastoral care overview — weekday data only (Mon–Fri). Use filters and click charts for details (no page reload).
     </p>
 
-    <div id="pc-filter-bar" style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; margin-bottom: 2.5rem; padding: 18px; background: #1e293b; border-radius: 8px;">
+    <form id="pc-filter-bar" method="GET" action="{{ route('reports.pc') }}" style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; margin-bottom: 2.5rem; padding: 18px; background: #1e293b; border-radius: 8px;">
         <div>
             <label for="pc-house" style="display: block; font-size: 0.85rem; opacity: 0.85; margin-bottom: 6px;">House</label>
             <select id="pc-house" name="house" style="min-width: 180px; padding: 10px 12px; font-size: 1rem; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff;">
-                <option value="All">All</option>
+                <option value="All" @selected(request('house', 'All') === 'All')>All</option>
                 @foreach ($houses as $h)
-                    <option value="{{ $h }}">{{ $h }}</option>
+                    <option value="{{ $h }}" @selected(request('house') === $h)>{{ $h }}</option>
                 @endforeach
             </select>
         </div>
         <div>
             <label for="pc-year" style="display: block; font-size: 0.85rem; opacity: 0.85; margin-bottom: 6px;">Year</label>
             <select id="pc-year" name="year" style="min-width: 140px; padding: 10px 12px; font-size: 1rem; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff;">
-                <option value="All">All</option>
-                <option value="7">Year 7</option>
-                <option value="8">Year 8</option>
-                <option value="9">Year 9</option>
-                <option value="10">Year 10</option>
-                <option value="11">Year 11</option>
-                <option value="12">Year 12</option>
+                <option value="All" @selected(request('year', 'All') === 'All')>All</option>
+                <option value="7" @selected(request('year') == '7')>Year 7</option>
+                <option value="8" @selected(request('year') == '8')>Year 8</option>
+                <option value="9" @selected(request('year') == '9')>Year 9</option>
+                <option value="10" @selected(request('year') == '10')>Year 10</option>
+                <option value="11" @selected(request('year') == '11')>Year 11</option>
+                <option value="12" @selected(request('year') == '12')>Year 12</option>
             </select>
         </div>
         <div>
             <label for="pc-start" style="display: block; font-size: 0.85rem; opacity: 0.85; margin-bottom: 6px;">Start date</label>
-            <input type="date" id="pc-start" name="start_date" style="padding: 10px 12px; font-size: 1rem; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff;">
+            <input type="date" id="pc-start" name="start_date" value="{{ request('start_date') }}" style="padding: 10px 12px; font-size: 1rem; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff;">
         </div>
         <div>
             <label for="pc-end" style="display: block; font-size: 0.85rem; opacity: 0.85; margin-bottom: 6px;">End date</label>
-            <input type="date" id="pc-end" name="end_date" style="padding: 10px 12px; font-size: 1rem; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff;">
+            <input type="date" id="pc-end" name="end_date" value="{{ request('end_date') }}" style="padding: 10px 12px; font-size: 1rem; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff;">
         </div>
         <div>
-            <button type="button" id="pc-apply" style="padding: 11px 22px; font-size: 1rem; font-weight: 600; border: none; border-radius: 6px; background: #0ea5e9; color: #fff; cursor: pointer;">
+            <button type="submit" id="pc-apply" style="padding: 11px 22px; font-size: 1rem; font-weight: 600; border: none; border-radius: 6px; background: #0ea5e9; color: #fff; cursor: pointer;">
                 Apply
             </button>
         </div>
-    </div>
+    </form>
 
     <div id="pc-report-grid">
         <div class="row">
@@ -448,10 +448,6 @@ document.addEventListener("DOMContentLoaded", function () {
     modalBackdrop.addEventListener('click', function (e) {
         if (e.target.id === 'pc-modal-backdrop') modalBackdrop.style.display = 'none';
     });
-    document.getElementById('pc-apply').addEventListener('click', function () {
-        loadAndRender().catch(err => console.error('PC load failed', err));
-    });
-
     loadAndRender().catch(err => console.error('PC load failed', err));
 });
 </script>
