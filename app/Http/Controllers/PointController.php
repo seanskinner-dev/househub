@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Award;
 use App\Models\Commendation;
 use Carbon\Carbon;
-use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -88,7 +87,7 @@ class PointController extends Controller
         }
 
         if (! $teacherId) {
-            throw new Exception('No users available');
+            abort(500, 'No users available');
         }
 
         $teacherLabel = DB::table('users')->where('id', $teacherId)->value('name');
