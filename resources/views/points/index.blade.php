@@ -260,6 +260,17 @@
             margin-bottom: 16px;
         }
 
+        .points-index-page .house-bar button.house-item {
+            border: 0;
+            margin: 0;
+            appearance: none;
+            -webkit-appearance: none;
+            font: inherit;
+            color: inherit;
+            box-sizing: border-box;
+            text-align: left;
+        }
+
         .points-index-page .house-item {
             flex: 1;
             padding: 10px 12px;
@@ -386,18 +397,18 @@
             <h1 class="h4 mb-0" style="color: #f1f5f9;">Award points</h1>
 
             <div class="house-bar">
-                <div class="house-item gryffindor" data-house="gryffindor">
-                    Gryffindor <span id="gryffindor-points">{{ $pillPoints['gryffindor'] }}</span>
-                </div>
-                <div class="house-item slytherin" data-house="slytherin">
-                    Slytherin <span id="slytherin-points">{{ $pillPoints['slytherin'] }}</span>
-                </div>
-                <div class="house-item ravenclaw" data-house="ravenclaw">
-                    Ravenclaw <span id="ravenclaw-points">{{ $pillPoints['ravenclaw'] }}</span>
-                </div>
-                <div class="house-item hufflepuff" data-house="hufflepuff">
-                    Hufflepuff <span id="hufflepuff-points">{{ $pillPoints['hufflepuff'] }}</span>
-                </div>
+                @foreach ($houses as $house)
+                    @php
+                        $slug = strtolower(str_replace(' ', '', $house->name ?? ''));
+                        $pillDisplay = array_key_exists($slug, $pillPoints) ? $pillPoints[$slug] : (int) ($house->points ?? 0);
+                    @endphp
+                    <button type="button"
+                            class="house-item {{ $slug }}"
+                            data-house-id="{{ (int) $house->id }}"
+                            onclick="awardHouse({{ (int) $house->id }}, this)">
+                        {{ $house->name }} <span id="{{ $slug }}-points">{{ $pillDisplay }}</span>
+                    </button>
+                @endforeach
             </div>
 
             <div class="search-container">
@@ -538,16 +549,6 @@
             return m ? m.getAttribute('content') : '';
         }
 
-        function houseSlugToApiName(slug) {
-            var map = {
-                gryffindor: 'Gryffindor',
-                slytherin: 'Slytherin',
-                ravenclaw: 'Ravenclaw',
-                hufflepuff: 'Hufflepuff'
-            };
-            return map[String(slug || '').toLowerCase()] || slug;
-        }
-
         function houseApiNameToSlug(name) {
             var map = {
                 Gryffindor: 'gryffindor',
@@ -568,8 +569,15 @@
             el.textContent = n + (delta || 0);
         }
 
-        function awardHouse(house) {
-            var houseName = houseSlugToApiName(house);
+        function awardHouse(houseId, el) {
+            console.log('House clicked:', houseId);
+
+            if (el && el.classList) {
+                el.classList.add('clicked');
+                setTimeout(function () {
+                    el.classList.remove('clicked');
+                }, 200);
+            }
 
             fetch(@json(url('/points')), {
                 method: 'POST',
@@ -577,21 +585,24 @@
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
                     'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': csrfToken()
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                 },
                 credentials: 'same-origin',
                 body: JSON.stringify({
-                    house_name: houseName,
+                    house_id: houseId,
                     amount: 1
                 })
             })
                 .then(function (res) {
-                    if (!res.ok) {
-                        throw new Error('bad');
-                    }
-                    return res.json();
+                    return res.json().then(function (data) {
+                        if (!res.ok) {
+                            throw new Error((data && data.message) ? data.message : 'bad');
+                        }
+                        return data;
+                    });
                 })
                 .then(function (data) {
+                    console.log('Success:', data);
                     if (data.house) {
                         bumpHouseStandingsPill(data.house, data.amount || 1);
                     }
@@ -601,10 +612,11 @@
                         window.houseHubPrependRecentActivity(data.recent_entry);
                     }
                     if (typeof window.reportShowToast === 'function') {
-                        window.reportShowToast('House points updated');
+                        window.reportShowToast('House point added');
                     }
                 })
-                .catch(function () {
+                .catch(function (err) {
+                    console.error('Error:', err);
                     if (typeof window.reportShowToast === 'function') {
                         window.reportShowToast('Unable to update house');
                     }
@@ -622,20 +634,6 @@
             btn.addEventListener('click', function () {
                 var studentId = this.dataset.studentId;
                 window.openAwardModal(studentId);
-            });
-        });
-
-        document.querySelectorAll('.points-header .house-item').forEach(function (el) {
-            el.addEventListener('click', function () {
-                var house = el.getAttribute('data-house');
-                if (!house) {
-                    return;
-                }
-                el.classList.add('clicked');
-                setTimeout(function () {
-                    el.classList.remove('clicked');
-                }, 200);
-                awardHouse(house);
             });
         });
 
