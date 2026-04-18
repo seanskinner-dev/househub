@@ -53,12 +53,12 @@
             </select>
         </div>
         <div>
-            <label for="pc-start" style="display: block; font-size: 0.85rem; opacity: 0.85; margin-bottom: 6px;">Start date</label>
-            <input type="date" id="pc-start" name="start_date" value="{{ request('start_date') }}" style="padding: 10px 12px; font-size: 1rem; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff;">
+            <label for="start_date" style="display: block; font-size: 0.85rem; opacity: 0.85; margin-bottom: 6px;">Start date</label>
+            <input type="text" class="date-picker" name="start_date" id="start_date" value="{{ request('start_date') }}" style="padding: 10px 12px; font-size: 1rem; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff;">
         </div>
         <div>
-            <label for="pc-end" style="display: block; font-size: 0.85rem; opacity: 0.85; margin-bottom: 6px;">End date</label>
-            <input type="date" id="pc-end" name="end_date" value="{{ request('end_date') }}" style="padding: 10px 12px; font-size: 1rem; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff;">
+            <label for="end_date" style="display: block; font-size: 0.85rem; opacity: 0.85; margin-bottom: 6px;">End date</label>
+            <input type="text" class="date-picker" name="end_date" id="end_date" value="{{ request('end_date') }}" style="padding: 10px 12px; font-size: 1rem; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff;">
         </div>
         <div>
             <button type="submit" id="pc-apply" style="padding: 11px 22px; font-size: 1rem; font-weight: 600; border: none; border-radius: 6px; background: #0ea5e9; color: #fff; cursor: pointer;">
@@ -165,8 +165,10 @@ document.addEventListener("DOMContentLoaded", function () {
         const params = new URLSearchParams();
         params.set('house', document.getElementById('pc-house').value || 'All');
         params.set('year', document.getElementById('pc-year').value || 'All');
-        const start = document.getElementById('pc-start').value;
-        const end = document.getElementById('pc-end').value;
+        const startEl = document.getElementById('start_date');
+        const endEl = document.getElementById('end_date');
+        const start = startEl ? startEl.value : '';
+        const end = endEl ? endEl.value : '';
         if (start) params.set('start_date', start);
         if (end) params.set('end_date', end);
         return params.toString();

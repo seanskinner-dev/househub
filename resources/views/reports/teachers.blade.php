@@ -18,11 +18,11 @@
         </div>
         <div>
             <label for="tu-start" style="display: block; font-size: 0.85rem; opacity: 0.85; margin-bottom: 6px;">Start</label>
-            <input type="date" id="tu-start" style="padding: 8px 10px; font-size: 1rem; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff;">
+            <input type="text" class="date-picker" id="tu-start" style="padding: 8px 10px; font-size: 1rem; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff;">
         </div>
         <div>
             <label for="tu-end" style="display: block; font-size: 0.85rem; opacity: 0.85; margin-bottom: 6px;">End</label>
-            <input type="date" id="tu-end" style="padding: 8px 10px; font-size: 1rem; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff;">
+            <input type="text" class="date-picker" id="tu-end" style="padding: 8px 10px; font-size: 1rem; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff;">
         </div>
         <div>
             <label for="tu-year" style="display: block; font-size: 0.85rem; opacity: 0.85; margin-bottom: 6px;">Year</label>

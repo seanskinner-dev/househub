@@ -7,6 +7,7 @@
     <title>HouseHub</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
 
     <style>
         /* Hide scrollbars but keep scroll */
@@ -318,6 +319,20 @@
             gap: 8px;
             justify-content: flex-end;
             align-items: center;
+        }
+
+        .flatpickr-calendar {
+            background: #0f172a;
+            border: 1px solid #1e293b;
+        }
+
+        .flatpickr-day.selected {
+            background: #0ea5e9;
+            border-color: #0ea5e9;
+        }
+
+        .flatpickr-day:hover {
+            background: #1e293b;
         }
     </style>
 </head>
@@ -1503,6 +1518,18 @@
         })();
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof flatpickr === 'undefined') {
+                return;
+            }
+            flatpickr('.date-picker', {
+                dateFormat: 'Y-m-d',
+                allowInput: true,
+            });
+        });
+    </script>
 
 </body>
 </html>
