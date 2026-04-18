@@ -80,25 +80,18 @@ class PointController extends Controller
         // 🔧 FIX: default amount
         $amount = (int) $request->input('amount', 1);
 
-        $demoTeachers = [
-            'Mr Smith',
-            'Ms Johnson',
-            'Mr Brown',
-            'Ms Taylor',
-            'Mr Wilson',
-            'Ms Clark'
-        ];
-
-        $awardedById = auth()->id();
-
-        if (auth()->check()) {
-            $teacherLabel = auth()->user()?->name ?? 'System';
-        } else {
-            $teacherLabel = $demoTeachers[array_rand($demoTeachers)];
+        $teacherId = auth()->id();
+        if (! $teacherId) {
+            $teacherId = DB::table('users')->inRandomOrder()->value('id');
         }
+        if (! $teacherId) {
+            throw new \Exception('No users available to assign as teacher');
+        }
+
+        $teacherLabel = DB::table('users')->where('id', $teacherId)->value('name');
         $hasTeacherName = $this->pointTransactionsHasTeacherName();
 
-        return DB::transaction(function () use ($request, $amount, $awardedById, $teacherLabel, $hasTeacherName) {
+        return DB::transaction(function () use ($request, $amount, $teacherLabel, $hasTeacherName, $teacherId) {
 
             $student = null;
             $house = null;
@@ -135,7 +128,7 @@ class PointController extends Controller
                     'amount' => $amount,
                     'category' => 'manual',
                     'description' => 'House points awarded',
-                    'awarded_by' => $awardedById,
+                    'awarded_by' => $teacherId,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
@@ -196,7 +189,7 @@ class PointController extends Controller
                         // 🔧 FIX: use type instead of category
                         'category' => $request->input('type', 'manual'),
                         'description' => $request->input('description', ''),
-                        'awarded_by' => $awardedById,
+                        'awarded_by' => $teacherId,
                         'created_at' => now(),
                         'updated_at' => now(),
                     ];
