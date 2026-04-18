@@ -531,6 +531,7 @@
     </div>
 
     <script>
+        console.log("POINTS SCRIPT LOADED");
         (function () {
             var searchEl = document.getElementById('student-search');
             if (searchEl) {
@@ -570,7 +571,7 @@
         }
 
         function awardHouse(houseId, el) {
-            console.log('House clicked:', houseId);
+            console.log("House clicked:", houseId);
 
             if (el && el.classList) {
                 el.classList.add('clicked');
