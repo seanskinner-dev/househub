@@ -20,7 +20,7 @@ class BroadcastMessageController extends Controller
 
         $broadcastMessage = BroadcastMessage::create([
             'message' => $validated['message'],
-            'created_by' => $request->user()->id,
+            'created_by' => auth()->id() ?? 1,
             'expires_at' => Carbon::now()->addMinutes(15),
         ]);
 
@@ -76,7 +76,7 @@ class BroadcastMessageController extends Controller
 
         $message = BroadcastMessage::create([
             'message' => 'EMERGENCY:'.$validated['code'],
-            'created_by' => $request->user()->id,
+            'created_by' => auth()->id() ?? 1,
             'expires_at' => null,
         ]);
 

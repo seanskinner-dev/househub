@@ -22,7 +22,7 @@ class OfficeMessageController extends Controller
             'student_id' => $validated['student_id'],
             'message' => $validated['message'],
             'status' => 'pending',
-            'created_by' => $request->user()->id,
+            'created_by' => auth()->id() ?? 1,
         ]);
 
         return response()->json($officeMessage->load(['student', 'creator']), 201);

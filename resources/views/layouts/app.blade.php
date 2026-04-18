@@ -372,7 +372,7 @@
             <a href="/admin">Admin</a>
             <div class="user-indicator">
                 @auth
-                    {{ auth()->user()->name }}
+                    {{ auth()->user()?->name ?? 'System' }}
                 @else
                     Guest
                 @endauth

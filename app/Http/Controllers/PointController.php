@@ -82,7 +82,7 @@ class PointController extends Controller
 
         if (auth()->check()) {
             $userId = auth()->id();
-            $teacherLabel = auth()->user()->name;
+            $teacherLabel = auth()->user()?->name ?? 'System';
         } else {
             $teacherLabel = $demoTeachers[array_rand($demoTeachers)];
             $userId = null;
@@ -232,7 +232,7 @@ class PointController extends Controller
 
         if (auth()->check()) {
             $userId = auth()->id();
-            $teacherName = auth()->user()->name;
+            $teacherName = auth()->user()?->name ?? 'System';
         } else {
             $teacherName = $demoTeachers[array_rand($demoTeachers)];
             $userId = null;
@@ -308,7 +308,7 @@ class PointController extends Controller
 
         if (auth()->check()) {
             $userId = auth()->id();
-            $teacherName = auth()->user()->name;
+            $teacherName = auth()->user()?->name ?? 'System';
         } else {
             $teacherName = $demoTeachers[array_rand($demoTeachers)];
             $userId = auth()->id() ?? 1;
