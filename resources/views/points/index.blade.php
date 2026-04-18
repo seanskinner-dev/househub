@@ -506,13 +506,20 @@
                                         } else {
                                             $who = $r->house_name ?? 'House';
                                         }
+                                        $teacherName = trim((string) ($r->teacher ?? '')) === '' ? 'System' : $r->teacher;
+                                        $rawAmount = (int) ($r->amount ?? 0);
+                                        $absAmount = abs($rawAmount);
+                                        $pointsWord = $absAmount === 1 ? 'point' : 'points';
+                                        if ($rawAmount > 0) {
+                                            $recentSentence = "{$teacherName} awarded {$absAmount} {$pointsWord} to {$who}";
+                                        } elseif ($rawAmount < 0) {
+                                            $recentSentence = "{$teacherName} deducted {$absAmount} {$pointsWord} from {$who}";
+                                        } else {
+                                            $recentSentence = "{$teacherName} awarded {$absAmount} {$pointsWord} to {$who}";
+                                        }
                                     @endphp
                                     <div class="activity-item mb-3 pb-2 border-bottom border-secondary" style="border-color: #334155 !important;">
-                                        <div>
-                                            <strong>{{ ($r->amount > 0 ? '+' : '') . $r->amount }}</strong>
-                                            {{ $who }}
-                                        </div>
-                                        <div class="text-muted" style="color: #94a3b8 !important;">{{ $r->teacher ?? 'System' }}</div>
+                                        <div class="small" style="color: #f1f5f9;">{{ $recentSentence }}</div>
                                         @if (! empty($r->category))
                                             <div class="text-muted small" style="color: #94a3b8 !important;">{{ $r->category }}</div>
                                         @endif
@@ -645,6 +652,38 @@
                 .replace(/'/g, "&#39;");
         }
 
+        function recentActivityRecipient(r) {
+            var who = '';
+            if (r.student_id != null && r.student_id !== '') {
+                who = String((r.first_name || '') + ' ' + (r.last_name || '')).trim();
+                if (!who) {
+                    who = r.house_name || 'Student';
+                }
+            } else {
+                who = r.house_name || 'House';
+            }
+            return who;
+        }
+
+        function recentActivitySentence(r) {
+            var teacher = r.teacher != null && String(r.teacher).trim() !== ''
+                ? String(r.teacher)
+                : 'System';
+            var who = recentActivityRecipient(r);
+            var amt = r.amount != null ? Number(r.amount) : 0;
+            var absAmt = Math.abs(amt);
+            var pointsWord = absAmt === 1 ? 'point' : 'points';
+            var t = escapeRecentHtml(teacher);
+            var w = escapeRecentHtml(who);
+            if (amt > 0) {
+                return t + ' awarded ' + absAmt + ' ' + pointsWord + ' to ' + w;
+            }
+            if (amt < 0) {
+                return t + ' deducted ' + absAmt + ' ' + pointsWord + ' from ' + w;
+            }
+            return t + ' awarded ' + absAmt + ' ' + pointsWord + ' to ' + w;
+        }
+
         function renderRecentActivityRows(rows) {
             var wrap = document.getElementById('recent-activity');
             if (!wrap) {
@@ -657,24 +696,9 @@
             var html = '';
             for (var i = 0; i < rows.length; i++) {
                 var r = rows[i];
-                var who = '';
-                if (r.student_id != null && r.student_id !== '') {
-                    who = String((r.first_name || '') + ' ' + (r.last_name || '')).trim();
-                    if (!who) {
-                        who = r.house_name || 'Student';
-                    }
-                } else {
-                    who = r.house_name || 'House';
-                }
-                var amt = r.amount != null ? Number(r.amount) : 0;
-                var sign = amt > 0 ? '+' : '';
-                var teacher = r.teacher != null && String(r.teacher).trim() !== ''
-                    ? String(r.teacher)
-                    : 'System';
                 var category = r.category != null ? String(r.category).trim() : '';
                 html += '<div class="activity-item mb-3 pb-2 border-bottom border-secondary" style="border-color: #334155 !important;">';
-                html += '<div><strong>' + sign + amt + '</strong> ' + escapeRecentHtml(who) + '</div>';
-                html += '<div class="text-muted" style="color: #94a3b8 !important;">' + escapeRecentHtml(teacher) + '</div>';
+                html += '<div class="small" style="color: #f1f5f9;">' + recentActivitySentence(r) + '</div>';
                 if (category) {
                     html += '<div class="text-muted small" style="color: #94a3b8 !important;">' + escapeRecentHtml(category) + '</div>';
                 }
