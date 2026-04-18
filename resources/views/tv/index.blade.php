@@ -53,19 +53,49 @@
             z-index: 0;
         } */
 
-        .tv-broadcast-banner {
+        .omm-banner {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            background: #dc2626;
-            color: #fff;
-            text-align: center;
-            font-size: clamp(24px, 4vw, 40px);
-            font-weight: bold;
-            padding: 16px;
+            box-sizing: border-box;
             display: none;
             z-index: 10002;
+            justify-content: center;
+            text-align: left;
+            font-size: clamp(18px, 2.5vw, 28px);
+
+            background: linear-gradient(135deg, #7f1d1d, #b91c1c);
+            color: #fff;
+            border-radius: 16px;
+            padding: 18px 22px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+
+            box-shadow:
+                0 10px 40px rgba(0, 0, 0, 0.6),
+                0 0 30px rgba(185, 28, 28, 0.35);
+
+            border: 1px solid rgba(255, 255, 255, 0.08);
+
+            align-items: center;
+            gap: 12px;
+
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .omm-banner .omm-text {
+            opacity: 0.85;
+            font-weight: 500;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .omm-banner:hover {
+            transform: translateY(-2px);
+            box-shadow:
+                0 14px 50px rgba(0, 0, 0, 0.7),
+                0 0 40px rgba(239, 68, 68, 0.4);
         }
 
         #emergencyScreen {
@@ -1400,7 +1430,11 @@
         <div class="em-sub">Follow instructions from staff</div>
     </div>
 
-    <div id="broadcastBanner" class="tv-broadcast-banner" role="status" aria-live="polite"></div>
+    <div id="broadcastBanner" class="omm-banner" role="status" aria-live="polite" style="display:none;">
+        <span aria-hidden="true">⚠️</span>
+        <strong>Emergency Message</strong>
+        <span class="omm-text" id="broadcastBannerText"></span>
+    </div>
 
     <div class="tv-screen active" id="screen-2">
 
@@ -1931,6 +1965,7 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log('TV screens found:', screens.length);
     const broadcastUrl = @json(route('broadcast-messages.latest'));
     const broadcastBanner = document.getElementById('broadcastBanner');
+    const broadcastBannerText = document.getElementById('broadcastBannerText');
 
     function showScreen(index) {
         if (emergencyActive) {
@@ -2369,7 +2404,9 @@ document.addEventListener("DOMContentLoaded", function () {
                             currentText: broadcastBanner.innerText,
                             time: new Date().toISOString()
                         });
-                        broadcastBanner.innerText = '';
+                        if (broadcastBannerText) {
+                            broadcastBannerText.textContent = '';
+                        }
                         console.log('BANNER WRITE:', {
                             source: 'fetchBroadcast empty message hide banner',
                             message: data && data.message ? data.message : null,
@@ -2402,14 +2439,16 @@ document.addEventListener("DOMContentLoaded", function () {
                             currentText: broadcastBanner.innerText,
                             time: new Date().toISOString()
                         });
-                        broadcastBanner.innerText = message;
+                        if (broadcastBannerText) {
+                            broadcastBannerText.textContent = message;
+                        }
                         console.log('BANNER WRITE:', {
                             source: 'fetchBroadcast new message show banner',
                             message: data && data.message ? data.message : null,
                             currentText: broadcastBanner.innerText,
                             time: new Date().toISOString()
                         });
-                        broadcastBanner.style.display = 'block';
+                        broadcastBanner.style.display = 'flex';
                         console.log('BANNER WRITE:', {
                             source: 'fetchBroadcast new message add show class',
                             message: data && data.message ? data.message : null,
