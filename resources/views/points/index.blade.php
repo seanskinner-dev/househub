@@ -639,7 +639,7 @@
         });
 
         function escapeRecentHtml(value) {
-            return String(value == null ? '')
+            return String(value == null ? '' : value)
                 .replace(/&/g, '&amp;')
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;')
