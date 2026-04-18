@@ -26,6 +26,35 @@ class PointController extends Controller
         return $hasTeacherName;
     }
 
+    /**
+     * Latest point transactions for Live Activity (includes house-only rows where student_id is null).
+     */
+    private function recentActivityQuery()
+    {
+        $hasTeacherName = $this->pointTransactionsHasTeacherName();
+
+        $recentTeacherSelect = $hasTeacherName
+            ? DB::raw("COALESCE(point_transactions.teacher_name, users.name, 'Unknown') as teacher")
+            : DB::raw("COALESCE(users.name, 'Unknown') as teacher");
+
+        return DB::table('point_transactions')
+            ->leftJoin('students', 'point_transactions.student_id', '=', 'students.id')
+            ->leftJoin('houses', 'point_transactions.house_id', '=', 'houses.id')
+            ->leftJoin('users', 'point_transactions.awarded_by', '=', 'users.id')
+            ->select(
+                'point_transactions.student_id',
+                'students.first_name',
+                'students.last_name',
+                'houses.name as house_name',
+                'point_transactions.amount',
+                'point_transactions.category',
+                'point_transactions.created_at',
+                $recentTeacherSelect
+            )
+            ->orderByDesc('point_transactions.created_at')
+            ->limit(10);
+    }
+
     public function index()
     {
         // 🔥 ONLY CHANGE: JOIN houses to get house_name
@@ -38,32 +67,18 @@ class PointController extends Controller
             ->orderBy('students.id')
             ->get();
 
-        $hasTeacherName = $this->pointTransactionsHasTeacherName();
-
-        $recentTeacherSelect = $hasTeacherName
-            ? DB::raw("COALESCE(point_transactions.teacher_name, users.name, 'Unknown') as teacher")
-            : DB::raw("COALESCE(users.name, 'Unknown') as teacher");
-
-        $recent = DB::table('point_transactions')
-            ->leftJoin('students', 'point_transactions.student_id', '=', 'students.id')
-            ->leftJoin('houses', 'point_transactions.house_id', '=', 'houses.id')
-            ->leftJoin('users', 'point_transactions.awarded_by', '=', 'users.id')
-            ->select(
-                'students.first_name',
-                'students.last_name',
-                'houses.name as house_name',
-                'point_transactions.amount',
-                'point_transactions.category',
-                'point_transactions.created_at',
-                $recentTeacherSelect
-            )
-            ->orderByDesc('point_transactions.created_at')
-            ->limit(6)
-            ->get();
+        $recent = $this->recentActivityQuery()->get();
 
         $houses = DB::table('houses')->get();
 
         return view('points.index', compact('students','recent','houses'));
+    }
+
+    public function recent()
+    {
+        $rows = $this->recentActivityQuery()->get();
+
+        return response()->json($rows);
     }
 
     public function store(Request $request)

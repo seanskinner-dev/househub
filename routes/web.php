@@ -33,6 +33,7 @@ Route::get('/broadcast', [BroadcastMessageController::class, 'latest'])
 // PUBLIC — Points (no login; guest actions attributed to demo teachers)
 // =============================
 Route::get('/points', [PointController::class, 'index'])->name('points.index');
+Route::get('/points/recent', [PointController::class, 'recent'])->name('points.recent');
 Route::post('/points', [PointController::class, 'store'])->name('points.store');
 Route::post('/points/commendation', [PointController::class, 'storeCommendation'])->name('points.commendation');
 Route::post('/points/award', [PointController::class, 'storeAward'])->name('points.award');

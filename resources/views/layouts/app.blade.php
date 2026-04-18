@@ -700,7 +700,9 @@
                 }
 
                 function updateUI(data) {
-                    if (data && data.recent_entry) {
+                    if (typeof window.loadRecentActivity === 'function') {
+                        window.loadRecentActivity();
+                    } else if (data && data.recent_entry) {
                         window.houseHubPrependRecentActivity(data.recent_entry);
                     }
 

@@ -482,26 +482,36 @@
                         <div class="card-header border-secondary text-white fw-semibold" style="background: #0f172a; border-color: #334155 !important;">
                             Recent activity
                         </div>
-                        <div class="card-body small" style="max-height: 500px; overflow-y: auto;" id="recent-activity">
-                            @forelse ($recent as $r)
-                                @php
-                                    $who = trim(($r->first_name ?? '') . ' ' . ($r->last_name ?? ''));
-                                    if ($who === '') {
-                                        $who = $r->house_name ?? 'House';
-                                    }
-                                @endphp
-                                <div class="activity-item mb-3 pb-2 border-bottom border-secondary" style="border-color: #334155 !important;">
-                                    <div>
-                                        <strong>{{ ($r->amount > 0 ? '+' : '') . $r->amount }}</strong>
-                                        {{ $who }}
+                        <div class="card-body small" style="max-height: 500px; overflow-y: auto;">
+                            <div id="recent-activity">
+                                @forelse ($recent as $r)
+                                    @php
+                                        $who = '';
+                                        if ($r->student_id !== null) {
+                                            $who = trim(($r->first_name ?? '').' '.($r->last_name ?? ''));
+                                            if ($who === '') {
+                                                $who = $r->house_name ?? 'Student';
+                                            }
+                                        } else {
+                                            $who = $r->house_name ?? 'House';
+                                        }
+                                    @endphp
+                                    <div class="activity-item mb-3 pb-2 border-bottom border-secondary" style="border-color: #334155 !important;">
+                                        <div>
+                                            <strong>{{ ($r->amount > 0 ? '+' : '') . $r->amount }}</strong>
+                                            {{ $who }}
+                                        </div>
+                                        @if (! empty($r->teacher))
+                                            <div class="text-muted" style="color: #94a3b8 !important;">{{ $r->teacher }}</div>
+                                        @endif
+                                        @if (! empty($r->category))
+                                            <div class="text-muted small" style="color: #94a3b8 !important;">{{ $r->category }}</div>
+                                        @endif
                                     </div>
-                                    @if (!empty($r->teacher))
-                                        <div class="text-muted" style="color: #94a3b8 !important;">{{ $r->teacher }}</div>
-                                    @endif
-                                </div>
-                            @empty
-                                <p class="text-muted mb-0" style="color: #94a3b8 !important;">No recent transactions.</p>
-                            @endforelse
+                                @empty
+                                    <p class="text-muted mb-0" style="color: #94a3b8 !important;">No recent transactions.</p>
+                                @endforelse
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -585,7 +595,9 @@
                     if (data.house) {
                         bumpHouseStandingsPill(data.house, data.amount || 1);
                     }
-                    if (data.recent_entry && typeof window.houseHubPrependRecentActivity === 'function') {
+                    if (typeof window.loadRecentActivity === 'function') {
+                        window.loadRecentActivity();
+                    } else if (data.recent_entry && typeof window.houseHubPrependRecentActivity === 'function') {
                         window.houseHubPrependRecentActivity(data.recent_entry);
                     }
                     if (typeof window.reportShowToast === 'function') {
@@ -626,23 +638,82 @@
                 awardHouse(house);
             });
         });
-    </script>
 
-    <script>
-        function trimActivity() {
-            const container = document.querySelector('#recent-activity');
-            if (!container) return;
-
-            const items = container.querySelectorAll('.activity-item');
-
-            if (items.length > 10) {
-                for (let i = 10; i < items.length; i++) {
-                    items[i].remove();
-                }
-            }
+        function escapeRecentHtml(value) {
+            return String(value == null ? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
         }
 
-        trimActivity();
-        setInterval(trimActivity, 3000);
+        function renderRecentActivityRows(rows) {
+            var wrap = document.getElementById('recent-activity');
+            if (!wrap) {
+                return;
+            }
+            if (!rows || !rows.length) {
+                wrap.innerHTML = '<p class="text-muted mb-0" style="color: #94a3b8 !important;">No recent transactions.</p>';
+                return;
+            }
+            var html = '';
+            for (var i = 0; i < rows.length; i++) {
+                var r = rows[i];
+                var who = '';
+                if (r.student_id != null && r.student_id !== '') {
+                    who = String((r.first_name || '') + ' ' + (r.last_name || '')).trim();
+                    if (!who) {
+                        who = r.house_name || 'Student';
+                    }
+                } else {
+                    who = r.house_name || 'House';
+                }
+                var amt = r.amount != null ? Number(r.amount) : 0;
+                var sign = amt > 0 ? '+' : '';
+                var teacher = r.teacher != null ? String(r.teacher) : '';
+                var category = r.category != null ? String(r.category).trim() : '';
+                html += '<div class="activity-item mb-3 pb-2 border-bottom border-secondary" style="border-color: #334155 !important;">';
+                html += '<div><strong>' + sign + amt + '</strong> ' + escapeRecentHtml(who) + '</div>';
+                if (teacher) {
+                    html += '<div class="text-muted" style="color: #94a3b8 !important;">' + escapeRecentHtml(teacher) + '</div>';
+                }
+                if (category) {
+                    html += '<div class="text-muted small" style="color: #94a3b8 !important;">' + escapeRecentHtml(category) + '</div>';
+                }
+                html += '</div>';
+            }
+            wrap.innerHTML = html;
+        }
+
+        function loadRecentActivity() {
+            fetch(@json(route('points.recent')), {
+                headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                credentials: 'same-origin'
+            })
+                .then(function (res) {
+                    if (!res.ok) {
+                        throw new Error('recent');
+                    }
+                    return res.json();
+                })
+                .then(function (data) {
+                    renderRecentActivityRows(Array.isArray(data) ? data : []);
+                })
+                .catch(function () {});
+        }
+
+        window.loadRecentActivity = loadRecentActivity;
+
+        function initRecentActivityPolling() {
+            loadRecentActivity();
+            setInterval(loadRecentActivity, 5000);
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initRecentActivityPolling);
+        } else {
+            initRecentActivityPolling();
+        }
     </script>
 @endsection
