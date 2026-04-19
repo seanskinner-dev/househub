@@ -85,7 +85,7 @@ class PointController extends Controller
         if (! $teacherId) {
             $teacherId = DB::table('users')
                 ->where('id', '!=', 1)
-                ->where('name', '!=', 'System')
+                ->whereRaw("LOWER(name) != 'system'")
                 ->inRandomOrder()
                 ->value('id');
         }
