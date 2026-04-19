@@ -85,6 +85,7 @@ class PointController extends Controller
         if (! $teacherId) {
             $teacherId = DB::table('users')
                 ->where('id', '!=', 1)
+                ->where('name', '!=', 'System')
                 ->inRandomOrder()
                 ->value('id');
         }
@@ -239,7 +240,7 @@ class PointController extends Controller
 
         if (auth()->check()) {
             $userId = auth()->id();
-            $teacherName = auth()->user()?->name ?? 'System';
+            $teacherName = auth()->user()?->name ?? 'Staff';
         } else {
             $teacherName = $demoTeachers[array_rand($demoTeachers)];
             $userId = null;
@@ -315,7 +316,7 @@ class PointController extends Controller
 
         if (auth()->check()) {
             $userId = auth()->id();
-            $teacherName = auth()->user()?->name ?? 'System';
+            $teacherName = auth()->user()?->name ?? 'Staff';
         } else {
             $teacherName = $demoTeachers[array_rand($demoTeachers)];
             $userId = auth()->id() ?? 1;
