@@ -83,7 +83,10 @@ class PointController extends Controller
         $teacherId = auth()->id();
 
         if (! $teacherId) {
-            $teacherId = DB::table('users')->inRandomOrder()->value('id');
+            $teacherId = DB::table('users')
+                ->where('id', '!=', 1)
+                ->inRandomOrder()
+                ->value('id');
         }
 
         if (! $teacherId) {
