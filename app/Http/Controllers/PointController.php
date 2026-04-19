@@ -229,22 +229,21 @@ class PointController extends Controller
 
     public function storeCommendation(Request $request)
     {
-        $demoTeachers = [
-            'Mr Smith',
-            'Ms Johnson',
-            'Mr Brown',
-            'Ms Taylor',
-            'Mr Wilson',
-            'Ms Clark'
-        ];
+        $userId = auth()->id();
 
-        if (auth()->check()) {
-            $userId = auth()->id();
-            $teacherName = auth()->user()?->name ?? 'Staff';
-        } else {
-            $teacherName = $demoTeachers[array_rand($demoTeachers)];
-            $userId = null;
+        if (! $userId) {
+            $userId = DB::table('users')
+                ->where('id', '!=', 1)
+                ->whereRaw("LOWER(name) != 'system'")
+                ->inRandomOrder()
+                ->value('id');
         }
+
+        if (! $userId) {
+            abort(500, 'No users available');
+        }
+
+        $teacherName = DB::table('users')->where('id', $userId)->value('name');
         $hasTeacherName = $this->pointTransactionsHasTeacherName();
 
         $data = validator($request->all(), [
@@ -273,7 +272,7 @@ class PointController extends Controller
             $insertData = [
                 'student_id' => $student->id,
                 'house_id' => $houseId,
-                'amount' => 0,
+                'amount' => 1,
                 'category' => 'commendation',
                 'description' => $description,
                 'awarded_by' => $userId,
@@ -295,7 +294,7 @@ class PointController extends Controller
             'success' => true,
             'total' => $total,
             'recent_entry' => [
-                'amount' => 0,
+                'amount' => 1,
                 'who' => $who,
                 'category' => 'commendation',
                 'teacher' => $teacherName,
@@ -305,22 +304,21 @@ class PointController extends Controller
 
     public function storeAward(Request $request)
     {
-        $demoTeachers = [
-            'Mr Smith',
-            'Ms Johnson',
-            'Mr Brown',
-            'Ms Taylor',
-            'Mr Wilson',
-            'Ms Clark'
-        ];
+        $userId = auth()->id();
 
-        if (auth()->check()) {
-            $userId = auth()->id();
-            $teacherName = auth()->user()?->name ?? 'Staff';
-        } else {
-            $teacherName = $demoTeachers[array_rand($demoTeachers)];
-            $userId = auth()->id() ?? 1;
+        if (! $userId) {
+            $userId = DB::table('users')
+                ->where('id', '!=', 1)
+                ->whereRaw("LOWER(name) != 'system'")
+                ->inRandomOrder()
+                ->value('id');
         }
+
+        if (! $userId) {
+            abort(500, 'No users available');
+        }
+
+        $teacherName = DB::table('users')->where('id', $userId)->value('name');
         $hasTeacherName = $this->pointTransactionsHasTeacherName();
 
         $data = validator($request->all(), [
@@ -347,7 +345,7 @@ class PointController extends Controller
             $insertData = [
                 'student_id' => $student->id,
                 'house_id' => $houseId,
-                'amount' => 0,
+                'amount' => 5,
                 'category' => 'award',
                 'description' => $data['award_name'].': '.$data['description'],
                 'awarded_by' => $userId,
@@ -365,7 +363,7 @@ class PointController extends Controller
         return response()->json([
             'success' => true,
             'recent_entry' => [
-                'amount' => 0,
+                'amount' => 5,
                 'who' => $who,
                 'category' => 'award: '.$data['award_name'],
                 'teacher' => $teacherName,
