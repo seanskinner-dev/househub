@@ -84,6 +84,10 @@ Route::get('/terms', function () {
     return view('terms');
 });
 
+Route::get('/security', function () {
+    return view('security');
+});
+
 // =============================
 // REPORTS
 // =============================
