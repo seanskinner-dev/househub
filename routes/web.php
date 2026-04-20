@@ -88,6 +88,10 @@ Route::get('/security', function () {
     return view('security');
 });
 
+Route::get('/contact', function () {
+    return view('contact');
+});
+
 // =============================
 // REPORTS
 // =============================

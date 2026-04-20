@@ -428,6 +428,9 @@
                             <li>
                                 <a class="dropdown-item" href="/security">Data Security</a>
                             </li>
+                            <li>
+                                <a class="dropdown-item" href="/contact">Contact</a>
+                            </li>
                         </ul>
                     </li>
                     <li class="nav-item ms-lg-2">
