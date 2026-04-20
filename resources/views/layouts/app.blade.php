@@ -408,8 +408,7 @@
                         <a class="nav-link" href="/admin">Admin</a>
                     </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle 
-                            {{ request()->is('privacy') || request()->is('terms') || request()->is('security') ? 'active' : '' }}"
+                        <a class="nav-link dropdown-toggle"
                            href="#"
                            id="legalDropdown"
                            role="button"
@@ -420,13 +419,13 @@
 
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="legalDropdown">
                             <li>
-                                <a class="dropdown-item" href="/privacy">Privacy Policy</a>
+                                <a class="dropdown-item {{ request()->is('privacy') ? 'active' : '' }}" href="/privacy">Privacy Policy</a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="/terms">Terms of Service</a>
+                                <a class="dropdown-item {{ request()->is('terms') ? 'active' : '' }}" href="/terms">Terms of Service</a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="/security">Data Security</a>
+                                <a class="dropdown-item {{ request()->is('security') ? 'active' : '' }}" href="/security">Data Security</a>
                             </li>
                             <li>
                                 <a class="dropdown-item" href="/contact">Contact</a>
