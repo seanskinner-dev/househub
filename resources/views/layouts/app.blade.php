@@ -115,6 +115,17 @@
             border-color: rgba(255, 255, 255, 0.35);
         }
 
+        .demo-banner {
+            width: 100%;
+            background: #fef3c7;
+            color: #78350f;
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding: 8px 12px;
+            border-bottom: 1px solid #fde68a;
+        }
+
         /* PAGE CONTENT */
         .page-content {
             padding: 20px;
@@ -338,6 +349,7 @@
 </head>
 
 <body>
+    <div class="demo-banner">Demo Environment - Sample Data Only</div>
 
     <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg navbar-dark hh-navbar py-2">
