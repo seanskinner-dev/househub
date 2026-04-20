@@ -22,5 +22,11 @@
     <h2>Contact for security issues</h2>
     <p>For security-related enquiries, contact: sean@househub.net.au</p>
 
+    <h2>Incident Response</h2>
+    <p>In the event of a security incident or data breach, HouseHub will take immediate steps to contain the issue and notify affected parties as soon as practicable.</p>
+
+    <h2>Vulnerability Disclosure</h2>
+    <p>If you identify a potential security issue, please report it to sean@househub.net.au. All reports will be investigated and addressed promptly.</p>
+
 </div>
 @endsection
