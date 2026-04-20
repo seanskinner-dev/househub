@@ -9,6 +9,7 @@ use App\Http\Controllers\OfficeMessageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PointController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\StudentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -59,9 +60,11 @@ Route::post('/emergency-mode', [BroadcastMessageController::class, 'storeEmergen
 Route::post('/emergency-mode/clear', [BroadcastMessageController::class, 'clearEmergency'])->name('emergency.clear');
 
 // =============================
-// STUDENT PROFILE
+// STUDENT PROFILE (AUTH ONLY)
 // =============================
-Route::get('/students/{id}', [PointController::class, 'showStudent'])->name('students.show');
+Route::middleware(['auth'])->group(function () {
+    Route::get('/students/{id}', [StudentController::class, 'show'])->name('students.show');
+});
 
 // =============================
 // CERTIFICATES
