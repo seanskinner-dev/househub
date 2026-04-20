@@ -9,7 +9,7 @@
 
     <h2>Contact Details</h2>
     <p><strong>Name:</strong> Sean Skinner</p>
-    <p><strong>Email:</strong> sean@househub.com.au</p>
+    <p><strong>Email:</strong> sean@househub.net.au</p>
     <p><strong>Phone:</strong> 0478 486 859</p>
 
 </div>
