@@ -407,11 +407,28 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/admin">Admin</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('privacy') ? 'active' : '' }}" href="{{ route('privacy') }}">Privacy</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->is('terms') ? 'active' : '' }}" href="/terms">Terms</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle 
+                            {{ request()->is('privacy') || request()->is('terms') || request()->is('security') ? 'active' : '' }}"
+                           href="#"
+                           id="legalDropdown"
+                           role="button"
+                           data-bs-toggle="dropdown"
+                           aria-expanded="false">
+                            Legal
+                        </a>
+
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="legalDropdown">
+                            <li>
+                                <a class="dropdown-item" href="/privacy">Privacy Policy</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="/terms">Terms of Service</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="/security">Data Security</a>
+                            </li>
+                        </ul>
                     </li>
                     <li class="nav-item ms-lg-2">
                         <span class="navbar-text user-indicator mb-0">
