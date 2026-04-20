@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -58,9 +59,67 @@ class ReportController extends Controller
             ];
         })->values()->all();
 
+        $chartData = $this->housePointsOverTimeChartData();
+
         return view('reports.house', [
             'housePerformance' => $housePerformance,
+            'chartData' => $chartData,
         ]);
+    }
+
+    /**
+     * Cumulative house points per calendar day (last 60 days) for the House Performance report chart.
+     *
+     * @return array<int, array{date: string, gryffindor: int, slytherin: int, ravenclaw: int, hufflepuff: int}>
+     */
+    private function housePointsOverTimeChartData(): array
+    {
+        $houses = ['Gryffindor', 'Slytherin', 'Ravenclaw', 'Hufflepuff'];
+        $keys = ['gryffindor', 'slytherin', 'ravenclaw', 'hufflepuff'];
+
+        $start = Carbon::today()->subDays(59)->startOfDay();
+        $end = Carbon::today()->endOfDay();
+
+        $dailyRows = DB::table('point_transactions')
+            ->join('houses', 'point_transactions.house_id', '=', 'houses.id')
+            ->whereBetween('point_transactions.created_at', [$start, $end])
+            ->whereNotNull('point_transactions.house_id')
+            ->selectRaw('(point_transactions.created_at::date) AS day_bucket, houses.name AS house_name, SUM(point_transactions.amount) AS daily_total')
+            ->groupByRaw('(point_transactions.created_at::date), houses.name')
+            ->orderBy('day_bucket')
+            ->get();
+
+        $dailyMap = [];
+        foreach ($dailyRows as $row) {
+            $day = Carbon::parse($row->day_bucket)->format('Y-m-d');
+            if (! isset($dailyMap[$day])) {
+                $dailyMap[$day] = [];
+            }
+            $dailyMap[$day][$row->house_name] = (int) $row->daily_total;
+        }
+
+        $running = [
+            'Gryffindor' => 0,
+            'Slytherin' => 0,
+            'Ravenclaw' => 0,
+            'Hufflepuff' => 0,
+        ];
+
+        $chartData = [];
+        foreach (CarbonPeriod::create($start->toDateString(), Carbon::today()->toDateString()) as $date) {
+            $ds = $date->format('Y-m-d');
+            foreach ($houses as $name) {
+                $running[$name] += (int) ($dailyMap[$ds][$name] ?? 0);
+            }
+
+            $row = ['date' => $ds];
+            foreach ($houses as $i => $name) {
+                $row[$keys[$i]] = $running[$name];
+            }
+            $chartData[] = $row;
+        }
+
+        return $chartData;
     }
 
     /**
