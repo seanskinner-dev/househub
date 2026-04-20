@@ -29,10 +29,11 @@
             color: white;
         }
 
-        /* NAVBAR — Bootstrap navbar + dark theme (hh- prefix) */
+        /* Navbar base */
         .hh-navbar {
-            background: #1e293b;
-            font-weight: bold;
+            background: linear-gradient(135deg, #0b1a2f, #132a4a);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
         }
 
         .hh-navbar .container-fluid {
@@ -47,9 +48,12 @@
             }
         }
 
+        /* Navbar brand */
         .hh-navbar .navbar-brand {
             font-size: 18px;
             color: #fff;
+            font-weight: 600;
+            letter-spacing: 0.3px;
         }
 
         .hh-navbar .navbar-brand:hover,
@@ -57,21 +61,26 @@
             color: #fff;
         }
 
-        .hh-navbar .navbar-nav .nav-link {
-            color: #fff;
-            font-weight: bold;
+        /* Nav links */
+        .hh-navbar .nav-link {
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 500;
+            padding: 10px 14px;
+            transition: all 0.2s ease;
+            border-radius: 6px;
         }
 
-        .hh-navbar .navbar-nav .nav-link:hover,
-        .hh-navbar .navbar-nav .nav-link:focus {
-            color: #fff;
-            text-decoration: underline;
+        /* Hover effect */
+        .hh-navbar .nav-link:hover,
+        .hh-navbar .nav-link:focus {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.06);
         }
 
-        .hh-navbar .navbar-nav .nav-link.active {
-            text-decoration: underline;
-            border-bottom: 2px solid #fff;
-            padding-bottom: 2px;
+        /* Active item (subtle, not underlined) */
+        .hh-navbar .nav-link.active {
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
         }
 
         .hh-navbar .navbar-nav .dropdown-toggle::after {
@@ -79,35 +88,41 @@
             vertical-align: 0.15em;
         }
 
+        /* Dropdown menu */
         .hh-navbar .dropdown-menu {
-            background: #1e293b;
-            border: 1px solid #334155;
+            background: #0f223a;
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
             margin-top: 0.5rem;
-            padding: 0.35rem 0;
+            padding: 8px;
         }
 
+        /* Dropdown items */
         .hh-navbar .dropdown-item {
-            color: #f1f5f9;
-            font-weight: normal;
-            padding: 0.45rem 1rem;
+            color: rgba(255, 255, 255, 0.85);
+            border-radius: 6px;
+            padding: 8px 12px;
+            transition: all 0.2s ease;
         }
 
+        /* Dropdown hover */
         .hh-navbar .dropdown-item:hover,
         .hh-navbar .dropdown-item:focus {
-            background: #334155;
-            color: #fff;
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
         }
 
-        .hh-navbar .dropdown-item.active,
-        .hh-navbar .dropdown-item:active {
-            background: #475569;
-            color: #fff;
+        /* Active dropdown item */
+        .hh-navbar .dropdown-item.active {
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
         }
 
-        .hh-navbar .user-indicator {
-            font-size: 12px;
-            opacity: 0.7;
-            color: #cbd5e1;
+        /* User indicator */
+        .user-indicator {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
             white-space: nowrap;
         }
 
