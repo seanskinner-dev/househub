@@ -11,7 +11,8 @@ return new class extends Migration
         Schema::create('login_logs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
-            $table->string('ip_address')->nullable();
+            $table->string('ip_address')->nullable()->index();
+            $table->string('event')->default('login');
             $table->string('user_agent')->nullable();
             $table->timestamps();
         });
