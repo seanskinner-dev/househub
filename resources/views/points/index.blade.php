@@ -341,13 +341,14 @@
             }
         }
 
-        .student-link {
-            color: #93c5fd;
-            font-weight: 700;
+        .points-index-page .student-name-link {
+            color: #f1f5f9;
+            font-weight: inherit;
             text-decoration: none;
         }
 
-        .student-link:hover {
+        .points-index-page .student-name-link:hover {
+            color: #bfdbfe;
             text-decoration: underline;
         }
 
@@ -434,7 +435,7 @@
                         <div class="student-left">
                             <div class="student-left-main">
                                 <div class="student-name">
-                                    <a href="/students/{{ $student->id }}" class="student-link">
+                                    <a href="{{ url('/students/' . $student->id) }}" class="student-name-link">
                                         {{ $student->first_name }} {{ $student->last_name }}
                                     </a>
                                 </div>
