@@ -74,6 +74,11 @@ Route::get('/certificate/{id}', [PointController::class, 'certificate'])->name('
 Route::get('/tv', [PointController::class, 'tv'])->name('tv');
 
 // =============================
+// PRIVACY
+// =============================
+Route::view('/privacy', 'privacy')->name('privacy');
+
+// =============================
 // REPORTS
 // =============================
 Route::get('/reports/house-performance', [App\Http\Controllers\ReportController::class, 'housePerformance'])
