@@ -2,21 +2,20 @@
 
 namespace App\Providers;
 
-use App\Models\LoginLog;
+use App\Listeners\LogSuccessfulLogin;
 use Illuminate\Auth\Events\Login;
-use Illuminate\Support\Facades\Event;
-use Illuminate\Support\ServiceProvider;
+use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
 {
-    public function boot(): void
-    {
-        Event::listen(Login::class, function ($event) {
-            LoginLog::create([
-                'user_id' => $event->user->id,
-                'ip_address' => request()->ip(),
-                'user_agent' => request()->userAgent(),
-            ]);
-        });
-    }
+    /**
+     * The event to listener mappings for the application.
+     *
+     * @var array<class-string, array<int, class-string>>
+     */
+    protected $listen = [
+        Login::class => [
+            LogSuccessfulLogin::class,
+        ],
+    ];
 }
