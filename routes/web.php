@@ -76,7 +76,9 @@ Route::get('/tv', [PointController::class, 'tv'])->name('tv');
 // =============================
 // PRIVACY
 // =============================
-Route::view('/privacy', 'privacy')->name('privacy');
+Route::get('/privacy', function () {
+    return view('privacy');
+})->name('privacy');
 
 // =============================
 // REPORTS
