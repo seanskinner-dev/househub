@@ -60,11 +60,9 @@ Route::post('/emergency-mode', [BroadcastMessageController::class, 'storeEmergen
 Route::post('/emergency-mode/clear', [BroadcastMessageController::class, 'clearEmergency'])->name('emergency.clear');
 
 // =============================
-// STUDENT PROFILE (AUTH ONLY)
+// STUDENT PROFILE (demo: public)
 // =============================
-Route::middleware(['auth'])->group(function () {
-    Route::get('/students/{id}', [StudentController::class, 'show'])->name('students.show');
-});
+Route::get('/students/{id}', [StudentController::class, 'show'])->name('students.show');
 
 // =============================
 // CERTIFICATES
