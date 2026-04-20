@@ -82,19 +82,10 @@ class PointController extends Controller
 
         $teacherId = auth()->id();
 
-        if (! $teacherId) {
-            $teacherId = DB::table('users')
-                ->where('id', '!=', 1)
-                ->whereRaw("LOWER(name) != 'system'")
-                ->inRandomOrder()
-                ->value('id');
-        }
+        $teacherLabel = $teacherId
+            ? DB::table('users')->where('id', $teacherId)->value('name')
+            : null;
 
-        if (! $teacherId) {
-            abort(500, 'No users available');
-        }
-
-        $teacherLabel = DB::table('users')->where('id', $teacherId)->value('name');
         $hasTeacherName = $this->pointTransactionsHasTeacherName();
 
         return DB::transaction(function () use ($request, $amount, $teacherLabel, $hasTeacherName, $teacherId) {
@@ -138,7 +129,7 @@ class PointController extends Controller
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
-                if ($hasTeacherName) {
+                if ($hasTeacherName && $teacherLabel !== null && $teacherLabel !== '') {
                     $houseInsert['teacher_name'] = $teacherLabel;
                 }
                 DB::table('point_transactions')->insert($houseInsert);
@@ -199,7 +190,7 @@ class PointController extends Controller
                         'created_at' => now(),
                         'updated_at' => now(),
                     ];
-                    if ($hasTeacherName) {
+                    if ($hasTeacherName && $teacherLabel !== null && $teacherLabel !== '') {
                         $studentInsert['teacher_name'] = $teacherLabel;
                     }
                     DB::table('point_transactions')->insert($studentInsert);
@@ -231,19 +222,10 @@ class PointController extends Controller
     {
         $userId = auth()->id();
 
-        if (! $userId) {
-            $userId = DB::table('users')
-                ->where('id', '!=', 1)
-                ->whereRaw("LOWER(name) != 'system'")
-                ->inRandomOrder()
-                ->value('id');
-        }
+        $teacherName = $userId
+            ? DB::table('users')->where('id', $userId)->value('name')
+            : null;
 
-        if (! $userId) {
-            abort(500, 'No users available');
-        }
-
-        $teacherName = DB::table('users')->where('id', $userId)->value('name');
         $hasTeacherName = $this->pointTransactionsHasTeacherName();
 
         $data = validator($request->all(), [
