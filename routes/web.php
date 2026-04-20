@@ -80,6 +80,10 @@ Route::get('/privacy', function () {
     return view('privacy');
 })->name('privacy');
 
+Route::get('/terms', function () {
+    return view('terms');
+});
+
 // =============================
 // REPORTS
 // =============================

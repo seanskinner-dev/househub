@@ -410,6 +410,9 @@
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('privacy') ? 'active' : '' }}" href="{{ route('privacy') }}">Privacy</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->is('terms') ? 'active' : '' }}" href="/terms">Terms</a>
+                    </li>
                     <li class="nav-item ms-lg-2">
                         <span class="navbar-text user-indicator mb-0">
                             @auth
