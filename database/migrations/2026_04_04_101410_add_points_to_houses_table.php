@@ -8,15 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('houses', function (Blueprint $table) {
-            $table->integer('points')->default(0);
-        });
+        // The column already exists.
     }
 
     public function down(): void
     {
-        Schema::table('houses', function (Blueprint $table) {
-            $table->dropColumn('points');
-        });
     }
 };
