@@ -151,6 +151,36 @@ Route::middleware('auth')->group(function () {
     Route::get('/insights', [InsightsController::class, 'index'])->name('insights.index');
 });
 
+Route::middleware('auth')->group(function () {
+    Route::get('/admin/usage', function () {
+        $totalActions = DB::table('point_transactions')->count();
+
+        $uniqueUsers = DB::table('point_transactions')
+            ->whereNotNull('awarded_by')
+            ->distinct()
+            ->count('awarded_by');
+
+        $daily = DB::table('point_transactions')
+            ->selectRaw('DATE(created_at) as date, COUNT(*) as total')
+            ->where('created_at', '>=', now()->subDays(14))
+            ->groupByRaw('DATE(created_at)')
+            ->orderByDesc('date')
+            ->get();
+
+        $topUsers = DB::table('point_transactions')
+            ->join('users', 'point_transactions.awarded_by', '=', 'users.id')
+            ->select('users.name')
+            ->selectRaw('COUNT(*) as total')
+            ->whereNotNull('point_transactions.awarded_by')
+            ->groupBy('users.id', 'users.name')
+            ->orderByDesc('total')
+            ->limit(10)
+            ->get();
+
+        return view('admin.usage', compact('totalActions', 'uniqueUsers', 'daily', 'topUsers'));
+    })->name('admin.usage');
+});
+
 // =============================
 // AUTH ROUTES
 // =============================
