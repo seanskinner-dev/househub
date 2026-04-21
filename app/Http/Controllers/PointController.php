@@ -52,14 +52,24 @@ class PointController extends Controller
     public function index()
     {
         // 🔥 ONLY CHANGE: JOIN houses to get house_name
-        $students = DB::table('students')
-            ->leftJoin('houses', 'students.house_id', '=', 'houses.id')
-            ->select(
-                'students.*',
-                'houses.name as house_name'
-            )
-            ->orderBy('students.id')
-            ->get();
+        if (Schema::hasColumn('students', 'house_id')) {
+            $students = DB::table('students')
+                ->leftJoin('houses', 'students.house_id', '=', 'houses.id')
+                ->select(
+                    'students.*',
+                    'houses.name as house_name'
+                )
+                ->orderBy('students.id')
+                ->get();
+        } else {
+            $students = DB::table('students')
+                ->select(
+                    'students.*',
+                    'students.house_name as house_name'
+                )
+                ->orderBy('students.id')
+                ->get();
+        }
 
         $recent = $this->recentActivityQuery()->get();
 
