@@ -5,6 +5,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\BroadcastMessageController;
+use App\Http\Controllers\InsightsController;
 use App\Http\Controllers\OfficeMessageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PointController;
@@ -142,6 +143,13 @@ Route::get('/admin', function () {
 
     return view('admin.index', ['houses' => $houses]);
 })->name('admin.index');
+
+// =============================
+// INSIGHTS
+// =============================
+Route::middleware('auth')->group(function () {
+    Route::get('/insights', [InsightsController::class, 'index'])->name('insights.index');
+});
 
 // =============================
 // AUTH ROUTES
