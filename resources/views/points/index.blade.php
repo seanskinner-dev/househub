@@ -507,7 +507,10 @@
                                         } else {
                                             $who = $r->house_name ?? 'House';
                                         }
-                                        $teacherName = $r->teacher;
+                                        $demoTeacherFallbacks = ['Mr Smith', 'Ms Johnson', 'Mr Brown', 'Mrs Taylor'];
+                                        $teacherName = (isset($r->teacher) && trim((string) $r->teacher) !== '')
+                                            ? $r->teacher
+                                            : $demoTeacherFallbacks[array_rand($demoTeacherFallbacks)];
                                         $rawAmount = (int) ($r->amount ?? 0);
                                         $absAmount = abs($rawAmount);
                                         $pointsWord = $absAmount === 1 ? 'point' : 'points';
@@ -663,8 +666,18 @@
             return who;
         }
 
+        var RECENT_DEMO_TEACHER_NAMES = ['Mr Smith', 'Ms Johnson', 'Mr Brown', 'Mrs Taylor'];
+
+        function recentActivityDisplayTeacher(teacherRaw) {
+            var s = teacherRaw != null ? String(teacherRaw).trim() : '';
+            if (s !== '') {
+                return s;
+            }
+            return RECENT_DEMO_TEACHER_NAMES[Math.floor(Math.random() * RECENT_DEMO_TEACHER_NAMES.length)];
+        }
+
         function recentActivitySentence(r) {
-            var teacher = String(r.teacher != null ? r.teacher : '');
+            var teacher = recentActivityDisplayTeacher(r.teacher);
             var who = recentActivityRecipient(r);
             var amt = r.amount != null ? Number(r.amount) : 0;
             var absAmt = Math.abs(amt);

@@ -246,10 +246,12 @@ class PointController extends Controller
                 $description = 'Commendation';
             }
 
-            Commendation::create([
-                'student_id' => $student->id,
-                'awarded_by' => $userId,
-            ]);
+            if ($userId) {
+                Commendation::create([
+                    'student_id' => $student->id,
+                    'awarded_by' => $userId,
+                ]);
+            }
 
             $insertData = [
                 'student_id' => $student->id,
@@ -261,15 +263,16 @@ class PointController extends Controller
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
-            if ($hasTeacherName) {
+            if ($hasTeacherName && $teacherName !== null && $teacherName !== '') {
                 $insertData['teacher_name'] = $teacherName;
             }
             DB::table('point_transactions')->insert($insertData);
         });
 
         $who = trim(($student->first_name ?? '').' '.($student->last_name ?? ''));
-        $total = Commendation::query()
+        $total = (int) DB::table('point_transactions')
             ->where('student_id', $student->id)
+            ->where('category', 'commendation')
             ->count();
 
         return response()->json([
@@ -288,19 +291,10 @@ class PointController extends Controller
     {
         $userId = auth()->id();
 
-        if (! $userId) {
-            $userId = DB::table('users')
-                ->where('id', '!=', 1)
-                ->whereRaw("LOWER(name) != 'system'")
-                ->inRandomOrder()
-                ->value('id');
-        }
+        $teacherName = $userId
+            ? DB::table('users')->where('id', $userId)->value('name')
+            : null;
 
-        if (! $userId) {
-            abort(500, 'No users available');
-        }
-
-        $teacherName = DB::table('users')->where('id', $userId)->value('name');
         $hasTeacherName = $this->pointTransactionsHasTeacherName();
 
         $data = validator($request->all(), [
@@ -317,12 +311,14 @@ class PointController extends Controller
         $houseId = $student->house_id ?? null;
 
         DB::transaction(function () use ($data, $userId, $teacherName, $student, $houseId, $hasTeacherName) {
-            Award::create([
-                'student_id' => $student->id,
-                'awarded_by' => $userId,
-                'name' => $data['award_name'],
-                'description' => $data['description'],
-            ]);
+            if ($userId) {
+                Award::create([
+                    'student_id' => $student->id,
+                    'awarded_by' => $userId,
+                    'name' => $data['award_name'],
+                    'description' => $data['description'],
+                ]);
+            }
 
             $insertData = [
                 'student_id' => $student->id,
@@ -334,7 +330,7 @@ class PointController extends Controller
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
-            if ($hasTeacherName) {
+            if ($hasTeacherName && $teacherName !== null && $teacherName !== '') {
                 $insertData['teacher_name'] = $teacherName;
             }
             DB::table('point_transactions')->insert($insertData);

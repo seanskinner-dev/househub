@@ -583,7 +583,9 @@
                 }
                 var who = entry.who != null ? String(entry.who) : '—';
                 var amt = entry.amount != null ? Number(entry.amount) : 0;
-                var teacher = entry.teacher != null ? String(entry.teacher) : '';
+                var demoTeachers = ['Mr Smith', 'Ms Johnson', 'Mr Brown', 'Mrs Taylor'];
+                var teacherRaw = entry.teacher != null ? String(entry.teacher).trim() : '';
+                var teacher = teacherRaw !== '' ? teacherRaw : demoTeachers[Math.floor(Math.random() * demoTeachers.length)];
                 var absAmt = Math.abs(amt);
                 var pointsWord = absAmt === 1 ? 'point' : 'points';
                 var t = escapeReportHtml(teacher);
