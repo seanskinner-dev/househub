@@ -341,14 +341,13 @@
             }
         }
 
-        .points-index-page .student-name-link {
-            color: #f1f5f9;
-            font-weight: inherit;
+        .student-link {
+            color: #93c5fd;
+            font-weight: 700;
             text-decoration: none;
         }
 
-        .points-index-page .student-name-link:hover {
-            color: #bfdbfe;
+        .student-link:hover {
             text-decoration: underline;
         }
 
@@ -379,37 +378,25 @@
 
     <div class="container-fluid points-index-page" style="max-width: 1200px;">
 
-        @php
-            $pillPoints = [
-                'gryffindor' => 0,
-                'slytherin' => 0,
-                'ravenclaw' => 0,
-                'hufflepuff' => 0,
-            ];
-            foreach ($houses as $h) {
-                $k = strtolower(str_replace(' ', '', $h->name ?? ''));
-                if (array_key_exists($k, $pillPoints)) {
-                    $pillPoints[$k] = (int) ($h->points ?? 0);
-                }
-            }
-        @endphp
-
         <div class="points-header">
             <h1 class="h4 mb-0" style="color: #f1f5f9;">Award points</h1>
 
             <div class="house-bar">
-                @foreach ($houses as $house)
-                    @php
-                        $slug = strtolower(str_replace(' ', '', $house->name ?? ''));
-                        $pillDisplay = array_key_exists($slug, $pillPoints) ? $pillPoints[$slug] : (int) ($house->points ?? 0);
-                    @endphp
-                    <button type="button"
-                            class="house-item {{ $slug }}"
-                            data-house-id="{{ (int) $house->id }}"
-                            onclick="awardHouse({{ (int) $house->id }}, this)">
-                        {{ $house->name }} <span id="{{ $slug }}-points">{{ $pillDisplay }}</span>
-                    </button>
-                @endforeach
+                <button type="button" class="house-item slytherin" data-house-id="2" onclick="awardHouse(2, this)">
+                    Slytherin <span id="slytherin-points">{{ $houses['Slytherin']->points ?? 0 }}</span>
+                </button>
+
+                <button type="button" class="house-item ravenclaw" data-house-id="3" onclick="awardHouse(3, this)">
+                    Ravenclaw <span id="ravenclaw-points">{{ $houses['Ravenclaw']->points ?? 0 }}</span>
+                </button>
+
+                <button type="button" class="house-item hufflepuff" data-house-id="4" onclick="awardHouse(4, this)">
+                    Hufflepuff <span id="hufflepuff-points">{{ $houses['Hufflepuff']->points ?? 0 }}</span>
+                </button>
+
+                <button type="button" class="house-item gryffindor" data-house-id="1" onclick="awardHouse(1, this)">
+                    Gryffindor <span id="gryffindor-points">{{ $houses['Gryffindor']->points ?? 0 }}</span>
+                </button>
             </div>
 
             <div class="search-container">
@@ -435,7 +422,7 @@
                         <div class="student-left">
                             <div class="student-left-main">
                                 <div class="student-name">
-                                    <a href="{{ url('/students/' . $student->id) }}" class="student-name-link">
+                                    <a href="/students/{{ $student->id }}" class="student-link">
                                         {{ $student->first_name }} {{ $student->last_name }}
                                     </a>
                                 </div>
@@ -717,6 +704,106 @@
         }
 
         window.loadRecentActivity = loadRecentActivity;
+
+        window.awardPoint = function (studentId, amount) {
+            amount = parseInt(amount, 10);
+            if (isNaN(amount)) {
+                amount = 0;
+            }
+            if (studentId == null || studentId === '') {
+                return;
+            }
+
+            function showToast(message, type) {
+                if (typeof window.reportShowToast !== 'function') {
+                    return;
+                }
+                if (type === 'error') {
+                    window.reportShowToast(message || 'Unable to update points');
+                    return;
+                }
+                window.reportShowToast(message || 'Points updated');
+            }
+
+            function updateUI(data) {
+                if (typeof window.loadRecentActivity === 'function') {
+                    window.loadRecentActivity();
+                } else if (data && data.recent_entry && typeof window.houseHubPrependRecentActivity === 'function') {
+                    window.houseHubPrependRecentActivity(data.recent_entry);
+                }
+
+                var el = document.querySelector('[data-student-id="' + String(studentId) + '"].td-points');
+                if (!el) {
+                    return;
+                }
+
+                var start = parseInt(el.innerText || '0', 10);
+                if (isNaN(start)) {
+                    start = 0;
+                }
+                var end = parseInt(data && data.points != null ? data.points : start, 10);
+                if (isNaN(end)) {
+                    end = start;
+                }
+
+                var i = start;
+                var interval = setInterval(function () {
+                    if (i === end) {
+                        clearInterval(interval);
+                    } else {
+                        i += (end > start ? 1 : -1);
+                        el.innerText = String(i);
+                    }
+                }, 20);
+
+                var studentCard = el.closest('.student-card');
+                if (studentCard) {
+                    studentCard.classList.add('pulse');
+                    setTimeout(function () {
+                        studentCard.classList.remove('pulse');
+                    }, 150);
+                }
+
+                if (studentCard) {
+                    var house = studentCard.getAttribute('data-house');
+                    if (house) {
+                        var houseEl = document.getElementById(house + '-points');
+                        if (houseEl) {
+                            houseEl.textContent = parseInt(houseEl.textContent) + amount;
+                        }
+                    }
+                }
+            }
+
+            fetch(@json(url('/points')), {
+                credentials: 'same-origin',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': csrfToken()
+                },
+                body: JSON.stringify({
+                    student_id: studentId,
+                    amount: amount
+                })
+            })
+                .then(function (res) {
+                    return res.json();
+                })
+                .then(function (data) {
+                    if (data && data.success) {
+                        updateUI(data);
+                        showToast('Points updated');
+                    } else {
+                        showToast('Failed to update', 'error');
+                    }
+                })
+                .catch(function () {
+                    showToast('Unable to update points', 'error');
+                });
+        };
 
         function initRecentActivityPolling() {
             loadRecentActivity();

@@ -4,6 +4,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Admin\UsageController;
 use App\Http\Controllers\BroadcastMessageController;
 use App\Http\Controllers\OfficeMessageController;
 use App\Http\Controllers\ProfileController;
@@ -96,9 +97,6 @@ Route::get('/contact', function () {
 // =============================
 // REPORTS
 // =============================
-Route::get('/reports/house-performance', [App\Http\Controllers\ReportController::class, 'housePerformance'])
-    ->name('reports.house');
-
 Route::get('/reports/pc', [App\Http\Controllers\ReportController::class, 'atRiskStudents'])
     ->name('reports.pc');
 
@@ -142,6 +140,9 @@ Route::get('/admin', function () {
 
     return view('admin.index', ['houses' => $houses]);
 })->name('admin.index');
+
+Route::middleware('auth')->get('/admin/usage', [UsageController::class, 'index'])
+    ->name('admin.usage');
 
 // =============================
 // AUTH ROUTES

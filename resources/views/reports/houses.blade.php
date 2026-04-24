@@ -74,7 +74,7 @@
                 <h3 id="hr-modal-title" style="margin:0;font-size:1.1rem;">Details</h3>
                 <button id="hr-modal-close" type="button" style="background:transparent;border:none;color:#fff;font-size:1.4rem;cursor:pointer;" aria-label="Close">&times;</button>
             </div>
-            <div id="hr-modal-body" style="padding:16px 18px;">
+            <div id="hr-modal-body" style="padding:16px 18px;max-height: 70vh;overflow-y: auto;">
                 <p id="hr-empty" style="margin:0;opacity:0.9;display:none;">No rows.</p>
                 <div id="hr-wrap" style="display:none;overflow-x:auto;">
                     <table id="hr-drilldown-table" class="report-drilldown-table" style="font-size:0.95rem;">
@@ -94,10 +94,20 @@
             var drillUrl = @json(route('reports.drilldown'));
             var charts = { overTime: null, rank: null, contribution: null, risk: null, momentum: null };
             function chartDataSeries(rawSeries) {
-                if (Array.isArray(rawSeries) && rawSeries.length && typeof rawSeries[0] === 'object' && rawSeries[0] && Array.isArray(rawSeries[0].data)) {
-                    return rawSeries[0].data.map(function (v) { return Number(v) || 0; });
+                if (!Array.isArray(rawSeries)) return [];
+
+                // If already proper Apex series format, return as-is
+                if (rawSeries.length && typeof rawSeries[0] === 'object' && Array.isArray(rawSeries[0].data)) {
+                    return rawSeries;
                 }
-                return (rawSeries || []).map(function (v) { return Number(v) || 0; });
+
+                // If flat array, wrap into series
+                return [{
+                    name: 'Series',
+                    data: rawSeries.map(function (v) {
+                        return Number(v) || 0;
+                    })
+                }];
             }
 
             function escapeHtml(s) {
@@ -152,7 +162,8 @@
 
             function renderRank(data) {
                 var houses = (data.house_breakdown && data.house_breakdown.categories) ? data.house_breakdown.categories : [];
-                var values = chartDataSeries(data.house_breakdown ? data.house_breakdown.series : []);
+                var series = chartDataSeries(data.house_breakdown ? data.house_breakdown.series : []);
+                var values = (series[0] && Array.isArray(series[0].data)) ? series[0].data : [];
                 var sorted = houses.map(function (h, i) {
                     return { name: h, value: values[i] || 0 };
                 }).sort(function (a, b) {
@@ -184,19 +195,16 @@
             }
 
             function renderHousePointsOverTime(data) {
+                console.log('FULL DATA:', data);
+                window.overTimeDebug = data;
                 var overTime = data.house_points_over_time || {};
-                var rawDates = Array.isArray(overTime.categories) ? overTime.categories : [];
-                var displayDates = rawDates.map(function (d) {
-                    if (typeof d === 'string' && d.length >= 10) {
-                        var dt = new Date(d + 'T00:00:00');
-                        if (!isNaN(dt.getTime())) {
-                            return dt.toLocaleDateString(undefined, { weekday: 'short' });
-                        }
-                    }
-                    return typeof window.formatReportChartDate === 'function' ? window.formatReportChartDate(d) : String(d);
-                });
-
+                var categories = Array.isArray(overTime.categories) ? overTime.categories : [];
                 var series = Array.isArray(overTime.series) ? overTime.series : [];
+                if (categories.length && series.length && typeof fillMissingDates === 'function') {
+                    var fixed = fillMissingDates(categories, series);
+                    categories = fixed.categories;
+                    series = fixed.series;
+                }
                 var colorsByHouse = {
                     Gryffindor: '#740001',
                     Slytherin: '#1a472a',
@@ -220,10 +228,20 @@
                         };
                     }),
                     xaxis: {
-                        categories: displayDates,
+                        categories: categories,
                         tickPlacement: 'on',
                         labels: {
                             rotate: -90,
+                            formatter: function (val) {
+                                var d = new Date(val + 'T00:00:00');
+                                if (isNaN(d.getTime())) {
+                                    return String(val || '');
+                                }
+                                return d.toLocaleDateString('en-AU', {
+                                    day: 'numeric',
+                                    month: 'short'
+                                });
+                            },
                             style: {
                                 fontSize: '12px'
                             }
@@ -262,9 +280,20 @@
             }
 
             function renderContribution(data) {
-                var houses = (data.house_breakdown && data.house_breakdown.categories) ? data.house_breakdown.categories : [];
-                var source = chartDataSeries(data.house_breakdown ? data.house_breakdown.series : []);
-                var values = source.map(function (v) { return Math.max(0, Math.floor(v / 10)); });
+                var houses = (data.house_contribution && data.house_contribution.categories) ? data.house_contribution.categories : [];
+                var rawSeries = data.house_contribution?.series || [];
+
+                // Support both single + multi-series safely
+                var values = [];
+
+                if (rawSeries.length === 1) {
+                    values = rawSeries[0].data || [];
+                } else {
+                    // sum across series if multiple exist
+                    values = rawSeries[0]?.data.map((_, i) => {
+                        return rawSeries.reduce((sum, s) => sum + (s.data[i] || 0), 0);
+                    }) || [];
+                }
                 var sortedContribution = houses.map(function (h, i) {
                     return { name: h, value: values[i] || 0 };
                 }).sort(function (a, b) { return b.value - a.value; });
@@ -292,7 +321,7 @@
                             barHeight: '50%'
                         }
                     },
-                    series: [{ name: 'Estimated contributors', data: values }],
+                    series: [{ name: 'Contributors', data: values }],
                     xaxis: {
                         categories: houses,
                         labels: {
@@ -329,12 +358,12 @@
                         }
                     },
                     colors: ['#f59e0b'],
-                    title: { text: 'Contribution Spread (click to inspect non-contributors)' },
+                    title: { text: 'Contribution Spread (click to inspect low-activity students)' },
                     tooltip: {
                         theme: 'dark',
                         y: {
                             formatter: function (val) {
-                                return String(val) + ' points';
+                                return String(val) + ' students';
                             }
                         }
                     }
@@ -343,42 +372,72 @@
             }
 
             function renderRisk(data) {
-                var houses = (data.underperformance_index && data.underperformance_index.categories) ? data.underperformance_index.categories : [];
-                var source = chartDataSeries(data.underperformance_index ? data.underperformance_index.series : []);
-                var values = source.map(function (v) { return Math.min(100, Math.floor(100 / (Number(v) + 1))); });
+                var houses = (data.house_risk && data.house_risk.categories) ? data.house_risk.categories : [];
+                var riskSeries = data.house_risk?.series || [];
+
+                var highSeries = [];
+                var mediumSeries = [];
+
+                riskSeries.forEach(function (s) {
+                    var name = (s.name || '').toLowerCase();
+
+                    if (name.includes('high')) {
+                        highSeries = s.data || [];
+                    }
+
+                    if (name.includes('medium')) {
+                        mediumSeries = s.data || [];
+                    }
+                });
                 var sortedRisk = houses.map(function (h, i) {
-                    return { name: h, value: values[i] || 0 };
-                }).sort(function (a, b) { return b.value - a.value; });
+                    return { name: h, high: highSeries[i] || 0, medium: mediumSeries[i] || 0 };
+                }).sort(function (a, b) { return (b.high + b.medium) - (a.high + a.medium); });
                 houses = sortedRisk.map(function (r) { return r.name; });
-                values = sortedRisk.map(function (r) { return r.value; });
+                highSeries = sortedRisk.map(function (r) { return r.high; });
+                mediumSeries = sortedRisk.map(function (r) { return r.medium; });
 
                 charts.risk = new ApexCharts(document.querySelector('#house-risk'), window.hhApplyApexDefaults({
                     chart: {
                         type: 'bar',
                         height: 320,
+                        stacked: true,
                         toolbar: { show: false },
                         events: {
                             dataPointSelection: function (event, chartContext, config) {
                                 var house = houses[config.dataPointIndex];
                                 if (house) {
-                                    drillDown({ type: 'house_low', value: house });
+                                    drillDown({ type: 'underperformance_house', value: house });
                                 }
                             }
                         }
                     },
-                    series: [{ name: 'Risk index', data: values }],
+                    series: [
+                        { name: 'High Risk', data: highSeries },
+                        { name: 'Medium Risk', data: mediumSeries }
+                    ],
+                    plotOptions: { bar: { borderRadius: 5, columnWidth: '55%' } },
+                    dataLabels: { enabled: false },
+                    legend: { position: 'top' },
+                    colors: ['#ef4444', '#f59e0b'],
+                    fill: { opacity: 0.95 },
+                    stroke: { width: 0 },
                     xaxis: { categories: houses },
-                    colors: ['#ef4444'],
-                    plotOptions: { bar: { borderRadius: 5 } },
-                    title: { text: 'Underperformance Index (click for at-risk students)' },
+                    title: { text: 'House Risk Counts (click for at-risk students)' },
                     tooltip: { theme: 'dark' }
                 }));
                 charts.risk.render();
             }
 
-            function renderMomentum(data) {
-                var rawDates = (data.trend && data.trend.categories) ? data.trend.categories : [];
-                var values = chartDataSeries(data.trend ? data.trend.series : []);
+            window.renderMomentum = function renderMomentum(data) {
+                var rawDates = data.categories || [];
+                var rawSeries = data.series || [];
+                var series = chartDataSeries(rawSeries);
+
+                var values = [];
+
+                if (series.length > 0 && Array.isArray(series[0].data)) {
+                    values = series[0].data;
+                }
                 var displayDates = rawDates.map(function (d) {
                     return typeof window.formatReportChartDate === 'function' ? window.formatReportChartDate(d) : String(d);
                 });
@@ -394,7 +453,7 @@
                     });
                 }
 
-                charts.momentum = new ApexCharts(document.querySelector('#house-momentum'), window.hhApplyApexDefaults({
+                var options = window.hhApplyApexDefaults({
                     chart: {
                         type: 'area',
                         height: 320,
@@ -408,8 +467,11 @@
                             }
                         }
                     },
-                    series: [{ name: 'Weekday points', data: values }],
-                    xaxis: { type: 'category', categories: displayDates },
+                    series: data.series,
+                    xaxis: {
+                        type: 'category',
+                        categories: data.categories
+                    },
                     stroke: { curve: 'smooth', width: 3 },
                     markers: { size: 4 },
                     dataLabels: { enabled: false },
@@ -421,9 +483,11 @@
                     colors: ['#a855f7'],
                     title: { text: 'House Momentum (click weakest day for detail)' },
                     tooltip: { theme: 'dark' }
-                }));
+                });
+                console.log('MOMENTUM OPTIONS:', options);
+                charts.momentum = new ApexCharts(document.querySelector('#house-momentum'), options);
                 charts.momentum.render();
-            }
+            };
 
             function renderHouseCharts(data) {
                 try {
@@ -432,7 +496,7 @@
                     renderRank(data);
                     renderContribution(data);
                     renderRisk(data);
-                    renderMomentum(data);
+                    renderMomentum(data.engagement_trend);
                 } catch (e) {
                     console.error('Chart render failed:', e);
                 }
@@ -445,6 +509,7 @@
                 })
                     .then(function (res) { return res.json(); })
                     .then(function (data) {
+                        window.reportData = data;
                         console.log('Report data received:', data);
                         console.log('Chart data:', data);
                         renderHouseCharts(data);

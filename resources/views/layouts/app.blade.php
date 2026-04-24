@@ -385,7 +385,7 @@
                         <a class="nav-link" href="/points">Points</a>
                     </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle {{ request()->routeIs('reports.pc', 'reports.leadership', 'reports.teachers', 'reports.house', 'reports.houses') ? 'active' : '' }}"
+                        <a class="nav-link dropdown-toggle {{ request()->routeIs('reports.pc', 'reports.leadership', 'reports.teachers', 'reports.houses') ? 'active' : '' }}"
                            href="#"
                            id="reportsDropdown"
                            role="button"
@@ -394,10 +394,6 @@
                             Reports
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="reportsDropdown">
-                            <li>
-                                <a class="dropdown-item {{ request()->routeIs('reports.house') ? 'active' : '' }}"
-                                   href="{{ route('reports.house') }}">House performance</a>
-                            </li>
                             <li>
                                 <a class="dropdown-item {{ request()->routeIs('reports.pc') ? 'active' : '' }}"
                                    href="{{ route('reports.pc') }}">Pastoral Insights</a>

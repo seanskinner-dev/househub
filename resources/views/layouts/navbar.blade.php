@@ -29,6 +29,6 @@
     <div class="nav-left">🏫 HouseHub</div>
     <div class="nav-right">
         <a href="/points">Points</a>
-        <a href="/reports/house-performance">Reports</a>
+        <a href="/reports/leadership">Reports</a>
     </div>
 </div>

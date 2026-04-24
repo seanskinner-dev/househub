@@ -282,7 +282,10 @@
                         events: {
                             click: function (event) {
                                 stopEvent(event);
-                                drillDown({ type: 'engagement_active' });
+
+                                drillDown({
+                                    type: 'engagement_inactive'
+                                });
                             }
                         }
                     },
@@ -290,9 +293,9 @@
                         radialBar: {
                             hollow: { size: '62%' },
                             dataLabels: {
-                                name: { show: true, fontSize: '15px', color: '#94a3b8' },
+                                name: { show: false },
                                 value: {
-                                    fontSize: '28px',
+                                    fontSize: '32px',
                                     fontWeight: 700,
                                     formatter: function (val) {
                                         return val + '%';
@@ -301,7 +304,6 @@
                             }
                         }
                     },
-                    labels: ['Engagement'],
                     colors: ['#22c55e']
                 };
 
@@ -310,135 +312,130 @@
             }
 
             function renderHeatmap(data) {
-                var cats = (data.trend && data.trend.categories) ? data.trend.categories : [];
-                var seriesPayload = (data.trend && data.trend.series) ? data.trend.series : [];
-                var sourceValues;
-                if (
-                    Array.isArray(seriesPayload) &&
-                    seriesPayload.length > 0 &&
-                    typeof seriesPayload[0] === 'object' &&
-                    seriesPayload[0] !== null &&
-                    Array.isArray(seriesPayload[0].data)
-                ) {
-                    sourceValues = seriesPayload[0].data.map(function (v) { return Number(v) || 0; });
-                } else {
-                    sourceValues = (seriesPayload || []).map(function (v) { return Number(v) || 0; });
+
+                var cats = (data.trend && data.trend.categories) || [];
+                var seriesPayload = (data.trend && data.trend.series) || [];
+
+                var values = [];
+
+                if (seriesPayload.length && seriesPayload[0].data) {
+                    values = seriesPayload[0].data;
                 }
 
-                var weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-                var totalsByDay = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0 };
-                cats.forEach(function (rawDate, i) {
-                    var value = sourceValues[i] || 0;
-                    var dt = new Date(String(rawDate));
-                    if (isNaN(dt.getTime())) {
-                        return;
-                    }
+                var len = Math.min(cats.length, values.length);
+
+                if (!len) {
+                    console.warn('Heatmap: no data');
+                    return;
+                }
+
+                var totalsByDay = {
+                    'Mon': 0,
+                    'Tue': 0,
+                    'Wed': 0,
+                    'Thu': 0,
+                    'Fri': 0
+                };
+
+                for (var i = 0; i < len; i++) {
+
+                    var rawDate = cats[i];
+                    var value = parseInt(values[i] || 0, 10);
+
+                    var dt = new Date(rawDate + 'T00:00:00');
+
+                    if (isNaN(dt.getTime())) continue;
+
                     var dayIndex = dt.getDay();
-                    var key = null;
-                    if (dayIndex === 1) key = 'Mon';
-                    if (dayIndex === 2) key = 'Tue';
-                    if (dayIndex === 3) key = 'Wed';
-                    if (dayIndex === 4) key = 'Thu';
-                    if (dayIndex === 5) key = 'Fri';
-                    if (key) {
+                    var key = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][dayIndex];
+
+                    if (totalsByDay[key] !== undefined) {
                         totalsByDay[key] += value;
                     }
+                }
+
+                var heatmapData = Object.keys(totalsByDay).map(function (day) {
+                    return {
+                        x: day,
+                        y: totalsByDay[day]
+                    };
                 });
 
                 var options = {
-                    series: [{
-                        name: 'Activity',
-                        data: weekdays.map(function (d) {
-                            return { x: d, y: totalsByDay[d] || 0 };
-                        })
-                    }],
                     chart: {
                         type: 'heatmap',
-                        height: 320,
-                        fontFamily: commonFont.fontFamily,
-                        foreColor: commonFont.foreColor,
-                        toolbar: { show: false }
-                    },
-                    dataLabels: { enabled: false },
-                    xaxis: { categories: weekdays, type: 'category', labels: { rotate: 0 } },
-                    plotOptions: {
-                        heatmap: {
-                            radius: 6,
-                            colorScale: {
-                                ranges: [
-                                    { from: 0, to: 20, color: '#020617' },
-                                    { from: 21, to: 60, color: '#1e293b' },
-                                    { from: 61, to: 120, color: '#0ea5e9' },
-                                    { from: 121, to: 200, color: '#22c55e' }
-                                ]
+                        height: 250,
+                        events: {
+                            dataPointSelection: function (event, chartContext, config) {
+                                var day = config.w.config.series[config.seriesIndex].data[config.dataPointIndex].x;
+
+                                drillDown({
+                                    type: 'weekday_activity',
+                                    day: day
+                                });
                             }
                         }
                     },
-                    tooltip: {
-                        theme: 'dark',
-                        y: {
-                            formatter: function (val) {
-                                return String(val) + ' points';
-                            }
-                        }
-                    },
-                    grid: { borderColor: '#334155' }
+                    series: [{
+                        name: 'Activity',
+                        data: heatmapData
+                    }]
                 };
 
-                lrCharts.heatmap = new ApexCharts(document.querySelector('#heatmap'), window.hhApplyApexDefaults(options));
+                document.querySelector("#heatmap").innerHTML = '';
+                lrCharts.heatmap = new ApexCharts(document.querySelector("#heatmap"), options);
                 lrCharts.heatmap.render();
             }
 
             function renderYearTrend(data) {
-                var cats = (data.year_level && data.year_level.categories) ? data.year_level.categories : [];
-                var ser = (data.year_level && data.year_level.series) ? data.year_level.series : [];
-                var xcats = cats.map(function (y) {
-                    return 'Year ' + y;
+
+                var cats = (data.year_level && data.year_level.categories) || [];
+                var seriesPayload = (data.year_level && data.year_level.series) || [];
+
+                var values = [];
+
+                if (seriesPayload.length && seriesPayload[0].data) {
+                    values = seriesPayload[0].data;
+                }
+
+                var len = Math.min(cats.length, values.length);
+
+                if (!len) {
+                    console.warn('Year chart: no data');
+                    return;
+                }
+
+                var categories = cats.slice(0, len);
+                var dataPoints = values.slice(0, len).map(function (v) {
+                    return parseInt(v || 0, 10);
                 });
 
                 var options = {
-                    series: [{ name: 'Points', data: ser.map(function (v) { return Number(v) || 0; }) }],
                     chart: {
-                        type: 'area',
+                        type: 'bar',
                         height: 320,
-                        fontFamily: commonFont.fontFamily,
-                        foreColor: commonFont.foreColor,
-                        toolbar: { show: false },
-                        zoom: { enabled: false },
                         events: {
                             dataPointSelection: function (event, chartContext, config) {
-                                stopEvent(event);
-                                var catsInner = config.w.config.xaxis.categories;
-                                var label = catsInner[config.dataPointIndex];
-                                if (label) {
-                                    drillDown({ type: 'year_level', value: String(label) });
-                                }
-                            },
-                            markerClick: function (event, chartContext, config) {
-                                stopEvent(event);
-                                var catsInner = config.w.config.xaxis.categories;
-                                var label = catsInner[config.dataPointIndex];
-                                if (label) {
-                                    drillDown({ type: 'year_level', value: String(label) });
-                                }
+                                var year = categories[config.dataPointIndex];
+
+                                drillDown({
+                                    type: 'year_level',
+                                    year: year
+                                });
                             }
                         }
                     },
-                    stroke: { curve: 'smooth', width: 2 },
-                    markers: { size: 4 },
-                    dataLabels: { enabled: false },
-                    fill: {
-                        type: 'gradient',
-                        gradient: { shadeIntensity: 1, opacityFrom: 0.45, opacityTo: 0.05 }
-                    },
-                    xaxis: { categories: xcats, labels: { style: { fontSize: '13px' } } },
-                    yaxis: { labels: { style: { fontSize: '13px' } }, min: 0 },
-                    grid: { borderColor: '#334155' },
-                    colors: ['#a855f7'],
-                    tooltip: { theme: 'dark' }
+                    series: [{
+                        name: 'Points',
+                        data: dataPoints
+                    }],
+                    xaxis: {
+                        categories: categories
+                    }
                 };
 
-                lrCharts.yearTrend = new ApexCharts(document.querySelector('#year-level'), window.hhApplyApexDefaults(options));
+                document.querySelector("#year-level").innerHTML = '';
+                lrCharts.yearTrend = new ApexCharts(document.querySelector("#year-level"), options);
                 lrCharts.yearTrend.render();
             }
 

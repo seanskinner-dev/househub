@@ -15,7 +15,7 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('reports.house')" :active="request()->routeIs('reports.house')">
+                    <x-nav-link :href="route('reports.leadership')" :active="request()->routeIs('reports.leadership')">
                         {{ __('Reports') }}
                     </x-nav-link>
                     <x-dropdown align="left" width="48">
@@ -94,7 +94,7 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('reports.house')" :active="request()->routeIs('reports.house')">
+            <x-responsive-nav-link :href="route('reports.leadership')" :active="request()->routeIs('reports.leadership')">
                 {{ __('Reports') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link href="/privacy" :active="request()->is('privacy')">
