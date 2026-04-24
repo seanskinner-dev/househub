@@ -1,3 +1,4 @@
+<!-- CURSOR TEST -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -31,7 +32,11 @@
 
         /* NAVBAR — Bootstrap navbar + dark theme (hh- prefix) */
         .hh-navbar {
-            background: #1e293b;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.05),
+                0 4px 20px rgba(0, 0, 0, 0.4);
             font-weight: bold;
         }
 
@@ -48,30 +53,51 @@
         }
 
         .hh-navbar .navbar-brand {
-            font-size: 18px;
+            font-size: 20px;
+            letter-spacing: 0.5px;
+            font-weight: 700;
             color: #fff;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.15);
         }
 
         .hh-navbar .navbar-brand:hover,
         .hh-navbar .navbar-brand:focus {
-            color: #fff;
+            color: #f8fafc;
         }
 
-        .hh-navbar .navbar-nav .nav-link {
-            color: #fff;
-            font-weight: bold;
+        .hh-navbar .navbar-nav {
+            gap: 8px;
+            align-items: center;
         }
 
-        .hh-navbar .navbar-nav .nav-link:hover,
-        .hh-navbar .navbar-nav .nav-link:focus {
-            color: #fff;
-            text-decoration: underline;
+        .hh-navbar .nav-link {
+            color: rgba(255,255,255,0.7);
+            padding: 6px 12px;
+            border-radius: 8px;
+            min-height: 36px;
+
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            transition: all 0.15s ease;
         }
 
-        .hh-navbar .navbar-nav .nav-link.active {
-            text-decoration: underline;
-            border-bottom: 2px solid #fff;
-            padding-bottom: 2px;
+        .hh-navbar .nav-link:hover {
+            color: #ffffff;
+            background: rgba(255,255,255,0.05);
+            transform: translateY(-1px);
+        }
+
+        .hh-navbar .nav-link.active {
+            color: #38bdf8;
+            background: rgba(56,189,248,0.15);
+
+            transform: translateY(-1px);
+
+            box-shadow:
+                0 0 0 1px rgba(56,189,248,0.25),
+                0 4px 12px rgba(56,189,248,0.12);
         }
 
         .hh-navbar .navbar-nav .dropdown-toggle::after {
@@ -113,6 +139,17 @@
 
         .hh-navbar .navbar-toggler {
             border-color: rgba(255, 255, 255, 0.35);
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(6px);
+            border-radius: 10px;
+            box-shadow: 0 0 0 rgba(56, 189, 248, 0);
+            transition: all 0.2s ease;
+        }
+
+        .hh-navbar .navbar-toggler:hover,
+        .hh-navbar .navbar-toggler:focus {
+            border-color: rgba(56, 189, 248, 0.8);
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
         }
 
         /* PAGE CONTENT */
@@ -338,6 +375,20 @@
 </head>
 
 <body>
+    <div style="
+        width: 100%;
+        background: #ffcc00;
+        color: #000;
+        text-align: center;
+        font-weight: 900;
+        font-size: 26px;
+        padding: 14px 0;
+        letter-spacing: 3px;
+        position: relative;
+        z-index: 99999;
+    ">
+        DEVELOPMENT
+    </div>
 
     <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg navbar-dark hh-navbar py-2">
@@ -355,10 +406,10 @@
             <div class="collapse navbar-collapse" id="mainNavbar">
                 <ul class="navbar-nav ms-auto align-items-lg-center">
                     <li class="nav-item">
-                        <a class="nav-link" href="/points">Points</a>
+                        <a class="nav-link {{ request()->is('points*') ? 'active' : '' }}" href="/points">Points</a>
                     </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle {{ request()->routeIs('reports.pc', 'reports.leadership', 'reports.teachers', 'reports.house', 'reports.houses') ? 'active' : '' }}"
+                        <a class="nav-link dropdown-toggle {{ request()->is('reports*') ? 'active' : '' }}"
                            href="#"
                            id="reportsDropdown"
                            role="button"
@@ -390,10 +441,10 @@
                         </ul>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/tv">TV</a>
+                        <a class="nav-link {{ request()->is('tv*') ? 'active' : '' }}" href="/tv">TV</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/admin">Admin</a>
+                        <a class="nav-link {{ request()->is('admin*') ? 'active' : '' }}" href="/admin">Admin</a>
                     </li>
                     <li class="nav-item ms-lg-2">
                         <span class="navbar-text user-indicator mb-0">

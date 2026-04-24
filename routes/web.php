@@ -10,6 +10,10 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PointController;
 use App\Http\Controllers\ReportController;
 
+Route::get('/test-dev', function () {
+    return 'DEV VERSION WORKING';
+});
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes

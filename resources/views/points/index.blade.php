@@ -717,6 +717,106 @@
 
         window.loadRecentActivity = loadRecentActivity;
 
+        window.awardPoint = function (studentId, amount) {
+            amount = parseInt(amount, 10);
+            if (isNaN(amount)) {
+                amount = 0;
+            }
+            if (studentId == null || studentId === '') {
+                return;
+            }
+
+            function showToast(message, type) {
+                if (typeof window.reportShowToast !== 'function') {
+                    return;
+                }
+                if (type === 'error') {
+                    window.reportShowToast(message || 'Unable to update points');
+                    return;
+                }
+                window.reportShowToast(message || 'Points updated');
+            }
+
+            function updateUI(data) {
+                if (typeof window.loadRecentActivity === 'function') {
+                    window.loadRecentActivity();
+                } else if (data && data.recent_entry && typeof window.houseHubPrependRecentActivity === 'function') {
+                    window.houseHubPrependRecentActivity(data.recent_entry);
+                }
+
+                var el = document.querySelector('[data-student-id="' + String(studentId) + '"].td-points');
+                if (!el) {
+                    return;
+                }
+
+                var start = parseInt(el.innerText || '0', 10);
+                if (isNaN(start)) {
+                    start = 0;
+                }
+                var end = parseInt(data && data.points != null ? data.points : start, 10);
+                if (isNaN(end)) {
+                    end = start;
+                }
+
+                var i = start;
+                var interval = setInterval(function () {
+                    if (i === end) {
+                        clearInterval(interval);
+                    } else {
+                        i += (end > start ? 1 : -1);
+                        el.innerText = String(i);
+                    }
+                }, 20);
+
+                var studentCard = el.closest('.student-card');
+                if (studentCard) {
+                    studentCard.classList.add('pulse');
+                    setTimeout(function () {
+                        studentCard.classList.remove('pulse');
+                    }, 150);
+                }
+
+                if (studentCard) {
+                    var house = studentCard.getAttribute('data-house');
+                    if (house) {
+                        var houseEl = document.getElementById(house + '-points');
+                        if (houseEl) {
+                            houseEl.textContent = parseInt(houseEl.textContent) + amount;
+                        }
+                    }
+                }
+            }
+
+            fetch(@json(url('/points')), {
+                credentials: 'same-origin',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': csrfToken()
+                },
+                body: JSON.stringify({
+                    student_id: studentId,
+                    amount: amount
+                })
+            })
+                .then(function (res) {
+                    return res.json();
+                })
+                .then(function (data) {
+                    if (data && data.success) {
+                        updateUI(data);
+                        showToast('Points updated');
+                    } else {
+                        showToast('Failed to update', 'error');
+                    }
+                })
+                .catch(function () {
+                    showToast('Unable to update points', 'error');
+                });
+        };
+
         function initRecentActivityPolling() {
             loadRecentActivity();
             setInterval(loadRecentActivity, 5000);

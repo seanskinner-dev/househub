@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
 class PointController extends Controller
@@ -51,9 +52,8 @@ class PointController extends Controller
 
     public function index()
     {
-        // 🔥 ONLY CHANGE: JOIN houses to get house_name
         $students = DB::table('students')
-            ->leftJoin('houses', 'students.house_id', '=', 'houses.id')
+            ->leftJoin('houses', 'students.house_name', '=', 'houses.name')
             ->select(
                 'students.*',
                 'houses.name as house_name'
@@ -162,6 +162,13 @@ class PointController extends Controller
 
                 if ($student) {
 
+                    Log::info('HOUSE UPDATE HIT', [
+                        'student_id' => $student->id ?? null,
+                        'house_id' => $student->house_id ?? null,
+                        'house_name' => $student->house_name ?? null,
+                        'amount' => $amount,
+                    ]);
+
                     DB::table('students')
                         ->where('id', $student->id)
                         ->increment('house_points', $amount);
@@ -170,27 +177,36 @@ class PointController extends Controller
                         ->where('id', $student->id)
                         ->value('house_points') ?? 0);
 
-                    $house = null;
-                    if (! empty($student->house_id)) {
-                        $house = DB::table('houses')->where('id', $student->house_id)->first();
-                    }
-                    if (! $house && ! empty($student->house_name)) {
-                        $house = DB::table('houses')->where('name', $student->house_name)->first();
+                    $aggregateHouseId = null;
+                    $rawHouseId = $student->house_id ?? null;
+                    if ($rawHouseId !== null && $rawHouseId !== '' && (int) $rawHouseId > 0) {
+                        $aggregateHouseId = (int) $rawHouseId;
+                    } else {
+                        $nameKey = trim((string) ($student->house_name ?? ''));
+                        if ($nameKey !== '') {
+                            $aggregateHouseId = (int) (DB::table('houses')
+                                ->whereRaw('LOWER(name) = ?', [strtolower($nameKey)])
+                                ->value('id') ?? 0);
+                            if ($aggregateHouseId <= 0) {
+                                $aggregateHouseId = null;
+                            }
+                        }
                     }
 
-                    if ($house) {
-                        DB::table('houses')
-                            ->where('id', $house->id)
-                            ->increment('points', $amount);
-
+                    if ($aggregateHouseId !== null) {
+                        DB::table('houses')->where('id', $aggregateHouseId)->increment('points', $amount);
                         $newHousePoints = (int) (DB::table('houses')
-                            ->where('id', $house->id)
+                            ->where('id', $aggregateHouseId)
                             ->value('points') ?? 0);
                     }
 
+                    $house = $aggregateHouseId !== null
+                        ? DB::table('houses')->where('id', $aggregateHouseId)->first()
+                        : null;
+
                     $studentInsert = [
                         'student_id' => $student->id,
-                        'house_id' => $house->id ?? null,
+                        'house_id' => $aggregateHouseId,
                         'amount' => $amount,
                         // 🔧 FIX: use type instead of category
                         'category' => $request->input('type', 'manual'),
@@ -374,7 +390,7 @@ class PointController extends Controller
     public function showStudent($id)
     {
         $student = DB::table('students')
-            ->leftJoin('houses', 'students.house_id', '=', 'houses.id')
+            ->leftJoin('houses', 'students.house_name', '=', 'houses.name')
             ->select('students.*', 'houses.name as house_name')
             ->where('students.id', $id)
             ->first();
@@ -429,7 +445,7 @@ class PointController extends Controller
     {
         $award = DB::table('awards')
             ->leftJoin('students', 'awards.student_id', '=', 'students.id')
-            ->leftJoin('houses', 'students.house_id', '=', 'houses.id')
+            ->leftJoin('houses', 'students.house_name', '=', 'houses.name')
             ->select(
                 'awards.*',
                 'students.first_name',
@@ -493,7 +509,7 @@ class PointController extends Controller
         });
 
         $topStudents = DB::table('students')
-            ->join('houses', 'students.house_id', '=', 'houses.id')
+            ->join('houses', 'students.house_name', '=', 'houses.name')
             ->select(
                 'students.id',
                 'students.first_name',
@@ -702,7 +718,7 @@ class PointController extends Controller
 
         $topByHouse = function (string $houseName) {
             return DB::table('students')
-                ->leftJoin('houses', 'students.house_id', '=', 'houses.id')
+                ->leftJoin('houses', 'students.house_name', '=', 'houses.name')
                 ->select('students.first_name', 'students.last_name', 'students.house_points', 'houses.name as house_name')
                 ->where('houses.name', $houseName)
                 ->orderByDesc('students.house_points')

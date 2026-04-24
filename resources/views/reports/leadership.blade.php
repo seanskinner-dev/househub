@@ -63,6 +63,11 @@
                         Visualises activity concentration across weekdays. Darker cells indicate stronger engagement intensity.
                     </p>
                     <div id="heatmap" style="min-height: 320px;"></div>
+                    <div style="display:flex;align-items:center;gap:10px;margin-top:10px;">
+                        <span style="font-size:12px;color:#cbd5e1;">Low</span>
+                        <div style="flex:1;height:10px;border-radius:999px;background:linear-gradient(90deg,#0f172a 0%,#1d4ed8 35%,#0ea5e9 65%,#22c55e 100%);border:1px solid #334155;"></div>
+                        <span style="font-size:12px;color:#cbd5e1;">High</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -123,6 +128,24 @@
                         </table>
                     </div>
                     <div id="lr-drilldown-grouped-host" style="display:none;"></div>
+                </div>
+                <div id="lr-risk-tabs-wrap" style="display:none;">
+                    <ul class="nav nav-tabs mb-3" id="riskTabs">
+                        <li class="nav-item">
+                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#high-risk">High Risk</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#medium-risk">Medium Risk</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#low-risk">Low Risk</button>
+                        </li>
+                    </ul>
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="high-risk"></div>
+                        <div class="tab-pane fade" id="medium-risk"></div>
+                        <div class="tab-pane fade" id="low-risk"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -220,10 +243,115 @@
                     console.warn('renderStudentTable is not available');
                     return;
                 }
+                var riskTabsWrap = document.getElementById('lr-risk-tabs-wrap');
+                var highPane = document.getElementById('high-risk');
+                var mediumPane = document.getElementById('medium-risk');
+                var lowPane = document.getElementById('low-risk');
+                var drillWrap = document.getElementById('lr-drilldown-wrap');
+                var drillEmpty = document.getElementById('lr-drilldown-empty');
+
+                function normalizeRiskRows(payload) {
+                    var buckets = { high: [], medium: [], low: [] };
+                    if (!payload || typeof payload !== 'object') {
+                        return buckets;
+                    }
+
+                    if (Array.isArray(payload.groups) && payload.groups.length > 0) {
+                        payload.groups.forEach(function (group) {
+                            var heading = String((group && group.heading) || '').toLowerCase();
+                            var rows = Array.isArray(group && group.rows) ? group.rows : [];
+                            if (heading.indexOf('high') !== -1) {
+                                buckets.high = rows;
+                            } else if (heading.indexOf('medium') !== -1) {
+                                buckets.medium = rows;
+                            } else if (heading.indexOf('low') !== -1) {
+                                buckets.low = rows;
+                            }
+                        });
+                    }
+
+                    if (Array.isArray(payload.rows) && payload.rows.length > 0) {
+                        var t = String(payload.title || '').toLowerCase();
+                        if (t.indexOf('high') !== -1) {
+                            buckets.high = payload.rows;
+                        } else if (t.indexOf('medium') !== -1) {
+                            buckets.medium = payload.rows;
+                        } else {
+                            buckets.low = payload.rows;
+                        }
+                    }
+
+                    return buckets;
+                }
+
+                function isRiskPayload(payload) {
+                    if (!payload || typeof payload !== 'object') {
+                        return false;
+                    }
+                    var title = String(payload.title || '').toLowerCase();
+                    var groupHit = Array.isArray(payload.groups) && payload.groups.some(function (group) {
+                        return String((group && group.heading) || '').toLowerCase().indexOf('risk') !== -1;
+                    });
+                    return title.indexOf('risk') !== -1 || groupHit;
+                }
+
+                function renderRowsTable(rows) {
+                    if (!Array.isArray(rows) || rows.length === 0) {
+                        return '<p class="text-white-50 small mb-0">No rows for this segment.</p>';
+                    }
+
+                    var keys = Object.keys(rows[0] || {});
+                    if (keys.length === 0) {
+                        return '<p class="text-white-50 small mb-0">No rows for this segment.</p>';
+                    }
+
+                    var thead = '<tr>' + keys.map(function (k) {
+                        return '<th style="text-align:left;padding:12px 14px;border-bottom:2px solid #334155;">' + escapeHtml(k.replace(/_/g, ' ')) + '</th>';
+                    }).join('') + '</tr>';
+
+                    var tbody = rows.map(function (row) {
+                        return '<tr class="report-drilldown-row">' + keys.map(function (k) {
+                            var val = row && row[k] != null ? String(row[k]) : '';
+                            return '<td style="text-align:left;padding:12px 14px;vertical-align:middle;">' + escapeHtml(val) + '</td>';
+                        }).join('') + '</tr>';
+                    }).join('');
+
+                    return '<div style="overflow-x:auto;"><table class="report-drilldown-table" style="font-size:0.95rem;"><thead>' + thead + '</thead><tbody>' + tbody + '</tbody></table></div>';
+                }
+
+                if (isRiskPayload(data)) {
+                    var buckets = normalizeRiskRows(data);
+                    riskTabsWrap.style.display = 'block';
+                    drillWrap.style.display = 'none';
+                    drillEmpty.style.display = 'none';
+
+                    highPane.innerHTML = renderRowsTable(buckets.high);
+                    mediumPane.innerHTML = renderRowsTable(buckets.medium);
+                    lowPane.innerHTML = renderRowsTable(buckets.low);
+
+                    document.querySelectorAll('#riskTabs .nav-link').forEach(function (btn) {
+                        btn.classList.remove('active');
+                        btn.setAttribute('aria-selected', 'false');
+                    });
+                    var highBtn = document.querySelector('#riskTabs .nav-link[data-bs-target="#high-risk"]');
+                    if (highBtn) {
+                        highBtn.classList.add('active');
+                        highBtn.setAttribute('aria-selected', 'true');
+                    }
+                    highPane.classList.add('show', 'active');
+                    mediumPane.classList.remove('show', 'active');
+                    lowPane.classList.remove('show', 'active');
+
+                    document.getElementById('lr-modal-title').textContent = data && data.title ? data.title : 'Risk Details';
+                    document.getElementById('lr-modal-backdrop').style.display = 'flex';
+                    return;
+                }
+
+                riskTabsWrap.style.display = 'none';
                 window.renderStudentTable(data, {
                     title: document.getElementById('lr-modal-title'),
-                    empty: document.getElementById('lr-drilldown-empty'),
-                    wrap: document.getElementById('lr-drilldown-wrap'),
+                    empty: drillEmpty,
+                    wrap: drillWrap,
                     singleTableWrap: document.getElementById('lr-drilldown-single-wrap'),
                     groupedHost: document.getElementById('lr-drilldown-grouped-host'),
                     theadRow: document.getElementById('lr-drilldown-thead-row'),
@@ -345,6 +473,11 @@
                     }
                 });
 
+                var weekdayValues = weekdays.map(function (d) { return Number(totalsByDay[d] || 0); });
+                var maxVal = Math.max.apply(null, weekdayValues.concat([0]));
+                var step = Math.max(1, Math.ceil(maxVal / 4));
+                var textColorThreshold = Math.max(2, Math.floor(maxVal * 0.45));
+
                 var options = {
                     series: [{
                         name: 'Activity',
@@ -352,33 +485,81 @@
                             return { x: d, y: totalsByDay[d] || 0 };
                         })
                     }],
-                    chart: {
-                        type: 'heatmap',
-                        height: 320,
-                        fontFamily: commonFont.fontFamily,
-                        foreColor: commonFont.foreColor,
-                        toolbar: { show: false }
+                    dataLabels: {
+                        enabled: true,
+                        formatter: function (val) {
+                            return String(Math.round(Number(val) || 0));
+                        },
+                        style: {
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            colors: ['#f8fafc']
+                        }
                     },
-                    dataLabels: { enabled: false },
-                    xaxis: { categories: weekdays, type: 'category', labels: { rotate: 0 } },
+                    xaxis: {
+                        categories: weekdays,
+                        type: 'category',
+                        labels: { rotate: 0, style: { fontWeight: 700 } }
+                    },
                     plotOptions: {
                         heatmap: {
                             radius: 6,
+                            shadeIntensity: 0.65,
+                            enableShades: true,
                             colorScale: {
+                                inverse: false,
                                 ranges: [
-                                    { from: 0, to: 20, color: '#020617' },
-                                    { from: 21, to: 60, color: '#1e293b' },
-                                    { from: 61, to: 120, color: '#0ea5e9' },
-                                    { from: 121, to: 200, color: '#22c55e' }
+                                    { from: 0, to: step - 1, color: '#0f172a', foreColor: '#e2e8f0' },
+                                    { from: step, to: (step * 2) - 1, color: '#1d4ed8', foreColor: '#f8fafc' },
+                                    { from: step * 2, to: (step * 3) - 1, color: '#0ea5e9', foreColor: '#020617' },
+                                    { from: step * 3, to: Math.max(step * 4, maxVal), color: '#22c55e', foreColor: '#020617' }
                                 ]
                             }
                         }
+                    },
+                    fill: {
+                        opacity: 1
                     },
                     tooltip: {
                         theme: 'dark',
                         y: {
                             formatter: function (val) {
                                 return String(val) + ' points';
+                            }
+                        }
+                    },
+                    states: {
+                        hover: {
+                            filter: {
+                                type: 'darken',
+                                value: 0.15
+                            }
+                        }
+                    },
+                    chart: {
+                        type: 'heatmap',
+                        height: 320,
+                        fontFamily: commonFont.fontFamily,
+                        foreColor: commonFont.foreColor,
+                        toolbar: { show: false },
+                        events: {
+                            mounted: function (chartContext) {
+                                var labels = chartContext && chartContext.el
+                                    ? chartContext.el.querySelectorAll('.apexcharts-datalabel text')
+                                    : [];
+                                labels.forEach(function (el, i) {
+                                    var v = weekdayValues[i] || 0;
+                                    el.style.fill = v >= textColorThreshold ? '#020617' : '#f8fafc';
+                                });
+                            },
+                            updated: function (chartContext) {
+                                var labels = chartContext && chartContext.el
+                                    ? chartContext.el.querySelectorAll('.apexcharts-datalabel text')
+                                    : [];
+                                labels.forEach(function (el, i) {
+                                    var v = weekdayValues[i] || 0;
+                                    el.style.fill = v >= textColorThreshold ? '#020617' : '#f8fafc';
+                                });
                             }
                         }
                     },

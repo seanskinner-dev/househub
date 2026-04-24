@@ -528,36 +528,82 @@ class ReportController extends Controller
     private function reportDrilldownStructured(array $data, string $house, Carbon $start, Carbon $end, string $yearFilter)
     {
         $type = $data['type'] ?? null;
+
         if ($type === null || $type === '') {
             return response()->json(['rows' => []]);
         }
 
         return match ($type) {
-            'date' => response()->json($this->drilldownPayloadDate($data, $house, $start, $end, $yearFilter)),
-            'engagement_low' => response()->json($this->pcDrilldownLowAtRisk($house, $start, $end, $yearFilter)),
-            'engagement_active' => response()->json($this->pcDrilldownRiskActive($house, $start, $end, $yearFilter)),
-            'house_low' => response()->json($this->drilldownHouseLow((string) ($data['value'] ?? ''), $house, $start, $end, $yearFilter)),
-            'house' => response()->json($this->drilldownHouseLow((string) ($data['value'] ?? ''), $house, $start, $end, $yearFilter)),
-            'underperformance_house' => response()->json($this->drilldownUnderperformanceHouse((string) ($data['value'] ?? ''), $house, $start, $end, $yearFilter)),
-            'term_comparison' => response()->json($this->drilldownTermComparison(
-                is_array($data['value'] ?? null) ? $data['value'] : [],
-                $house,
-                $start,
-                $end,
-                $yearFilter
-            )),
-            'contribution_spread' => response()->json($this->drilldownContributionSpread((string) ($data['value'] ?? ''), $house, $start, $end, $yearFilter)),
-            'teacher' => response()->json($this->drilldownTeacherStudents((string) ($data['value'] ?? ''), $house, $start, $end, $yearFilter)),
-            'teacher_bucket' => response()->json($this->tuDrilldownTeacherBucketList(
-                is_array($data['value'] ?? null) ? $data['value'] : [],
-                $house,
-                $start,
-                $end,
-                $yearFilter
-            )),
-            'year_level' => response()->json($this->drilldownPayloadYearLevel($data, $house, $start, $end, $yearFilter)),
-            'risk_segment' => response()->json($this->drilldownPayloadRiskSegment($data, $house, $start, $end, $yearFilter)),
-            'risk_segment_combined' => response()->json($this->drilldownPcRiskMediumHighCombined($house, $start, $end, $yearFilter)),
+
+            'date' => response()->json(
+                $this->drilldownPayloadDate($data, $house, $start, $end, $yearFilter)
+            ),
+
+            'engagement_low' => response()->json(
+                $this->pcDrilldownLowAtRisk($house, $start, $end, $yearFilter)
+            ),
+
+            'engagement_active' => response()->json(
+                $this->pcDrilldownRiskActive($house, $start, $end, $yearFilter)
+            ),
+
+            // split Medium and High (no merging)
+            'risk_medium' => response()->json(
+                $this->pcDrilldownEngagementActivity('Medium', $house, $start, $end, $yearFilter)
+            ),
+
+            'risk_high' => response()->json(
+                $this->pcDrilldownEngagementActivity('High', $house, $start, $end, $yearFilter)
+            ),
+
+            'house_low' => response()->json(
+                $this->drilldownHouseLow((string) ($data['value'] ?? ''), $house, $start, $end, $yearFilter)
+            ),
+
+            'house' => response()->json(
+                $this->drilldownHouseLow((string) ($data['value'] ?? ''), $house, $start, $end, $yearFilter)
+            ),
+
+            'underperformance_house' => response()->json(
+                $this->drilldownUnderperformanceHouse((string) ($data['value'] ?? ''), $house, $start, $end, $yearFilter)
+            ),
+
+            'term_comparison' => response()->json(
+                $this->drilldownTermComparison(
+                    is_array($data['value'] ?? null) ? $data['value'] : [],
+                    $house,
+                    $start,
+                    $end,
+                    $yearFilter
+                )
+            ),
+
+            'contribution_spread' => response()->json(
+                $this->drilldownContributionSpread((string) ($data['value'] ?? ''), $house, $start, $end, $yearFilter)
+            ),
+
+            'teacher' => response()->json(
+                $this->drilldownTeacherStudents((string) ($data['value'] ?? ''), $house, $start, $end, $yearFilter)
+            ),
+
+            'teacher_bucket' => response()->json(
+                $this->tuDrilldownTeacherBucketList(
+                    is_array($data['value'] ?? null) ? $data['value'] : [],
+                    $house,
+                    $start,
+                    $end,
+                    $yearFilter
+                )
+            ),
+
+            'year_level' => response()->json(
+                $this->drilldownPayloadYearLevel($data, $house, $start, $end, $yearFilter)
+            ),
+
+            'risk_segment' => response()->json(
+                $this->drilldownPayloadRiskSegment($data, $house, $start, $end, $yearFilter)
+            ),
+
             default => response()->json(['rows' => []]),
         };
     }
